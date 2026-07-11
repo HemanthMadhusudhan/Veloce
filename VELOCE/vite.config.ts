@@ -14,7 +14,7 @@ export default defineConfig({
     imagetools(),
     tsconfigPaths(),
     tailwindcss(),
-    tanstackStart({ server: { entry: "server" } }),
+   tanstackStart({ server: { preset: "vercel", entry: "server" } }),
     react(),
   ],
 });
