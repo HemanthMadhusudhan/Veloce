@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { imagetools } from "vite-imagetools";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { nitro } from "nitro/vite";
 
 export default defineConfig({
   server: {
@@ -14,7 +15,8 @@ export default defineConfig({
     imagetools(),
     tsconfigPaths(),
     tailwindcss(),
-   tanstackStart({ server: { preset: "vercel", entry: "server" } }),
+    tanstackStart({ server: { entry: "server" } }),
+    nitro(),
     react(),
   ],
 });
