@@ -1,0 +1,1 @@
+import{a as e}from"./client-CxT91J3I.js";import{i as t}from"./chrome-D9dKkTup.js";import{s as n}from"./index-DlDXQ7l7.js";var r=e(),i=()=>(0,r.jsx)(t,{children:(0,r.jsx)(n,{title:`FIFA World Cup`,subtitle:`Champions editions and tournament kits from football's greatest stage.`,category:`worldcup`})});export{i as component};
