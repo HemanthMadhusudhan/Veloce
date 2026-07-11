@@ -19,9 +19,6 @@ dist-ssr
 .env.*
 !.env.example
 
-# PocketBase local database and executable
-pocketbase/pb_data/
-pocketbase/pocketbase.exe
 
 # Wrangler / Cloudflare
 .wrangler/
