@@ -1,1 +1,0 @@
-import{a as e}from"./client-CxT91J3I.js";import{i as t}from"./chrome-D9dKkTup.js";var n=e(),r=({error:e})=>(0,n.jsx)(t,{children:(0,n.jsx)(`div`,{className:`mx-auto max-w-xl px-6 py-20 text-center text-sm text-muted-foreground`,children:e.message})});export{r as errorComponent};
