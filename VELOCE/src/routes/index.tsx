@@ -8,7 +8,7 @@ import { useCatalog } from "@/lib/catalog-store";
 import { useHotSelling } from "@/lib/hot-selling";
 import { formatINR } from "@/lib/format";
 import { ZONES, type Zone } from "@/lib/catalog";
-import { DEFAULT_DROPS, DROPS_KEY, type Drop } from "@/lib/drops";
+import { DEFAULT_DROPS, useDrops, type Drop } from "@/lib/drops";
 import { useSiteImage } from "@/lib/site-images";
 import { useShop } from "@/lib/store";
 
@@ -77,7 +77,7 @@ function isVideoUrl(url?: string): boolean {
 
 function Home() {
   const { products } = useCatalog();
-  const [drops, setDrops] = useState<Drop[]>(DEFAULT_DROPS);
+  const { drops } = useDrops();
   const heroBg = useSiteImage("hero");
   const filmVideo = useSiteImage("film-video");
   const [filmOpen, setFilmOpen] = useState(false);
@@ -88,9 +88,6 @@ function Home() {
   const zoneRonaldo = useSiteImage("zone-ronaldo");
   const zoneVerstappen = useSiteImage("zone-verstappen");
   const zoneHamilton = useSiteImage("zone-hamilton");
-  useEffect(() => {
-    try { const raw = localStorage.getItem(DROPS_KEY); if (raw) setDrops(JSON.parse(raw)); } catch {}
-  }, []);
   const activeDrop = drops[0] ?? DEFAULT_DROPS[0];
   const c = useCountdown(activeDrop.endsAt);
   const featured = products.slice(0, 8);

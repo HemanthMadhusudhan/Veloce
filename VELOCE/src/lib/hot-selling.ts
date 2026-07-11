@@ -1,25 +1,41 @@
 import { useState, useEffect } from "react";
-
-export const HOT_SELLING_KEY = "veloce_hot_selling";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useHotSelling() {
   const [hotSellingIds, setHotSellingIds] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(HOT_SELLING_KEY);
-      if (raw) setHotSellingIds(JSON.parse(raw));
-    } catch {}
-    setLoaded(true);
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", "hot_selling")
+          .maybeSingle();
+          
+        if (data?.value) {
+          setHotSellingIds(data.value as string[]);
+        }
+      } catch (err) {
+        console.error("Failed to load hot selling:", err);
+      } finally {
+        setLoaded(true);
+      }
+    }
+    load();
   }, []);
 
-  const setIds = (ids: string[]) => {
+  const setIds = async (ids: string[]) => {
     const limited = ids.slice(0, 7);
     setHotSellingIds(limited);
     try {
-      localStorage.setItem(HOT_SELLING_KEY, JSON.stringify(limited));
-    } catch {}
+      await supabase
+        .from("site_settings")
+        .upsert({ key: "hot_selling", value: limited });
+    } catch (err) {
+      console.error("Failed to save hot selling:", err);
+    }
   };
 
   return { hotSellingIds, setHotSellingIds: setIds, loaded };

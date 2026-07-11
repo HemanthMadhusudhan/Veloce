@@ -84,23 +84,16 @@ export async function uploadSiteImageFile(slot: SiteImageSlot, file: File): Prom
 }
 
 export function SiteImagesProvider({ children }: { children: ReactNode }) {
-  const [overrides, setOverrides] = useState<Partial<Record<SiteImageSlot, string>>>(() => {
-    // Read localStorage cache immediately for fast first render
-    try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return {};
-  });
+  const [overrides, setOverrides] = useState<Partial<Record<SiteImageSlot, string>>>({});
 
-  // Fetch the real data from Supabase (source of truth) and overwrite cache
+  // Fetch the real data from Supabase (source of truth)
   useEffect(() => {
     let active = true;
     async function load() {
       try {
         const { data, error } = await supabase.from("site_images").select("slot, url");
         if (error) {
-          console.warn("site_images table error, keeping cache:", error.message);
+          console.warn("site_images table error:", error.message);
           return;
         }
         if (data && active) {
@@ -109,8 +102,6 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
             map[r.slot as SiteImageSlot] = r.url;
           });
           setOverrides(map);
-          // Sync cache
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify(map)); } catch {}
         }
       } catch (err) {
         console.error("Failed to load site images from Supabase:", err);
@@ -125,8 +116,6 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
       const next = { ...prev };
       if (url && url.trim()) next[slot] = url.trim();
       else delete next[slot];
-      // Update cache
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
       return next;
     });
 
@@ -150,7 +139,6 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(async () => {
     setOverrides({});
-    try { localStorage.removeItem(CACHE_KEY); } catch {}
     try {
       // Delete all rows from site_images table
       const { data } = await supabase.from("site_images").select("slot");

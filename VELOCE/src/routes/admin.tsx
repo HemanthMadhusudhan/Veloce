@@ -4,7 +4,7 @@ import { Package, Boxes, LayoutGrid, Timer, Search, Trash2, Plus, AlertCircle, R
 import { SiteChrome } from "@/components/chrome";
 import { useCatalog } from "@/lib/catalog-store";
 import { CATEGORY_LABEL, ZONES, type Category, type Product, type Zone } from "@/lib/catalog";
-import { DEFAULT_DROPS, DROPS_KEY, type Drop } from "@/lib/drops";
+import { DEFAULT_DROPS, useDrops, type Drop } from "@/lib/drops";
 import { formatINR } from "@/lib/format";
 import { useShop, type OrderStatus } from "@/lib/store";
 import { useSiteImages, uploadSiteImageFile, SITE_IMAGE_META, type SiteImageSlot } from "@/lib/site-images";
@@ -43,7 +43,7 @@ function Admin() {
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[0.28em] text-brand">Atelier control</div>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">Admin Panel</h1>
-        <p className="text-xs text-muted-foreground">Local demo · Changes persist in your browser (localStorage). {products.length} products live.</p>
+        <p className="text-xs text-muted-foreground">{products.length} products live. Changes apply globally.</p>
       </div>
 
       <div className="mt-8 flex flex-wrap gap-2 border-b border-border/50 pb-2">
@@ -854,20 +854,11 @@ function toLocalInput(ts: number) {
 
 function DropsTab() {
   const { products } = useCatalog();
-  const [drops, setDrops] = useState<Drop[]>(DEFAULT_DROPS);
-  const [dropsLoaded, setDropsLoaded] = useState(false);
-  useEffect(() => {
-    try { const raw = localStorage.getItem(DROPS_KEY); if (raw) setDrops(JSON.parse(raw)); } catch {}
-    setDropsLoaded(true);
-  }, []);
-  useEffect(() => {
-    if (!dropsLoaded) return;
-    try { localStorage.setItem(DROPS_KEY, JSON.stringify(drops)); } catch {}
-  }, [drops, dropsLoaded]);
+  const { drops, setDrops } = useDrops();
 
-  const update = (id: string, patch: Partial<Drop>) => setDrops((d) => d.map((x) => x.id === id ? { ...x, ...patch } : x));
-  const add = () => setDrops((d) => [...d, { id: `drop-${Date.now()}`, name: "New Drop", eyebrow: "Capsule", productId: products[0]?.id ?? "", endsAt: Date.now() + 7 * 86400000 }]);
-  const remove = (id: string) => setDrops((d) => d.filter((x) => x.id !== id));
+  const update = (id: string, patch: Partial<Drop>) => setDrops(drops.map((x) => x.id === id ? { ...x, ...patch } : x));
+  const add = () => setDrops([...drops, { id: `drop-${Date.now()}`, name: "New Drop", eyebrow: "Capsule", productId: products[0]?.id ?? "", endsAt: Date.now() + 7 * 86400000 }]);
+  const remove = (id: string) => setDrops(drops.filter((x) => x.id !== id));
 
   return (
     <>
