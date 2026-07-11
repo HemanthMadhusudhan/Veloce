@@ -33,3 +33,5 @@ cd frontend
 npm run build
 npm run preview
 ```
+
+That's it......
