@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Gift, Smartphone, Wallet, Banknote } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { Check, Lock, Gift, Wallet, Banknote } from "lucide-react";
 import { SiteNav } from "@/components/chrome";
 import { CartDrawer } from "@/components/chrome";
 import { SearchDialog } from "@/components/chrome";
@@ -13,6 +12,26 @@ import { formatINR } from "@/lib/format";
 
 const UPI_VPA = "velocejersey@ybl";
 const UPI_PAYEE = "VELOCE JERSEY";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Veloce" }] }),
@@ -39,7 +58,6 @@ function CheckoutPage() {
   const [stateName, setStateName] = useState("");
   const [step, setStep] = useState<"details" | "payment">("details");
   const [pincode, setPincode] = useState("");
-  const [txnId, setTxnId] = useState("");
   const [txnErr, setTxnErr] = useState<string | null>(null);
   const [payMode, setPayMode] = useState<"full" | "cod">("full");
   const [finalCodDue, setFinalCodDue] = useState(0);
@@ -140,11 +158,6 @@ function CheckoutPage() {
   const submitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setTxnErr(null);
-    const trimmed = txnId.trim();
-    if (!/^\d{12}$/.test(trimmed)) {
-      setTxnErr("UTR must be exactly 12 digits. Open your UPI app, find this payment, and copy the 12-digit UTR / transaction reference number.");
-      return;
-    }
 
     for (const item of cart) {
       const p = getById(item.id);
@@ -189,25 +202,66 @@ function CheckoutPage() {
       }).catch((err) => console.error("Failed to sync checkout address to Supabase:", err));
     }
 
-    await placeOrder({
-      items: cart,
-      subtotal, discount, shipping, tax, total,
-      customer: {
-        email: contact.email,
-        name,
-        city: contact.city,
-        address: address,
-        state: stateName,
-        pincode: pincode,
-        phone: profile?.phone || "",
+    const res = await loadRazorpay();
+    if (!res) {
+      setTxnErr("Failed to load payment gateway. Please check your internet connection.");
+      return;
+    }
+
+    const keyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+    if (!keyId) {
+      setTxnErr("Payment gateway is not configured. Please contact support.");
+      return;
+    }
+
+    const options = {
+      key: keyId,
+      amount: Math.round(payNow * 100), // paise
+      currency: "INR",
+      name: "Veloce Atelier",
+      description: payMode === "cod" ? "COD Prepaid Charge" : `Order ${orderRef}`,
+      handler: async function (response: any) {
+        const paymentId = response.razorpay_payment_id;
+        try {
+          await placeOrder({
+            items: cart,
+            subtotal, discount, shipping, tax, total,
+            customer: {
+              email: contact.email,
+              name,
+              city: contact.city,
+              address: address,
+              state: stateName,
+              pincode: pincode,
+              phone: profile?.phone || "",
+            },
+            payment: { method: "razorpay", vpa: "", txnId: paymentId, mode: payMode, paidNow: payNow, codDue },
+            status: "processing", // Assuming paid via Razorpay
+          });
+          await refresh();
+          setFinalCodDue(codDue);
+          clearCart();
+          setDone(true);
+        } catch (err: any) {
+          console.error(err);
+          setTxnErr(err.message || "Failed to place order.");
+        }
       },
-      payment: { method: "upi", vpa: UPI_VPA, txnId: trimmed, mode: payMode, paidNow: payNow, codDue },
-      status: "awaiting_payment",
+      prefill: {
+        name: name,
+        email: contact.email,
+        contact: profile?.phone || "",
+      },
+      theme: {
+        color: "#ffffff",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.on("payment.failed", function (response: any) {
+      setTxnErr(response.error.description || "Payment failed. Please try again.");
     });
-    await refresh();
-    setFinalCodDue(codDue);
-    clearCart();
-    setDone(true);
+    paymentObject.open();
   };
 
   return (
@@ -325,54 +379,24 @@ function CheckoutPage() {
               </button>
             </div>
             {/* PAYMENT BOX */}
-            <div style={{width:'100%', boxSizing:'border-box', overflowX:'hidden'}} className="rounded-2xl border border-border/70 bg-card/40 p-4">
-              {/* QR CODE — centered */}
-              <div style={{display:'flex', justifyContent:'center', marginBottom:'1.25rem'}}>
-                <div style={{background:'white', borderRadius:'12px', padding:'10px', display:'inline-flex'}}>
-                  <QRCodeSVG value={upiUri} size={130} level="M" />
-                </div>
-              </div>
-              {/* Label */}
-              <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', marginBottom:'10px'}} className="text-[10px] uppercase tracking-[0.24em] text-brand">
-                <Smartphone style={{width:'14px', height:'14px', flexShrink:0}} /> Scan &amp; pay
-              </div>
+            <div style={{width:'100%', boxSizing:'border-box', overflowX:'hidden'}} className="rounded-2xl border border-border/70 bg-card/40 p-6">
               {/* Description */}
-              <p style={{fontSize:'13px', textAlign:'center', lineHeight:'1.6', marginBottom:'16px', wordBreak:'break-word', overflowWrap:'break-word'}} className="text-muted-foreground">
-                Open any UPI app (GPay, PhonePe, Paytm, BHIM) and scan the QR — amount preset to{" "}
-                <strong className="text-foreground">{formatINR(payNow)}</strong>
-                {payMode === "cod" && <> (COD prepay charge)</>}.
+              <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', marginBottom:'16px'}} className="text-[12px] uppercase tracking-[0.24em] text-brand">
+                <Lock style={{width:'16px', height:'16px', flexShrink:0}} /> Secure Checkout
+              </div>
+              <p style={{fontSize:'13px', textAlign:'center', lineHeight:'1.6', marginBottom:'24px', wordBreak:'break-word', overflowWrap:'break-word'}} className="text-muted-foreground">
+                You will be redirected to Razorpay to complete your payment securely via UPI, Credit/Debit Card, or Netbanking.
               </p>
               {/* Payment details */}
-              <div style={{borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'14px', display:'flex', flexDirection:'column', gap:'10px', fontSize:'13px', width:'100%'}}>
-                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}}><span className="text-muted-foreground">Payee</span><span style={{fontWeight:600}}>{UPI_PAYEE}</span></div>
-                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}}><span className="text-muted-foreground">UPI ID</span><span style={{fontFamily:'monospace', fontSize:'12px', wordBreak:'break-all'}}>{UPI_VPA}</span></div>
-                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}}><span className="text-muted-foreground">Pay now</span><span style={{fontFamily:'monospace'}}>{formatINR(payNow)}</span></div>
+              <div style={{borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'16px', display:'flex', flexDirection:'column', gap:'12px', fontSize:'14px', width:'100%'}}>
+                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}}><span className="text-muted-foreground">Pay now</span><span style={{fontFamily:'monospace', fontWeight:600}}>{formatINR(payNow)}</span></div>
                 {payMode === "cod" && (
-                  <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}} className="text-brand"><span>Cash on delivery</span><span style={{fontFamily:'monospace'}}>{formatINR(codDue)}</span></div>
+                  <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}} className="text-brand"><span>Cash on delivery</span><span style={{fontFamily:'monospace', fontWeight:600}}>{formatINR(codDue)}</span></div>
                 )}
-                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px', borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'10px', fontWeight:600}}><span className="text-muted-foreground">Order total</span><span style={{fontFamily:'monospace'}}>{formatINR(total)}</span></div>
-                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px'}}><span className="text-muted-foreground">Ref</span><span style={{fontFamily:'monospace', fontSize:'11px', wordBreak:'break-all'}}>{orderRef}</span></div>
+                <div style={{display:'flex', justifyContent:'space-between', width:'100%', gap:'8px', borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:'12px', fontWeight:600}}><span className="text-muted-foreground">Order total</span><span style={{fontFamily:'monospace'}}>{formatINR(total)}</span></div>
               </div>
-              {/* Open UPI button */}
-              <a href={upiUri} style={{display:'flex', alignItems:'center', justifyContent:'center', marginTop:'16px', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'9999px', padding:'12px', fontSize:'11px', textTransform:'uppercase', letterSpacing:'0.2em', width:'100%', boxSizing:'border-box'}} className="sm:hidden">
-                Open UPI app
-              </a>
+              {txnErr && <div className="mt-6 rounded-lg border border-brand/40 bg-brand/10 px-4 py-3 text-[13px] text-brand text-center">{txnErr}</div>}
             </div>
-            <div>
-              <div className="mb-1.5 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">UPI transaction / UTR number{payMode === "cod" && " (for the ₹80 prepaid charge)"}</div>
-              <Input
-                required
-                inputMode="numeric"
-                pattern="\d{12}"
-                maxLength={12}
-                placeholder="12-digit UTR (e.g. 431298765432)"
-                value={txnId}
-                onChange={(e) => { setTxnId(e.target.value.replace(/\D/g, "").slice(0, 12)); setTxnErr(null); }}
-              />
-              <p className="mt-1.5 text-[11px] text-muted-foreground">After paying, paste the 12-digit UTR from your UPI app. Your order stays "awaiting payment" until we confirm the UTR against our bank — fake or wrong numbers will be rejected.</p>
-              {txnErr && <div className="mt-2 rounded-lg border border-brand/40 bg-brand/10 px-3 py-2 text-[11px] text-brand">{txnErr}</div>}
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground"><Lock className="h-3 w-3" /> Payment goes directly to {UPI_VPA}</div>
           </Section>
             </>
           )}

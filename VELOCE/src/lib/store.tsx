@@ -36,7 +36,7 @@ export type Order = {
   status: OrderStatus;
   customer: { email?: string; name?: string; city?: string; address?: string; state?: string; pincode?: string; phone?: string; };
   payment?: {
-    method: "upi";
+    method: "upi" | "razorpay";
     vpa: string;
     txnId: string;
     mode: "full" | "cod";
