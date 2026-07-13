@@ -328,54 +328,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     try {
       const { data: record, error } = await supabase.from("orders").insert(dbData).select("*").single();
       if (error) throw error;
-      
-      // Deduct stock
-      try {
-        const itemsByProductId = o.items.reduce((acc, item) => {
-          if (!acc[item.id]) acc[item.id] = [];
-          acc[item.id].push(item);
-          return acc;
-        }, {} as Record<string, CartItem[]>);
-
-        for (const [productId, items] of Object.entries(itemsByProductId)) {
-          const { data: pData } = await supabase.from("products").select("stock, stock_by_size, sizes").eq("id", productId).single();
-          if (pData) {
-            let sizeStockObj = pData.stock_by_size || {};
-            const sizes = pData.sizes || [];
-            
-            if (Object.keys(sizeStockObj).length === 0 && sizes.length > 0) {
-              const evenStock = Math.floor(pData.stock / sizes.length);
-              for (const s of sizes) {
-                sizeStockObj[s] = evenStock;
-              }
-            }
-            
-            for (const item of items) {
-              let currentSizeStock = sizeStockObj[item.size] !== undefined ? sizeStockObj[item.size] : pData.stock;
-              sizeStockObj[item.size] = Math.max(0, currentSizeStock - item.qty);
-            }
-            
-            let newTotal = 0;
-            if (Object.keys(sizeStockObj).length > 0) {
-              newTotal = Object.values(sizeStockObj).reduce((acc: number, val: any) => acc + (val as number), 0);
-            } else {
-              const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
-              newTotal = Math.max(0, pData.stock - totalQty);
-            }
-            
-            const { error: updateError } = await supabase.from("products").update({
-               stock: newTotal,
-               stock_by_size: Object.keys(sizeStockObj).length > 0 ? sizeStockObj : null
-            }).eq("id", productId);
-            
-            if (updateError) {
-               console.error("Failed to update stock for product", productId, ":", updateError);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed to update stock after order:", err);
-      }
+      // Stock deduction is now handled completely automatically by the Supabase Postgres Trigger (tr_order_stock)
+      // which bypasses RLS securely and handles both order placement and order cancellation/rejection.
       
       const newOrder: Order = {
         id: record.id,
