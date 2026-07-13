@@ -211,7 +211,12 @@ function Pdp() {
                   return (
                     <button
                       key={s}
-                      onClick={() => !isOos && setSize(s)}
+                      onClick={() => {
+                        if (isOos) return;
+                        setSize(s);
+                        const newSizeStock = product.stockBySize?.[s] !== undefined ? product.stockBySize[s] : product.stock;
+                        setQty(q => Math.min(q, newSizeStock));
+                      }}
                       disabled={isOos}
                       className={`rounded-lg border py-2 text-xs transition ${isOos ? "border-border/30 text-muted-foreground/40 line-through cursor-not-allowed" : size === s ? "border-foreground bg-foreground text-background" : "border-border/70 hover:border-foreground"}`}
                     >
@@ -288,7 +293,7 @@ function Pdp() {
                   Out of Stock
                 </div>
               ) : (
-                <button onClick={() => addToCart({ id: product.id, qty, size, color, ...(customized && customName ? { customName } : {}), ...(customized && customNumber ? { customNumber } : {}) })} className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground active:bg-brand active:text-foreground">
+                <button onClick={() => addToCart({ id: product.id, qty, size, color, ...(customized && customName ? { customName } : {}), ...(customized && customNumber ? { customNumber } : {}) }, (product.stockBySize?.[size] !== undefined ? product.stockBySize[size] : product.stock))} className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground active:bg-brand active:text-foreground">
                   <ShoppingBag className="h-5 w-5 sm:h-4 sm:w-4" /> Add to Bag · {formatINR(product.price * qty)}
                 </button>
               )}

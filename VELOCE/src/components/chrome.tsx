@@ -331,7 +331,11 @@ export function CartDrawer() {
                       <div className="inline-flex items-center rounded-full border border-border/70">
                         <button onClick={() => updateQty(item.id, item.size, item.color, item.qty - 1, item.customName, item.customNumber)} className="px-2 py-1"><Minus className="h-3 w-3" /></button>
                         <span className="w-6 text-center font-mono text-xs">{item.qty}</span>
-                        <button onClick={() => updateQty(item.id, item.size, item.color, item.qty + 1, item.customName, item.customNumber)} className="px-2 py-1"><Plus className="h-3 w-3" /></button>
+                        <button onClick={() => {
+                          const p = getById(item.id);
+                          const available = p?.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : (p?.stock ?? 0);
+                          updateQty(item.id, item.size, item.color, Math.min(available, item.qty + 1), item.customName, item.customNumber);
+                        }} className="px-2 py-1"><Plus className="h-3 w-3" /></button>
                       </div>
                       <button onClick={() => removeFromCart(item.id, item.size, item.color, item.customName, item.customNumber)} className="text-muted-foreground hover:text-brand" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
                     </div>

@@ -23,7 +23,9 @@ export function ShopInner({ title, subtitle, category }: { title: string; subtit
   useEffect(() => { setTeam(search.team ?? null); }, [search.team]);
 
   const filtered = useMemo(() => {
-    let list = category ? products.filter((p) => p.category === category) : products;
+    let list = category 
+      ? products.filter((p) => category === "football" ? (p.category === "football" || p.category === "worldcup") : p.category === category) 
+      : products;
     if (team) list = list.filter((p) => p.team === team);
     list = list.filter((p) => p.price >= price[0] && p.price <= price[1]);
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);

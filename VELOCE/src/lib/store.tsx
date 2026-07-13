@@ -66,7 +66,7 @@ type ShopCtx = {
   closeCart: () => void;
   openSearch: () => void;
   closeSearch: () => void;
-  addToCart: (i: CartItem) => void;
+  addToCart: (i: CartItem, maxStock?: number) => void;
   updateQty: (id: string, size: string, color: string, qty: number, customName?: string, customNumber?: string) => void;
   removeFromCart: (id: string, size: string, color: string, customName?: string, customNumber?: string) => void;
   clearCart: () => void;
@@ -263,7 +263,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }
   }, [wishlist, userId, authLoading]);
 
-  const addToCart = useCallback((i: CartItem) => {
+  const addToCart = useCallback((i: CartItem, maxStock?: number) => {
     setCart((prev) => {
       const idx = prev.findIndex((x) => 
         x.id === i.id && 
@@ -274,7 +274,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       );
       if (idx >= 0) {
         const copy = [...prev];
-        copy[idx] = { ...copy[idx], qty: copy[idx].qty + i.qty };
+        const newQty = copy[idx].qty + i.qty;
+        copy[idx] = { ...copy[idx], qty: maxStock !== undefined ? Math.min(maxStock, newQty) : newQty };
         return copy;
       }
       return [...prev, i];
