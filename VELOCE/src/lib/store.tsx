@@ -331,8 +331,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       
       // Deduct stock
       try {
-        for (const item of o.items) {
-          const { data: pData } = await supabase.from("products").select("stock, stock_by_size, sizes").eq("id", item.id).single();
+        const itemsByProductId = o.items.reduce((acc, item) => {
+          if (!acc[item.id]) acc[item.id] = [];
+          acc[item.id].push(item);
+          return acc;
+        }, {} as Record<string, CartItem[]>);
+
+        for (const [productId, items] of Object.entries(itemsByProductId)) {
+          const { data: pData } = await supabase.from("products").select("stock, stock_by_size, sizes").eq("id", productId).single();
           if (pData) {
             let sizeStockObj = pData.stock_by_size || {};
             const sizes = pData.sizes || [];
@@ -344,20 +350,27 @@ export function ShopProvider({ children }: { children: ReactNode }) {
               }
             }
             
-            let currentSizeStock = sizeStockObj[item.size] !== undefined ? sizeStockObj[item.size] : pData.stock;
-            sizeStockObj[item.size] = Math.max(0, currentSizeStock - item.qty);
+            for (const item of items) {
+              let currentSizeStock = sizeStockObj[item.size] !== undefined ? sizeStockObj[item.size] : pData.stock;
+              sizeStockObj[item.size] = Math.max(0, currentSizeStock - item.qty);
+            }
             
             let newTotal = 0;
             if (Object.keys(sizeStockObj).length > 0) {
               newTotal = Object.values(sizeStockObj).reduce((acc: number, val: any) => acc + (val as number), 0);
             } else {
-              newTotal = Math.max(0, pData.stock - item.qty);
+              const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
+              newTotal = Math.max(0, pData.stock - totalQty);
             }
             
-            await supabase.from("products").update({
+            const { error: updateError } = await supabase.from("products").update({
                stock: newTotal,
                stock_by_size: Object.keys(sizeStockObj).length > 0 ? sizeStockObj : null
-            }).eq("id", item.id);
+            }).eq("id", productId);
+            
+            if (updateError) {
+               console.error("Failed to update stock for product", productId, ":", updateError);
+            }
           }
         }
       } catch (err) {
