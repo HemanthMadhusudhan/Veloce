@@ -146,6 +146,19 @@ function CheckoutPage() {
       return;
     }
 
+    for (const item of cart) {
+      const p = getById(item.id);
+      if (!p) {
+        setTxnErr(`Product ${item.id} not found.`);
+        return;
+      }
+      const available = p.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : p.stock;
+      if (item.qty > available) {
+        setTxnErr(`Sorry, only ${available} left in stock for ${p.name} (${item.size}).`);
+        return;
+      }
+    }
+
     const nameParts = [contact.firstName, contact.lastName].filter(Boolean);
     const name = nameParts.join(" ");
 
@@ -183,6 +196,10 @@ function CheckoutPage() {
         email: contact.email,
         name,
         city: contact.city,
+        address: address,
+        state: stateName,
+        pincode: pincode,
+        phone: profile?.phone || "",
       },
       payment: { method: "upi", vpa: UPI_VPA, txnId: trimmed, mode: payMode, paidNow: payNow, codDue },
       status: "awaiting_payment",

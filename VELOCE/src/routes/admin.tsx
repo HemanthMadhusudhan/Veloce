@@ -506,7 +506,9 @@ function OrdersTab() {
                   <span className={`rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[0.22em] ${STATUS_STYLE[o.status]}`}>{o.status}</span>
                 </div>
                 <div className="mt-1 text-[11px] text-muted-foreground">
-                  {new Date(o.createdAt).toLocaleString()} · {o.customer.name || "—"} · {o.customer.email || "no email"} · {o.customer.city || "—"}
+                  {new Date(o.createdAt).toLocaleString()} · {o.customer.name || "—"} · {o.customer.email || "no email"} · {o.customer.phone || "no phone"}
+                  <br/>
+                  {o.customer.address || "—"}, {o.customer.city || "—"}, {o.customer.state || "—"} - {o.customer.pincode || "—"}
                 </div>
               </div>
               <div className="flex items-center gap-2">

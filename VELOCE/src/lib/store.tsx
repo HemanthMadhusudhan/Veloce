@@ -34,7 +34,7 @@ export type Order = {
   shipping: number;
   tax: number;
   status: OrderStatus;
-  customer: { email?: string; name?: string; city?: string };
+  customer: { email?: string; name?: string; city?: string; address?: string; state?: string; pincode?: string; phone?: string; };
   payment?: {
     method: "upi";
     vpa: string;
@@ -327,6 +327,34 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     try {
       const { data: record, error } = await supabase.from("orders").insert(dbData).select("*").single();
       if (error) throw error;
+      
+      // Deduct stock
+      try {
+        for (const item of o.items) {
+          const { data: pData } = await supabase.from("products").select("stock, stock_by_size").eq("id", item.id).single();
+          if (pData) {
+            let sizeStockObj = pData.stock_by_size || {};
+            let currentSizeStock = sizeStockObj[item.size] !== undefined ? sizeStockObj[item.size] : pData.stock;
+            sizeStockObj[item.size] = Math.max(0, currentSizeStock - item.qty);
+            
+            // Calculate new total stock
+            let newTotal = 0;
+            if (Object.keys(sizeStockObj).length > 0) {
+              newTotal = Object.values(sizeStockObj).reduce((acc: number, val: any) => acc + (val as number), 0);
+            } else {
+              newTotal = Math.max(0, pData.stock - item.qty);
+            }
+            
+            await supabase.from("products").update({
+               stock: newTotal,
+               stock_by_size: sizeStockObj
+            }).eq("id", item.id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to update stock after order:", err);
+      }
+      
       const newOrder: Order = {
         id: record.id,
         createdAt: new Date(record.created_at).getTime(),

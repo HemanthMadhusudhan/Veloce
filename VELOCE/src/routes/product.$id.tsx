@@ -207,7 +207,7 @@ function Pdp() {
               <div className="grid grid-cols-5 gap-2">
                 {product.sizes.map((s) => {
                   const sizeStock = product.stockBySize?.[s];
-                  const isOos = sizeStock !== undefined && sizeStock <= 0;
+                  const isOos = (sizeStock !== undefined ? sizeStock : product.stock) <= 0;
                   return (
                     <button
                       key={s}
@@ -226,7 +226,7 @@ function Pdp() {
               <div className="inline-flex items-center rounded-full border border-border/70">
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-3 py-2">−</button>
                 <span className="w-6 text-center font-mono text-sm">{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} className="px-3 py-2">+</button>
+                <button onClick={() => setQty((q) => Math.min((product.stockBySize?.[size] !== undefined ? product.stockBySize[size] : product.stock), q + 1))} className="px-3 py-2">+</button>
               </div>
               <div className="text-xs text-muted-foreground"><span className="font-mono text-foreground">{product.stockBySize?.[size] !== undefined ? product.stockBySize[size] : product.stock}</span> in stock</div>
             </div>
@@ -283,9 +283,15 @@ function Pdp() {
 
             {/* ADD TO BAG & WISHLIST BUTTONS */}
             <div className="mt-6 flex flex-col gap-3">
-              <button onClick={() => addToCart({ id: product.id, qty, size, color, ...(customized && customName ? { customName } : {}), ...(customized && customNumber ? { customNumber } : {}) })} className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground active:bg-brand active:text-foreground">
-                <ShoppingBag className="h-5 w-5 sm:h-4 sm:w-4" /> Add to Bag · {formatINR(product.price * qty)}
-              </button>
+              {product.stock <= 0 ? (
+                <div className="flex w-full items-center justify-center gap-2 rounded-full border border-border/50 bg-surface/50 py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground cursor-not-allowed">
+                  Out of Stock
+                </div>
+              ) : (
+                <button onClick={() => addToCart({ id: product.id, qty, size, color, ...(customized && customName ? { customName } : {}), ...(customized && customNumber ? { customNumber } : {}) })} className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground active:bg-brand active:text-foreground">
+                  <ShoppingBag className="h-5 w-5 sm:h-4 sm:w-4" /> Add to Bag · {formatINR(product.price * qty)}
+                </button>
+              )}
               <button onClick={() => toggleWishlist(product.id)} className={`inline-flex w-full items-center justify-center gap-2 rounded-full border py-3 sm:py-2.5 text-[12px] sm:text-[11px] uppercase tracking-[0.2em] transition ${wished ? "border-brand text-brand bg-brand/5" : "border-border/70 hover:border-foreground active:border-foreground bg-surface/50 sm:bg-transparent"}`}>
                 <Heart className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${wished ? "fill-brand" : ""}`} /> {wished ? "Saved" : "Add to Wishlist"}
               </button>
