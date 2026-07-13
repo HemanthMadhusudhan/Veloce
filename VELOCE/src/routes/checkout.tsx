@@ -30,7 +30,7 @@ export const Route = createFileRoute("/checkout")({
 
 function CheckoutPage() {
   const { cart, clearCart, placeOrder, userEmail, userId, updateProfile, profile, orders } = useShop();
-  const { getById } = useCatalog();
+  const { getById, refresh } = useCatalog();
   const nav = useNavigate();
   const [mode, setMode] = useState<"guest" | "account">("guest");
   const [done, setDone] = useState(false);
@@ -137,7 +137,7 @@ function CheckoutPage() {
     );
   }
 
-  const submitPayment = (e: React.FormEvent) => {
+  const submitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setTxnErr(null);
     const trimmed = txnId.trim();
@@ -189,7 +189,7 @@ function CheckoutPage() {
       }).catch((err) => console.error("Failed to sync checkout address to Supabase:", err));
     }
 
-    placeOrder({
+    await placeOrder({
       items: cart,
       subtotal, discount, shipping, tax, total,
       customer: {
@@ -204,6 +204,7 @@ function CheckoutPage() {
       payment: { method: "upi", vpa: UPI_VPA, txnId: trimmed, mode: payMode, paidNow: payNow, codDue },
       status: "awaiting_payment",
     });
+    await refresh();
     setFinalCodDue(codDue);
     clearCart();
     setDone(true);

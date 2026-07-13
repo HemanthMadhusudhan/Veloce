@@ -84,7 +84,7 @@ export function ProductCard({ p, view = "grid" }: { p: Product; view?: "grid" | 
         )}
         
         {/* Sold Out or Shopping Bag */}
-        {p.stock === 0 ? (
+        {(p.stockBySize && Object.keys(p.stockBySize).length > 0 ? Object.values(p.stockBySize).every((qty: any) => (qty as number) <= 0) : p.stock <= 0) ? (
           <div className="absolute inset-x-0 bottom-4 flex justify-center z-10 pointer-events-none">
             <span className="bg-[#b5ff14]/90 backdrop-blur text-black text-[10px] sm:text-xs font-bold px-4 py-1.5 border border-black/10">SOLD OUT</span>
           </div>

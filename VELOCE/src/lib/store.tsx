@@ -332,13 +332,21 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       // Deduct stock
       try {
         for (const item of o.items) {
-          const { data: pData } = await supabase.from("products").select("stock, stock_by_size").eq("id", item.id).single();
+          const { data: pData } = await supabase.from("products").select("stock, stock_by_size, sizes").eq("id", item.id).single();
           if (pData) {
             let sizeStockObj = pData.stock_by_size || {};
+            const sizes = pData.sizes || [];
+            
+            if (Object.keys(sizeStockObj).length === 0 && sizes.length > 0) {
+              const evenStock = Math.floor(pData.stock / sizes.length);
+              for (const s of sizes) {
+                sizeStockObj[s] = evenStock;
+              }
+            }
+            
             let currentSizeStock = sizeStockObj[item.size] !== undefined ? sizeStockObj[item.size] : pData.stock;
             sizeStockObj[item.size] = Math.max(0, currentSizeStock - item.qty);
             
-            // Calculate new total stock
             let newTotal = 0;
             if (Object.keys(sizeStockObj).length > 0) {
               newTotal = Object.values(sizeStockObj).reduce((acc: number, val: any) => acc + (val as number), 0);
@@ -348,7 +356,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             
             await supabase.from("products").update({
                stock: newTotal,
-               stock_by_size: sizeStockObj
+               stock_by_size: Object.keys(sizeStockObj).length > 0 ? sizeStockObj : null
             }).eq("id", item.id);
           }
         }
