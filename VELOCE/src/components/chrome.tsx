@@ -255,7 +255,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border/50 pt-8 text-xs text-muted-foreground sm:flex-row">
           <div>© {new Date().getFullYear()} Veloce Atelier. All rights reserved.</div>
-          <div className="flex gap-6"><span>Privacy</span><span>Terms</span><span>Cookies</span></div>
+          <div className="flex gap-6"><Link to="/info/privacy-policy" className="hover:text-foreground">Privacy</Link><Link to="/info/terms-and-conditions" className="hover:text-foreground">Terms</Link><span>Cookies</span></div>
         </div>
       </div>
     </footer>

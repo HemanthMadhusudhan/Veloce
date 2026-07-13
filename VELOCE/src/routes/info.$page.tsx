@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/chrome";
-import { Mail, Phone, MapPin, Truck, RotateCcw, HelpCircle, Leaf, Users, BookOpen, Briefcase } from "lucide-react";
+import { Mail, Phone, MapPin, Truck, RotateCcw, HelpCircle, Leaf, Users, BookOpen, Briefcase, Shield, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/info/$page")({
   component: InfoPage,

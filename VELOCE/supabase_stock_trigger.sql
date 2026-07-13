@@ -22,27 +22,38 @@ BEGIN
     FOR item IN SELECT * FROM jsonb_array_elements(NEW.items)
     LOOP
       v_product_id := item->>'id';
-      v_qty := (item->>'qty')::int;
-      v_size := item->>'size';
+      v_qty := COALESCE((item->>'qty')::int, 1);
+      v_size := COALESCE(item->>'size', '');
       
-      SELECT stock, COALESCE(stock_by_size, '{}'::jsonb), COALESCE(sizes, '[]'::jsonb) 
+      -- Safely cast sizes to jsonb to prevent "text[] and jsonb cannot be matched" error
+      SELECT stock, COALESCE(stock_by_size::jsonb, '{}'::jsonb), COALESCE(to_jsonb(sizes), '[]'::jsonb) 
       INTO v_stock, v_stock_by_size, v_sizes
       FROM products WHERE id = v_product_id;
       
+      -- Ensure v_stock_by_size is a valid object
+      IF jsonb_typeof(v_stock_by_size) != 'object' THEN
+        v_stock_by_size := '{}'::jsonb;
+      END IF;
+
       -- Initialize stock_by_size if it is empty and sizes exist
-      IF jsonb_typeof(v_stock_by_size) = 'object' AND v_stock_by_size = '{}'::jsonb AND jsonb_array_length(v_sizes) > 0 THEN
-        v_even_stock := FLOOR(v_stock / jsonb_array_length(v_sizes));
+      IF v_stock_by_size = '{}'::jsonb AND jsonb_array_length(v_sizes) > 0 THEN
+        v_even_stock := FLOOR(COALESCE(v_stock, 0) / jsonb_array_length(v_sizes));
         SELECT jsonb_object_agg(elem#>>'{}', v_even_stock) INTO v_stock_by_size FROM jsonb_array_elements(v_sizes) elem;
       END IF;
       
       -- Deduct from specific size
-      v_current_size_stock := COALESCE((v_stock_by_size->>v_size)::int, v_stock);
+      IF v_stock_by_size != '{}'::jsonb THEN
+        v_current_size_stock := COALESCE((v_stock_by_size->>v_size)::int, 0);
+      ELSE
+        v_current_size_stock := COALESCE(v_stock, 0);
+      END IF;
+      
       v_stock_by_size := jsonb_set(v_stock_by_size, array[v_size], to_jsonb(GREATEST(0, v_current_size_stock - v_qty)));
       
       -- Calculate new total stock
       SELECT COALESCE(SUM(value::text::int), 0) INTO v_new_total FROM jsonb_each(v_stock_by_size);
-      IF v_new_total = 0 AND jsonb_typeof(v_stock_by_size) = 'object' AND v_stock_by_size = '{}'::jsonb THEN
-         v_new_total := GREATEST(0, v_stock - v_qty);
+      IF v_new_total = 0 AND v_stock_by_size = '{}'::jsonb THEN
+         v_new_total := GREATEST(0, COALESCE(v_stock, 0) - v_qty);
       END IF;
       
       -- Update the products table
@@ -55,19 +66,29 @@ BEGIN
       FOR item IN SELECT * FROM jsonb_array_elements(NEW.items)
       LOOP
         v_product_id := item->>'id';
-        v_qty := (item->>'qty')::int;
-        v_size := item->>'size';
+        v_qty := COALESCE((item->>'qty')::int, 1);
+        v_size := COALESCE(item->>'size', '');
         
-        SELECT stock, COALESCE(stock_by_size, '{}'::jsonb) INTO v_stock, v_stock_by_size FROM products WHERE id = v_product_id;
+        SELECT stock, COALESCE(stock_by_size::jsonb, '{}'::jsonb) INTO v_stock, v_stock_by_size FROM products WHERE id = v_product_id;
         
+        -- Ensure v_stock_by_size is a valid object
+        IF jsonb_typeof(v_stock_by_size) != 'object' THEN
+          v_stock_by_size := '{}'::jsonb;
+        END IF;
+
         -- Restore stock for specific size
-        v_current_size_stock := COALESCE((v_stock_by_size->>v_size)::int, v_stock);
+        IF v_stock_by_size != '{}'::jsonb THEN
+          v_current_size_stock := COALESCE((v_stock_by_size->>v_size)::int, 0);
+        ELSE
+          v_current_size_stock := COALESCE(v_stock, 0);
+        END IF;
+        
         v_stock_by_size := jsonb_set(v_stock_by_size, array[v_size], to_jsonb(v_current_size_stock + v_qty));
         
         -- Calculate new total stock
         SELECT COALESCE(SUM(value::text::int), 0) INTO v_new_total FROM jsonb_each(v_stock_by_size);
-        IF v_new_total = 0 AND jsonb_typeof(v_stock_by_size) = 'object' AND v_stock_by_size = '{}'::jsonb THEN
-           v_new_total := v_stock + v_qty;
+        IF v_new_total = 0 AND v_stock_by_size = '{}'::jsonb THEN
+           v_new_total := COALESCE(v_stock, 0) + v_qty;
         END IF;
         
         -- Update the products table
