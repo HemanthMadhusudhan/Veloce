@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Gift, Wallet, Banknote } from "lucide-react";
+import { Check, Lock, Gift, Wallet, Banknote, CreditCard } from "lucide-react";
 import { SiteNav } from "@/components/chrome";
 import { CartDrawer } from "@/components/chrome";
 import { SearchDialog } from "@/components/chrome";
@@ -521,11 +521,11 @@ function CheckoutPage() {
                     className={`rounded-xl border p-3 text-left transition ${payMode === "full" ? "border-foreground bg-card/60" : "border-border/60 hover:border-foreground/60"}`}
                   >
                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-brand">
-                      <Wallet className="h-3.5 w-3.5" /> Full UPI
+                      <CreditCard className="h-3.5 w-3.5" /> Pay Online
                     </div>
                     <div className="mt-1 text-sm font-semibold">Pay {formatINR(total)} now</div>
                     <div className="text-[11px] text-muted-foreground">
-                      One-shot UPI payment, order dispatched after verification.
+                      Cards, UPI, Netbanking, or Wallets. Dispatched after verification.
                     </div>
                   </button>
                   <button
