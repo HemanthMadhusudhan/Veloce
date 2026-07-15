@@ -14,7 +14,6 @@ import { ShopProvider } from "@/lib/store";
 import { CatalogProvider } from "@/lib/catalog-store";
 import { SiteImagesProvider } from "@/lib/site-images";
 import { PromoBanner } from "@/components/PromoBanner";
-import { PromoPopup } from "@/components/PromoPopup";
 
 function NotFoundComponent() {
   return (
@@ -78,15 +77,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Veloce — Elite Football Jerseys & Formula 1 Merchandise" },
-      { name: "description", content: "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide." },
+      {
+        name: "description",
+        content:
+          "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide.",
+      },
       { name: "author", content: "Veloce" },
       { name: "theme-color", content: "#0a0a0c" },
       { property: "og:title", content: "Veloce — Elite Football Jerseys & Formula 1 Merchandise" },
-      { property: "og:description", content: "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide." },
+      {
+        property: "og:description",
+        content:
+          "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Veloce — Elite Football Jerseys & Formula 1 Merchandise" },
-      { name: "twitter:description", content: "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide." },
+      {
+        name: "twitter:description",
+        content:
+          "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide.",
+      },
     ],
     links: [
       {
@@ -96,7 +107,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -128,7 +142,6 @@ function RootComponent() {
         <ShopProvider>
           <SiteImagesProvider>
             <PromoBanner />
-            <PromoPopup />
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
           </SiteImagesProvider>

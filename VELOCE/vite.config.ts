@@ -15,7 +15,7 @@ export default defineConfig({
     imagetools(),
     tsconfigPaths(),
     tailwindcss(),
-    tanstackStart({ server: { preset: "vercel", entry: "server" } }),
+    tanstackStart(),
     nitro({ preset: "vercel" }),
     react(),
   ],

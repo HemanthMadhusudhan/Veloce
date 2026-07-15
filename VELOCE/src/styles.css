@@ -126,7 +126,12 @@
     background: var(--foreground);
     color: var(--background);
   }
-  html, body, select, input, textarea, button {
+  html,
+  body,
+  select,
+  input,
+  textarea,
+  button {
     color-scheme: dark;
   }
   select option,
@@ -137,20 +142,38 @@
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 @keyframes reveal-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes slow-zoom {
-  from { transform: scale(1); }
-  to { transform: scale(1.08); }
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
 }
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @utility animate-marquee {
@@ -172,19 +195,29 @@
   background: color-mix(in oklab, var(--background) 92%, transparent);
   backdrop-filter: blur(24px) saturate(160%);
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
-  box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
 }
 @utility grid-noise {
   background-image:
     radial-gradient(1px 1px at 25% 15%, oklch(1 0 0 / 0.06) 50%, transparent 51%),
     radial-gradient(1px 1px at 75% 85%, oklch(1 0 0 / 0.05) 50%, transparent 51%);
-  background-size: 24px 24px, 32px 32px;
+  background-size:
+    24px 24px,
+    32px 32px;
 }
 
 @keyframes streak {
-  0% { transform: translateX(-30%); opacity: 0; }
-  15% { opacity: 1; }
-  100% { transform: translateX(140%); opacity: 0; }
+  0% {
+    transform: translateX(-30%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(140%);
+    opacity: 0;
+  }
 }
 .streak {
   position: absolute;
@@ -198,7 +231,14 @@
 
 /* ============ Gold & Silver luxury utilities ============ */
 @utility gold-text {
-  background-image: linear-gradient(100deg, var(--gold-deep) 0%, var(--gold) 30%, #ffd000 50%, var(--gold) 70%, var(--gold-deep) 100%);
+  background-image: linear-gradient(
+    100deg,
+    var(--gold-deep) 0%,
+    var(--gold) 30%,
+    #ffd000 50%,
+    var(--gold) 70%,
+    var(--gold-deep) 100%
+  );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -206,7 +246,14 @@
   animation: shimmer 6s linear infinite;
 }
 @utility silver-text {
-  background-image: linear-gradient(100deg, var(--silver-deep) 0%, var(--silver) 40%, #ffffff 50%, var(--silver) 60%, var(--silver-deep) 100%);
+  background-image: linear-gradient(
+    100deg,
+    var(--silver-deep) 0%,
+    var(--silver) 40%,
+    #ffffff 50%,
+    var(--silver) 60%,
+    var(--silver-deep) 100%
+  );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -217,13 +264,23 @@
   border: 1px solid transparent;
   background:
     linear-gradient(var(--background), var(--background)) padding-box,
-    linear-gradient(120deg, var(--gold-deep), var(--gold), #ffd000, var(--gold), var(--gold-deep)) border-box;
+    linear-gradient(120deg, var(--gold-deep), var(--gold), #ffd000, var(--gold), var(--gold-deep))
+      border-box;
 }
 @utility gold-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold) 20%, #ffd000 50%, var(--gold) 80%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold) 20%,
+    #ffd000 50%,
+    var(--gold) 80%,
+    transparent
+  );
   opacity: 0.7;
 }
 @utility gold-glow {
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 40%, transparent), 0 12px 40px -12px color-mix(in oklab, var(--gold) 55%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--gold) 40%, transparent),
+    0 12px 40px -12px color-mix(in oklab, var(--gold) 55%, transparent);
 }

@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import heroBg from "@/assets/hero-bg.jpg";
 import dualFootball from "@/assets/dual-football.jpg";
@@ -17,16 +25,56 @@ export type SiteImageSlot =
   | "promo-popup";
 
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
-  { slot: "hero", label: "Homepage hero (Image or Video)", description: "Full-screen background image or looping video at the top of the homepage." },
-  { slot: "film-video", label: "Watch the Film video (Optional)", description: "Cinematic video played in a modal when clicking 'Watch the film'." },
-  { slot: "worldcup-banner", label: "World Cup banner (Image or Video)", description: "Editorial 'The countdown has begun' section background." },
-  { slot: "category-football", label: "Football category card (Image or Video)", description: "Homepage tile linking to /shop/football." },
-  { slot: "category-f1", label: "Formula 1 category card (Image or Video)", description: "Homepage tile linking to /shop/f1." },
-  { slot: "zone-messi", label: "Player Zone · Leo Messi (Image or Video)", description: "Background for Leo Messi's player zone card." },
-  { slot: "zone-ronaldo", label: "Player Zone · Cristiano Ronaldo (Image or Video)", description: "Background for Cristiano Ronaldo's player zone card." },
-  { slot: "zone-verstappen", label: "Player Zone · Max Verstappen (Image or Video)", description: "Background for Max Verstappen's player zone card." },
-  { slot: "zone-hamilton", label: "Player Zone · Lewis Hamilton (Image or Video)", description: "Background for Lewis Hamilton's player zone card." },
-  { slot: "promo-popup", label: "Promo Pop-up (Image)", description: "Image shown in the first-load promo modal." },
+  {
+    slot: "hero",
+    label: "Homepage hero (Image or Video)",
+    description: "Full-screen background image or looping video at the top of the homepage.",
+  },
+  {
+    slot: "film-video",
+    label: "Watch the Film video (Optional)",
+    description: "Cinematic video played in a modal when clicking 'Watch the film'.",
+  },
+  {
+    slot: "worldcup-banner",
+    label: "World Cup banner (Image or Video)",
+    description: "Editorial 'The countdown has begun' section background.",
+  },
+  {
+    slot: "category-football",
+    label: "Football category card (Image or Video)",
+    description: "Homepage tile linking to /shop/football.",
+  },
+  {
+    slot: "category-f1",
+    label: "Formula 1 category card (Image or Video)",
+    description: "Homepage tile linking to /shop/f1.",
+  },
+  {
+    slot: "zone-messi",
+    label: "Player Zone · Leo Messi (Image or Video)",
+    description: "Background for Leo Messi's player zone card.",
+  },
+  {
+    slot: "zone-ronaldo",
+    label: "Player Zone · Cristiano Ronaldo (Image or Video)",
+    description: "Background for Cristiano Ronaldo's player zone card.",
+  },
+  {
+    slot: "zone-verstappen",
+    label: "Player Zone · Max Verstappen (Image or Video)",
+    description: "Background for Max Verstappen's player zone card.",
+  },
+  {
+    slot: "zone-hamilton",
+    label: "Player Zone · Lewis Hamilton (Image or Video)",
+    description: "Background for Lewis Hamilton's player zone card.",
+  },
+  {
+    slot: "promo-popup",
+    label: "Promo Pop-up (Image)",
+    description: "Image shown in the first-load promo modal.",
+  },
 ];
 
 const DEFAULTS: Record<SiteImageSlot, string> = {
@@ -108,7 +156,9 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
       }
     }
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   const set = useCallback(async (slot: SiteImageSlot, url: string | null) => {
@@ -121,14 +171,18 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
 
     try {
       if (url && url.trim()) {
-        await supabase.from("site_images").upsert({ slot, url: url.trim(), updated_at: new Date().toISOString() });
+        await supabase
+          .from("site_images")
+          .upsert({ slot, url: url.trim(), updated_at: new Date().toISOString() });
       } else {
         await supabase.from("site_images").delete().eq("slot", slot);
         // Also clean up storage files for this slot
         try {
           const { data: existing } = await supabase.storage.from("site-images").list(slot);
           if (existing && existing.length > 0) {
-            await supabase.storage.from("site-images").remove(existing.map((f) => `${slot}/${f.name}`));
+            await supabase.storage
+              .from("site-images")
+              .remove(existing.map((f) => `${slot}/${f.name}`));
           }
         } catch {}
       }
@@ -143,14 +197,18 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
       // Delete all rows from site_images table
       const { data } = await supabase.from("site_images").select("slot");
       if (data) {
-        await Promise.all(data.map((r: any) => supabase.from("site_images").delete().eq("slot", r.slot)));
+        await Promise.all(
+          data.map((r: any) => supabase.from("site_images").delete().eq("slot", r.slot)),
+        );
       }
       // Delete all files from storage bucket
       for (const meta of SITE_IMAGE_META) {
         try {
           const { data: files } = await supabase.storage.from("site-images").list(meta.slot);
           if (files && files.length > 0) {
-            await supabase.storage.from("site-images").remove(files.map((f) => `${meta.slot}/${f.name}`));
+            await supabase.storage
+              .from("site-images")
+              .remove(files.map((f) => `${meta.slot}/${f.name}`));
           }
         } catch {}
       }
@@ -159,13 +217,16 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const value = useMemo<Ctx>(() => ({
-    overrides,
-    get: (slot) => overrides[slot] || DEFAULTS[slot],
-    getDefault: (slot) => DEFAULTS[slot],
-    set,
-    reset,
-  }), [overrides, set, reset]);
+  const value = useMemo<Ctx>(
+    () => ({
+      overrides,
+      get: (slot) => overrides[slot] || DEFAULTS[slot],
+      getDefault: (slot) => DEFAULTS[slot],
+      set,
+      reset,
+    }),
+    [overrides, set, reset],
+  );
 
   return <C.Provider value={value}>{children}</C.Provider>;
 }

@@ -1,16 +1,39 @@
 import { Link } from "@tanstack/react-router";
 
-export function Logo({ className = "", showWord = true }: { className?: string; showWord?: boolean }) {
+export function Logo({
+  className = "",
+  showWord = true,
+}: {
+  className?: string;
+  showWord?: boolean;
+}) {
   return (
-    <Link to="/" className={`group inline-flex items-center gap-2 ${className}`} aria-label="Veloce home">
-      <svg width="28" height="28" viewBox="0 0 32 32" className="transition-transform duration-500 group-hover:rotate-[8deg]" fill="none">
+    <Link
+      to="/"
+      className={`group inline-flex items-center gap-2 ${className}`}
+      aria-label="Veloce home"
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 32 32"
+        className="transition-transform duration-500 group-hover:rotate-[8deg]"
+        fill="none"
+      >
         <defs>
           <linearGradient id="vg-gold" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="oklch(0.68 0.14 80)" />
             <stop offset="45%" stopColor="oklch(0.9 0.14 92)" />
             <stop offset="100%" stopColor="oklch(0.68 0.14 80)" />
           </linearGradient>
-          <linearGradient id="vg-silver" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="vg-silver"
+            x1="0"
+            y1="0"
+            x2="32"
+            y2="32"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0%" stopColor="oklch(0.62 0.01 260)" />
             <stop offset="50%" stopColor="oklch(0.95 0.005 260)" />
             <stop offset="100%" stopColor="oklch(0.62 0.01 260)" />

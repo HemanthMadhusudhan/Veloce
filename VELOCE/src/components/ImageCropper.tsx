@@ -20,7 +20,9 @@ export function ImageCropper({
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     if (aspect) {
       const { width, height } = e.currentTarget;
-      setCrop(centerCrop(makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height), width, height));
+      setCrop(
+        centerCrop(makeAspectCrop({ unit: "%", width: 90 }, aspect, width, height), width, height),
+      );
     }
   }
 
@@ -54,7 +56,7 @@ export function ImageCropper({
       0,
       0,
       image.naturalWidth,
-      image.naturalHeight
+      image.naturalHeight,
     );
 
     const base64Image = canvas.toDataURL("image/webp", 0.9);
@@ -66,11 +68,14 @@ export function ImageCropper({
       <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl">
         <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
           <div className="font-display text-lg font-semibold">Crop Image</div>
-          <button onClick={onCancel} className="rounded-full border border-border/60 p-2 hover:bg-white/10 hover:text-white">
+          <button
+            onClick={onCancel}
+            className="rounded-full border border-border/60 p-2 hover:bg-white/10 hover:text-white"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-auto bg-black/50 p-6 flex items-center justify-center min-h-[400px]">
           <ReactCrop
             crop={crop}
@@ -91,8 +96,10 @@ export function ImageCropper({
 
         <div className="flex items-center justify-between border-t border-border/50 px-6 py-4 bg-background">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Aspect Ratio</span>
-            <select 
+            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              Aspect Ratio
+            </span>
+            <select
               className="rounded-full border border-border/60 bg-transparent px-3 py-1.5 text-xs outline-none focus:border-foreground"
               value={aspect || ""}
               onChange={(e) => {
@@ -105,7 +112,13 @@ export function ImageCropper({
                   setAspect(newAspect);
                   if (imgRef.current) {
                     const { width, height } = imgRef.current;
-                    setCrop(centerCrop(makeAspectCrop({ unit: "%", width: 90 }, newAspect, width, height), width, height));
+                    setCrop(
+                      centerCrop(
+                        makeAspectCrop({ unit: "%", width: 90 }, newAspect, width, height),
+                        width,
+                        height,
+                      ),
+                    );
                   }
                 }
               }}
@@ -116,12 +129,19 @@ export function ImageCropper({
               <option value="">Free form</option>
             </select>
           </div>
-          
+
           <div className="flex gap-2">
-            <button onClick={onCancel} className="rounded-full border border-border/70 px-5 py-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground">
+            <button
+              onClick={onCancel}
+              className="rounded-full border border-border/70 px-5 py-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
+            >
               Cancel
             </button>
-            <button onClick={generateCroppedImage} disabled={!completedCrop?.width || !completedCrop?.height} className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-background hover:bg-brand hover:text-foreground disabled:opacity-50">
+            <button
+              onClick={generateCroppedImage}
+              disabled={!completedCrop?.width || !completedCrop?.height}
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-background hover:bg-brand hover:text-foreground disabled:opacity-50"
+            >
               <Check className="h-3.5 w-3.5" /> Apply Crop
             </button>
           </div>

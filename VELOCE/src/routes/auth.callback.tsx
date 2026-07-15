@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth/callback")({
-  head: () => ({ meta: [{ title: "Signing you in - Veloce" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Signing you in - Veloce" }, { name: "robots", content: "noindex" }],
+  }),
   component: AuthCallback,
 });
 
@@ -31,7 +33,9 @@ function AuthCallback() {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 text-center px-4">
-        <div className="text-brand text-sm font-semibold uppercase tracking-wider">Authentication Error</div>
+        <div className="text-brand text-sm font-semibold uppercase tracking-wider">
+          Authentication Error
+        </div>
         <div className="text-sm text-muted-foreground max-w-md">{error}</div>
         <button
           onClick={() => nav({ to: "/login", replace: true })}

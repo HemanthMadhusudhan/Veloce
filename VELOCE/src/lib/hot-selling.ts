@@ -13,7 +13,7 @@ export function useHotSelling() {
           .select("value")
           .eq("key", "hot_selling")
           .maybeSingle();
-          
+
         if (data?.value) {
           setHotSellingIds(data.value as string[]);
         }
@@ -30,9 +30,7 @@ export function useHotSelling() {
     const limited = ids.slice(0, 7);
     setHotSellingIds(limited);
     try {
-      await supabase
-        .from("site_settings")
-        .upsert({ key: "hot_selling", value: limited });
+      await supabase.from("site_settings").upsert({ key: "hot_selling", value: limited });
     } catch (err) {
       console.error("Failed to save hot selling:", err);
     }

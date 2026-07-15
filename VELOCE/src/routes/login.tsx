@@ -80,7 +80,9 @@ function LoginPage() {
           .maybeSingle();
 
         if (existingEmail) {
-          throw new Error("A user with this email address already exists. Tap “Sign in” below instead.");
+          throw new Error(
+            "A user with this email address already exists. Tap “Sign in” below instead.",
+          );
         }
 
         // Create user record in auth
@@ -172,20 +174,33 @@ function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden overflow-hidden lg:block">
-        <img src={heroBg} alt="" className="absolute inset-0 h-full w-full object-cover animate-slow-zoom" />
+        <img
+          src={heroBg}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover animate-slow-zoom"
+        />
         <div className="absolute inset-0 bg-gradient-to-br from-background/70 via-background/30 to-background/90" />
         <div className="relative flex h-full flex-col justify-between p-10">
           <Logo />
           <div>
             <div className="text-[10px] uppercase tracking-[0.3em] text-brand">Members</div>
-            <h2 className="mt-3 font-display text-5xl font-bold leading-tight">Cinematic detail.<br/>Delivered to you first.</h2>
-            <p className="mt-4 max-w-md text-sm text-muted-foreground">Early access to drops, private appointments, and lifetime authentication on every piece.</p>
+            <h2 className="mt-3 font-display text-5xl font-bold leading-tight">
+              Cinematic detail.
+              <br />
+              Delivered to you first.
+            </h2>
+            <p className="mt-4 max-w-md text-sm text-muted-foreground">
+              Early access to drops, private appointments, and lifetime authentication on every
+              piece.
+            </p>
           </div>
         </div>
       </div>
       <div className="flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm">
-          <div className="lg:hidden"><Logo /></div>
+          <div className="lg:hidden">
+            <Logo />
+          </div>
 
           <div className="mt-8 text-[10px] uppercase tracking-[0.28em] text-brand">
             {mode === "in" ? "Welcome back" : "Create account"}
@@ -258,24 +273,29 @@ function LoginPage() {
               </>
             )}
 
-            {err && <div className="rounded-lg border border-brand/40 bg-brand/10 px-3 py-2 text-[11px] text-brand">{err}</div>}
-            {info && <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-300">{info}</div>}
+            {err && (
+              <div className="rounded-lg border border-brand/40 bg-brand/10 px-3 py-2 text-[11px] text-brand">
+                {err}
+              </div>
+            )}
+            {info && (
+              <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-300">
+                {info}
+              </div>
+            )}
 
             <button
               disabled={loading}
               type="submit"
               className="w-full rounded-full bg-foreground py-3 text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground disabled:opacity-60 cursor-pointer"
             >
-              {loading
-                ? "Please wait..."
-                : mode === "in"
-                ? "Sign In"
-                : "Create Account"}
+              {loading ? "Please wait..." : mode === "in" ? "Sign In" : "Create Account"}
             </button>
           </form>
 
           <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-            <div className="h-px flex-1 bg-border/60" /> or <div className="h-px flex-1 bg-border/60" />
+            <div className="h-px flex-1 bg-border/60" /> or{" "}
+            <div className="h-px flex-1 bg-border/60" />
           </div>
           <button
             type="button"
@@ -305,13 +325,19 @@ function LoginPage() {
       {showMockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm rounded-3xl border border-border/60 bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="text-[10px] uppercase tracking-[0.28em] text-brand">Google Auth Sandbox</div>
-            <h2 className="mt-2 font-display text-xl font-bold tracking-tight">Mock Google Login</h2>
+            <div className="text-[10px] uppercase tracking-[0.28em] text-brand">
+              Google Auth Sandbox
+            </div>
+            <h2 className="mt-2 font-display text-xl font-bold tracking-tight">
+              Mock Google Login
+            </h2>
             <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-              Google OAuth has placeholder credentials (<code className="text-foreground font-mono">GOOGLE_CLIENT_ID</code>) in the database.
+              Google OAuth has placeholder credentials (
+              <code className="text-foreground font-mono">GOOGLE_CLIENT_ID</code>) in the database.
             </p>
             <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-              To facilitate local testing, we can log you in instantly with a mock account, or you can cancel to configure real Google credentials.
+              To facilitate local testing, we can log you in instantly with a mock account, or you
+              can cancel to configure real Google credentials.
             </p>
             <div className="mt-6 flex flex-col gap-2">
               <button
@@ -339,7 +365,9 @@ function LoginPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block font-sans">
-      <div className="mb-1.5 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">{label}</div>
+      <div className="mb-1.5 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+        {label}
+      </div>
       {children}
     </label>
   );

@@ -2,7 +2,26 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { supabase } from "@/integrations/supabase/client";
 import { type Category, type Product } from "./catalog";
 
-type Override = Partial<Pick<Product, "price" | "compareAt" | "stock" | "stockBySize" | "badge" | "name" | "tag" | "images" | "description" | "team" | "colors" | "sizes" | "material" | "rating" | "reviews">>;
+type Override = Partial<
+  Pick<
+    Product,
+    | "price"
+    | "compareAt"
+    | "stock"
+    | "stockBySize"
+    | "badge"
+    | "name"
+    | "tag"
+    | "images"
+    | "description"
+    | "team"
+    | "colors"
+    | "sizes"
+    | "material"
+    | "rating"
+    | "reviews"
+  >
+>;
 
 type Ctx = {
   products: Product[];
@@ -18,8 +37,12 @@ const C = createContext<Ctx | null>(null);
 let LIVE: Product[] = [];
 let listeners: (() => void)[] = [];
 
-export function getLiveProducts(): Product[] { return LIVE; }
-export function getLiveProduct(id: string): Product | undefined { return LIVE.find((p) => p.id === id); }
+export function getLiveProducts(): Product[] {
+  return LIVE;
+}
+export function getLiveProduct(id: string): Product | undefined {
+  return LIVE.find((p) => p.id === id);
+}
 
 // Helper to map DB row to Product object
 function mapDbRowToProduct(r: any): Product {
@@ -83,7 +106,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       const mapped = (data || []).map(mapDbRowToProduct);
       setProducts(mapped);
@@ -98,56 +124,65 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     refresh().then(() => setLoaded(true));
   }, [refresh]);
 
-  const updateProduct = useCallback(async (id: string, patch: Override) => {
-    try {
-      const dbPatch: any = {};
-      if (patch.name !== undefined) dbPatch.name = patch.name;
-      if (patch.price !== undefined) dbPatch.price = patch.price;
-      if (patch.compareAt !== undefined) dbPatch.compare_at = patch.compareAt;
-      if (patch.stock !== undefined) dbPatch.stock = patch.stock;
-      if (patch.stockBySize !== undefined) dbPatch.stock_by_size = patch.stockBySize;
-      if (patch.badge !== undefined) dbPatch.badge = patch.badge;
-      if (patch.tag !== undefined) dbPatch.tag = patch.tag;
-      if (patch.images !== undefined) dbPatch.images = patch.images;
-      if (patch.description !== undefined) dbPatch.description = patch.description;
-      if (patch.team !== undefined) dbPatch.team = patch.team;
-      if (patch.colors !== undefined) dbPatch.colors = patch.colors;
-      if (patch.sizes !== undefined) dbPatch.sizes = patch.sizes;
-      if (patch.material !== undefined) dbPatch.material = patch.material;
-      if (patch.rating !== undefined) dbPatch.rating = patch.rating;
-      if (patch.reviews !== undefined) dbPatch.reviews = patch.reviews;
+  const updateProduct = useCallback(
+    async (id: string, patch: Override) => {
+      try {
+        const dbPatch: any = {};
+        if (patch.name !== undefined) dbPatch.name = patch.name;
+        if (patch.price !== undefined) dbPatch.price = patch.price;
+        if (patch.compareAt !== undefined) dbPatch.compare_at = patch.compareAt;
+        if (patch.stock !== undefined) dbPatch.stock = patch.stock;
+        if (patch.stockBySize !== undefined) dbPatch.stock_by_size = patch.stockBySize;
+        if (patch.badge !== undefined) dbPatch.badge = patch.badge;
+        if (patch.tag !== undefined) dbPatch.tag = patch.tag;
+        if (patch.images !== undefined) dbPatch.images = patch.images;
+        if (patch.description !== undefined) dbPatch.description = patch.description;
+        if (patch.team !== undefined) dbPatch.team = patch.team;
+        if (patch.colors !== undefined) dbPatch.colors = patch.colors;
+        if (patch.sizes !== undefined) dbPatch.sizes = patch.sizes;
+        if (patch.material !== undefined) dbPatch.material = patch.material;
+        if (patch.rating !== undefined) dbPatch.rating = patch.rating;
+        if (patch.reviews !== undefined) dbPatch.reviews = patch.reviews;
 
-      const { error } = await supabase.from("products").update(dbPatch).eq("id", id);
-      if (error) throw error;
-      await refresh();
-    } catch (e) {
-      console.error("Failed to update product in Supabase:", e);
-      throw e;
-    }
-  }, [refresh]);
+        const { error } = await supabase.from("products").update(dbPatch).eq("id", id);
+        if (error) throw error;
+        await refresh();
+      } catch (e) {
+        console.error("Failed to update product in Supabase:", e);
+        throw e;
+      }
+    },
+    [refresh],
+  );
 
-  const addProduct = useCallback(async (p: Product) => {
-    try {
-      const dbRow = mapProductToDbRow(p);
-      const { error } = await supabase.from("products").insert(dbRow);
-      if (error) throw error;
-      await refresh();
-    } catch (e) {
-      console.error("Failed to add product to Supabase:", e);
-      throw e;
-    }
-  }, [refresh]);
+  const addProduct = useCallback(
+    async (p: Product) => {
+      try {
+        const dbRow = mapProductToDbRow(p);
+        const { error } = await supabase.from("products").insert(dbRow);
+        if (error) throw error;
+        await refresh();
+      } catch (e) {
+        console.error("Failed to add product to Supabase:", e);
+        throw e;
+      }
+    },
+    [refresh],
+  );
 
-  const removeProduct = useCallback(async (id: string) => {
-    try {
-      const { error } = await supabase.from("products").delete().eq("id", id);
-      if (error) throw error;
-      await refresh();
-    } catch (e) {
-      console.error("Failed to remove product from Supabase:", e);
-      throw e;
-    }
-  }, [refresh]);
+  const removeProduct = useCallback(
+    async (id: string) => {
+      try {
+        const { error } = await supabase.from("products").delete().eq("id", id);
+        if (error) throw error;
+        await refresh();
+      } catch (e) {
+        console.error("Failed to remove product from Supabase:", e);
+        throw e;
+      }
+    },
+    [refresh],
+  );
 
   const value: Ctx = {
     products,

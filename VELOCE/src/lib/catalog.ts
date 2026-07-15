@@ -39,16 +39,26 @@ const IMG_D = [product4, product2, product3, product1];
 
 export const PRODUCTS: Product[] = [];
 
-export function getProduct(id: string) { return PRODUCTS.find((p) => p.id === id); }
+export function getProduct(id: string) {
+  return PRODUCTS.find((p) => p.id === id);
+}
 export const TEAMS = Array.from(new Set(PRODUCTS.map((p) => p.team))).sort();
-export const DRIVERS = Array.from(new Set(PRODUCTS.map((p) => p.driver).filter(Boolean) as string[])).sort();
-export const TRENDING = ["Ferrari 2025 Team Kit","Real Madrid Home","Verstappen Cap","McLaren Papaya","PSG Blackout"];
+export const DRIVERS = Array.from(
+  new Set(PRODUCTS.map((p) => p.driver).filter(Boolean) as string[]),
+).sort();
+export const TRENDING = [
+  "Ferrari 2025 Team Kit",
+  "Real Madrid Home",
+  "Verstappen Cap",
+  "McLaren Papaya",
+  "PSG Blackout",
+];
 
 export const ZONES: { slug: Zone; name: string; tagline: string; category: "football" | "f1" }[] = [
-  { slug: "messi",      name: "Leo Messi",         tagline: "El Capitán · #10",     category: "football" },
-  { slug: "ronaldo",    name: "Cristiano Ronaldo", tagline: "Siuu · #7",             category: "football" },
-  { slug: "verstappen", name: "Max Verstappen",    tagline: "Simply Lovely · #1",    category: "f1" },
-  { slug: "hamilton",   name: "Lewis Hamilton",    tagline: "Still We Rise · #44",   category: "f1" },
+  { slug: "messi", name: "Leo Messi", tagline: "El Capitán · #10", category: "football" },
+  { slug: "ronaldo", name: "Cristiano Ronaldo", tagline: "Siuu · #7", category: "football" },
+  { slug: "verstappen", name: "Max Verstappen", tagline: "Simply Lovely · #1", category: "f1" },
+  { slug: "hamilton", name: "Lewis Hamilton", tagline: "Still We Rise · #44", category: "f1" },
 ];
 
 export const CATEGORY_LABEL: Record<Category, string> = {

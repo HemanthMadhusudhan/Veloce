@@ -30,7 +30,7 @@ export function computeCart(
   cart: CartItem[],
   lookup: (id: string) => Product | undefined,
   couponCode?: string,
-  isFirstOrder?: boolean
+  isFirstOrder?: boolean,
 ): CartTotals {
   const enriched = cart
     .map((c) => ({ item: c, product: lookup(c.id) }))
@@ -77,12 +77,14 @@ export function computeCart(
     const k = `${item.id}|${item.size}|${item.color}`;
     const freeUnits = freeCountByKey.get(k) ?? 0;
     const lineSubtotal = product.price * item.qty;
-    const lineDiscount = couponApplied === "FIRST50" ? lineSubtotal * 0.5 : (product.price * freeUnits);
+    const lineDiscount =
+      couponApplied === "FIRST50" ? lineSubtotal * 0.5 : product.price * freeUnits;
     return { item, product, freeUnits, lineSubtotal, lineDiscount };
   });
 
   const afterDiscount = Math.max(0, subtotal - discount);
-  const shipping = subtotal === 0 ? 0 : afterDiscount >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING;
+  const shipping =
+    subtotal === 0 ? 0 : afterDiscount >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING;
   const tax = Math.round(afterDiscount * GST_RATE);
   const total = afterDiscount + shipping + tax;
 
