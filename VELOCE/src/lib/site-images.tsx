@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import heroBg from "@/assets/hero-bg.jpg";
 import dualFootball from "@/assets/dual-football.jpg";
 import dualF1 from "@/assets/dual-f1.jpg";
+import defaultSiteImagesRaw from "./default-site-images.json";
 
 export type SiteImageSlot =
   | "hero"
@@ -131,8 +132,22 @@ export async function uploadSiteImageFile(slot: SiteImageSlot, file: File): Prom
   return urlData.publicUrl;
 }
 
+let cachedSiteImagesRaw = null;
+if (typeof window !== "undefined") {
+  try {
+    const c = localStorage.getItem("veloce_site_images_cache");
+    if (c) cachedSiteImagesRaw = JSON.parse(c);
+  } catch (e) {}
+}
+
+const initialOverrides: Partial<Record<SiteImageSlot, string>> = {};
+const sourceData = cachedSiteImagesRaw || (defaultSiteImagesRaw as any[]);
+sourceData.forEach((r: any) => {
+  initialOverrides[r.slot as SiteImageSlot] = r.url;
+});
+
 export function SiteImagesProvider({ children }: { children: ReactNode }) {
-  const [overrides, setOverrides] = useState<Partial<Record<SiteImageSlot, string>>>({});
+  const [overrides, setOverrides] = useState<Partial<Record<SiteImageSlot, string>>>(initialOverrides);
 
   // Fetch the real data from Supabase (source of truth)
   useEffect(() => {
@@ -150,6 +165,11 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
             map[r.slot as SiteImageSlot] = r.url;
           });
           setOverrides(map);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("veloce_site_images_cache", JSON.stringify(data));
+            } catch (e) {}
+          }
         }
       } catch (err) {
         console.error("Failed to load site images from Supabase:", err);
