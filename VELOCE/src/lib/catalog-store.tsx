@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { type Category, type Product } from "./catalog";
+import defaultProductsRaw from "./default-products.json";
 
 type Override = Partial<
   Pick<
@@ -34,16 +35,6 @@ type Ctx = {
 
 const C = createContext<Ctx | null>(null);
 
-let LIVE: Product[] = [];
-let listeners: (() => void)[] = [];
-
-export function getLiveProducts(): Product[] {
-  return LIVE;
-}
-export function getLiveProduct(id: string): Product | undefined {
-  return LIVE.find((p) => p.id === id);
-}
-
 // Helper to map DB row to Product object
 function mapDbRowToProduct(r: any): Product {
   return {
@@ -70,6 +61,24 @@ function mapDbRowToProduct(r: any): Product {
     hasVideo: r.has_video || false,
     has360: r.has_360 || false,
   };
+}
+
+let cachedRaw = null;
+if (typeof window !== "undefined") {
+  try {
+    const c = localStorage.getItem("veloce_products_cache");
+    if (c) cachedRaw = JSON.parse(c);
+  } catch (e) {}
+}
+
+let LIVE: Product[] = (cachedRaw || defaultProductsRaw as any[]).map(mapDbRowToProduct);
+let listeners: (() => void)[] = [];
+
+export function getLiveProducts(): Product[] {
+  return LIVE;
+}
+export function getLiveProduct(id: string): Product | undefined {
+  return LIVE.find((p) => p.id === id);
 }
 
 // Helper to map Product object to DB row fields
@@ -101,7 +110,7 @@ function mapProductToDbRow(p: Product): any {
 }
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(LIVE);
   const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -114,6 +123,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       const mapped = (data || []).map(mapDbRowToProduct);
       setProducts(mapped);
       LIVE = mapped;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("veloce_products_cache", JSON.stringify(data));
+        } catch (e) {}
+      }
       listeners.forEach((l) => l());
     } catch (e) {
       console.error("Failed to load products from Supabase:", e);

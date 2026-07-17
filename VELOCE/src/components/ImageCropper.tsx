@@ -64,9 +64,9 @@ export function ImageCropper({
   }
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border/50 px-6 py-4">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in">
+      <div className="flex h-[95vh] max-h-[95vh] w-[95vw] max-w-6xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-4 py-3 sm:px-6 sm:py-4">
           <div className="font-display text-lg font-semibold">Crop Image</div>
           <button
             onClick={onCancel}
@@ -76,25 +76,26 @@ export function ImageCropper({
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto bg-black/50 p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex-1 min-h-0 min-w-0 overflow-hidden bg-black/50 p-2 sm:p-6 flex items-center justify-center">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
-            className="max-h-full max-w-full"
+            className="max-h-full max-w-full flex items-center justify-center"
           >
             <img
               ref={imgRef}
               alt="Crop preview"
               src={imageUrl}
               onLoad={onImageLoad}
-              className="max-h-[60vh] w-auto object-contain"
+              className="max-h-full max-w-full object-contain block mx-auto"
+              style={{ maxHeight: '100%', maxWidth: '100%' }}
             />
           </ReactCrop>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border/50 px-6 py-4 bg-background">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-t border-border/50 px-4 py-3 sm:px-6 sm:py-4 bg-background">
           <div className="flex items-center gap-2">
             <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               Aspect Ratio
