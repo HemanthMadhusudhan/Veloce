@@ -1,0 +1,1 @@
+import{a as e}from"./client-BcGBCWaT.js";import{i as t}from"./chrome-CqYd4wlm.js";import{s as n}from"./index-DBzoijKt.js";var r=e(),i=()=>(0,r.jsx)(t,{children:(0,r.jsx)(n,{title:`Retro`,subtitle:`Vintage football and heritage F1 — the classics, faithfully reissued.`,category:`retro`})});export{i as component};
