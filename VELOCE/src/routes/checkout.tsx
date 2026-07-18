@@ -1,9 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Check, Lock, Gift, Wallet, Banknote, CreditCard, Loader2 } from "lucide-react";
-import { SiteNav } from "@/components/chrome";
-import { CartDrawer } from "@/components/chrome";
-import { SearchDialog } from "@/components/chrome";
+import { SiteChrome } from "@/components/chrome";
 
 import { createRazorpayOrder, verifyRazorpayPayment } from "@/lib/razorpay";
 import { useCatalog } from "@/lib/catalog-store";
@@ -37,14 +35,11 @@ const loadRazorpay = () => {
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Veloce" }] }),
   component: () => (
-    <>
-      <SiteNav />
-      <main className="pt-28 sm:pt-32 w-full overflow-x-hidden">
+    <SiteChrome>
+      <main className="w-full overflow-x-hidden">
         <CheckoutPage />
       </main>
-      <CartDrawer />
-      <SearchDialog />
-    </>
+    </SiteChrome>
   ),
 });
 
@@ -698,7 +693,7 @@ function CheckoutPage() {
           )}
 
           {/* MOBILE STICKY BUTTON */}
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 border-t border-border/50 p-3 sm:p-4 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.5)] sm:hidden">
+          <div className="fixed bottom-[56px] left-0 right-0 z-40 bg-background/95 border-t border-border/50 p-3 sm:p-4 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.5)] sm:hidden">
             {step === "details" ? (
               <button className="w-full rounded-full bg-foreground py-3 sm:py-4 px-2 text-[11px] sm:text-[13px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.24em] text-background transition active:bg-brand active:text-foreground text-center break-words whitespace-normal leading-tight">
                 Proceed to Payment
