@@ -530,10 +530,9 @@ export function MobileTopNav() {
         </div>
         
         <Link to="/" className="flex-1 flex justify-center">
-          <div className="relative font-display font-black tracking-tighter text-2xl text-brand flex flex-col leading-none items-center -mr-2">
-            <div className="absolute inset-0 bg-white/40 blur-[15px] rounded-full scale-[1.5] animate-pulse pointer-events-none mix-blend-screen" />
-            <span className="relative z-10 drop-shadow-[0_0_10px_rgba(255,0,0,0.3)]">VELOCE</span>
-            <span className="relative z-10 text-[9px] tracking-[0.3em] ml-1">WEAR</span>
+          <div className="font-display font-black tracking-tighter text-2xl text-brand flex flex-col leading-none items-center -mr-2">
+            <span>VELOCE</span>
+            <span className="text-[9px] tracking-[0.3em] ml-1">WEAR</span>
           </div>
         </Link>
         
