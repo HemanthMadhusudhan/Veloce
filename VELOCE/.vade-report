@@ -1,0 +1,49 @@
+## Vercel Web Analytics Installation
+
+Successfully installed and configured Vercel Web Analytics for this TanStack Start (React/Vite) project.
+
+### Changes Made
+
+**Modified Files:**
+1. `package.json` - Added `@vercel/analytics` dependency
+2. `package-lock.json` - Updated lockfile with new dependencies
+3. `src/routes/__root.tsx` - Added Analytics component to root layout
+
+### Implementation Details
+
+Following the latest official Vercel Analytics documentation (fetched from https://vercel.com/docs/analytics/quickstart):
+
+1. **Package Installation**: Installed `@vercel/analytics` package using npm
+   - Package version: Latest version from npm registry
+
+2. **Integration**: Added the Analytics component to the root layout
+   - Imported `Analytics` from `@vercel/analytics/react` (React framework path)
+   - Placed the `<Analytics />` component in the `RootShell` function, which renders the HTML structure
+   - Positioned after `<Scripts />` inside the `<body>` tag, following React best practices
+
+3. **Framework-Specific Implementation**: 
+   - This is a TanStack Start project using Vite
+   - Used the React integration path (`@vercel/analytics/react`)
+   - Added to the root layout component (`__root.tsx`) which wraps all routes
+   - The component will be rendered on every page of the application
+
+### Verification
+
+✅ Build completed successfully - no errors
+✅ Linter ran without issues
+✅ Analytics component properly bundled (visible in build output as `_libs/vercel__analytics.mjs`)
+
+### Next Steps for Deployment
+
+To activate analytics tracking:
+1. Deploy this project to Vercel using `vercel deploy` or via Git integration
+2. Navigate to the Analytics tab in your Vercel project dashboard
+3. Click the "Enable" button to activate analytics
+4. Data will start appearing in the dashboard once users visit your site
+
+### Technical Notes
+
+- The Analytics component is lightweight and doesn't impact page load performance
+- It automatically tracks page views for all routes
+- Analytics requests will be sent to `/_vercel/insights/*` paths after deployment
+- The implementation follows Vercel's official guidelines for React/Vite projects

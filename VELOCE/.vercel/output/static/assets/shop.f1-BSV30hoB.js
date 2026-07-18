@@ -1,0 +1,1 @@
+import{a as e}from"./client-BcGBCWaT.js";import{i as t}from"./chrome-CqYd4wlm.js";import{s as n}from"./index-DBzoijKt.js";var r=e(),i=()=>(0,r.jsx)(t,{children:(0,r.jsx)(n,{title:`Formula 1`,subtitle:`Paddock-grade kit from every constructor on the grid.`,category:`f1`})});export{i as component};
