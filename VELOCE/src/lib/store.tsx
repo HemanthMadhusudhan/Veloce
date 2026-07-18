@@ -245,27 +245,28 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           if (userProfile?.role !== "admin") {
             query = query.eq("user_id", uId);
           }
-          const { data: dbOrdersData, error: ordersError } = await query.order("created_at", {
-            ascending: false,
+          query.order("created_at", { ascending: false }).then(({ data: dbOrdersData, error: ordersError }) => {
+            if (ordersError) {
+              console.error("Failed to load user orders:", ordersError);
+              return;
+            }
+            const dbOrders = (dbOrdersData || []).map((r: any) => ({
+              id: r.id,
+              createdAt: new Date(r.created_at).getTime(),
+              items: r.items,
+              total: Number(r.total),
+              subtotal: Number(r.subtotal),
+              discount: Number(r.discount || 0),
+              shipping: Number(r.shipping || 0),
+              tax: Number(r.tax || 0),
+              status: r.status,
+              customer: r.customer,
+              payment: r.payment,
+            }));
+            setOrders(dbOrders);
           });
-          if (ordersError) throw ordersError;
-
-          const dbOrders = (dbOrdersData || []).map((r: any) => ({
-            id: r.id,
-            createdAt: new Date(r.created_at).getTime(),
-            items: r.items,
-            total: Number(r.total),
-            subtotal: Number(r.subtotal),
-            discount: Number(r.discount || 0),
-            shipping: Number(r.shipping || 0),
-            tax: Number(r.tax || 0),
-            status: r.status,
-            customer: r.customer,
-            payment: r.payment,
-          }));
-          setOrders(dbOrders);
         } catch (e) {
-          console.error("Failed to load user orders:", e);
+          console.error("Failed to fetch user orders:", e);
         }
       } else {
         setUserId(null);

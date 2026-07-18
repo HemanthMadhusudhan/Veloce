@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Gift, Wallet, Banknote, CreditCard } from "lucide-react";
+import { Check, Lock, Gift, Wallet, Banknote, CreditCard, Loader2 } from "lucide-react";
 import { SiteNav } from "@/components/chrome";
 import { CartDrawer } from "@/components/chrome";
 import { SearchDialog } from "@/components/chrome";
@@ -65,6 +65,7 @@ function CheckoutPage() {
   const [finalCodDue, setFinalCodDue] = useState(0);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCouponState, setAppliedCouponState] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const isFirstOrder = useMemo(() => orders.length === 0, [orders]);
   const totals = useMemo(
     () => computeCart(cart, getById, appliedCouponState, isFirstOrder),
@@ -90,6 +91,10 @@ function CheckoutPage() {
       setContact((prev) => ({ ...prev, email: userEmail }));
     }
   }, [userId, profile, userEmail]);
+
+  useEffect(() => {
+    loadRazorpay();
+  }, []);
 
   useEffect(() => {
     if (!userId) {
@@ -183,18 +188,22 @@ function CheckoutPage() {
 
   const submitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isProcessing) return;
     setTxnErr(null);
+    setIsProcessing(true);
 
     for (const item of cart) {
       const p = getById(item.id);
       if (!p) {
         setTxnErr(`Product ${item.id} not found.`);
+        setIsProcessing(false);
         return;
       }
       const available =
         p.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : p.stock;
       if (item.qty > available) {
         setTxnErr(`Sorry, only ${available} left in stock for ${p.name} (${item.size}).`);
+        setIsProcessing(false);
         return;
       }
     }
@@ -232,12 +241,14 @@ function CheckoutPage() {
     const res = await loadRazorpay();
     if (!res) {
       setTxnErr("Failed to load payment gateway. Please check your internet connection.");
+      setIsProcessing(false);
       return;
     }
 
     const keyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
     if (!keyId) {
       setTxnErr("Payment gateway is not configured. Please contact support.");
+      setIsProcessing(false);
       return;
     }
 
@@ -252,6 +263,7 @@ function CheckoutPage() {
 
       if (!orderData.order_id) {
         setTxnErr("Failed to create order on server");
+        setIsProcessing(false);
         return;
       }
 
@@ -275,6 +287,7 @@ function CheckoutPage() {
 
             if (!verifyData.success) {
               setTxnErr("Payment verification failed");
+              setIsProcessing(false);
               return;
             }
 
@@ -311,6 +324,7 @@ function CheckoutPage() {
           } catch (err: any) {
             console.error(err);
             setTxnErr(err.message || "Failed to verify or place order.");
+            setIsProcessing(false);
           }
         },
         prefill: {
@@ -321,16 +335,23 @@ function CheckoutPage() {
         theme: {
           color: "#ffffff",
         },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+          },
+        },
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.on("payment.failed", function (response: any) {
         setTxnErr("Payment failed. Please try a different card or payment method.");
+        setIsProcessing(false);
       });
       paymentObject.open();
     } catch (err: any) {
       console.error("Order creation error:", err);
       setTxnErr("Failed to initialize payment.");
+      setIsProcessing(false);
     }
   };
 
@@ -651,9 +672,20 @@ function CheckoutPage() {
             </button>
           ) : (
             <div className="flex flex-col gap-3 hidden sm:flex">
-              <button className="w-full rounded-full bg-foreground py-3.5 text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground">
-                Place order · Pay {formatINR(payNow)} now
-                {payMode === "cod" ? ` + ${formatINR(codDue)} COD` : ""}
+              <button
+                disabled={isProcessing}
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-foreground py-3.5 text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+                  </>
+                ) : (
+                  <>
+                    Place order · Pay {formatINR(payNow)} now
+                    {payMode === "cod" ? ` + ${formatINR(codDue)} COD` : ""}
+                  </>
+                )}
               </button>
               <button
                 type="button"
@@ -673,8 +705,19 @@ function CheckoutPage() {
               </button>
             ) : (
               <div className="flex flex-col gap-2">
-                <button className="w-full rounded-full bg-foreground py-3 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-background transition active:bg-brand active:text-foreground text-center">
-                  Place order · Pay {formatINR(payNow)} now{payMode === "cod" ? ` + COD` : ""}
+                <button
+                  disabled={isProcessing}
+                  className="w-full flex items-center justify-center gap-2 rounded-full bg-foreground py-3 px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-background transition active:bg-brand active:text-foreground text-center disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Processing...
+                    </>
+                  ) : (
+                    <>
+                      Place order · Pay {formatINR(payNow)} now{payMode === "cod" ? ` + COD` : ""}
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"

@@ -27,11 +27,7 @@ export function PromoBanner() {
                 <span>BUY 2 GET 1 FREE</span>
                 <span className="text-brand">·</span>
                 <span>
-                  Code <b className="text-brand">B2G1</b> at 3 jerseys
-                </span>
-                <span className="text-brand">·</span>
-                <span>
-                  Flat 50% on first order with <b className="text-brand">FIRST50</b>
+                  CODE <b className="text-brand">B2G1</b> AT 3 JERSEYS
                 </span>
                 <span className="text-brand">✕</span>
               </span>

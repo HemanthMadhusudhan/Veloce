@@ -14,6 +14,7 @@ import { ShopProvider } from "@/lib/store";
 import { CatalogProvider } from "@/lib/catalog-store";
 import { SiteImagesProvider } from "@/lib/site-images";
 import { PromoBanner } from "@/components/PromoBanner";
+import { SupportBot } from "@/components/SupportBot";
 
 function NotFoundComponent() {
   return (
@@ -144,6 +145,7 @@ function RootComponent() {
             <PromoBanner />
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
+            <SupportBot />
           </SiteImagesProvider>
         </ShopProvider>
       </CatalogProvider>

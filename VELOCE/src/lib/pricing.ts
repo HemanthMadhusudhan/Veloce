@@ -61,14 +61,38 @@ export function computeCart(
 
   let discount = 0;
   let couponApplied: string | null = null;
+  let spinFreeShipping = false;
+
+  // Check for unique Fortune Spin coupon codes
+  let fortuneDiscount = 0;
+  try {
+    const savedPrize = localStorage.getItem("veloce_last_prize");
+    if (savedPrize) {
+      const prize = JSON.parse(savedPrize);
+      if (prize.code === couponCode) {
+        if (prize.label === "10% OFF") fortuneDiscount = 0.1;
+        else if (prize.label === "20% OFF") fortuneDiscount = 0.2;
+        else if (prize.label === "30% OFF") fortuneDiscount = 0.3;
+        else if (prize.label === "40% OFF") fortuneDiscount = 0.4;
+        else if (prize.label === "FREE SHIP") spinFreeShipping = true;
+      }
+    }
+  } catch (e) {}
 
   if (couponCode === "FIRST50" && isFirstOrder) {
     discount = subtotal * 0.5;
     couponApplied = "FIRST50";
     freeCountByKey.clear(); // Overrides B2G1 free line items
+  } else if (fortuneDiscount > 0) {
+    discount = Math.round(subtotal * fortuneDiscount);
+    couponApplied = couponCode!;
+    freeCountByKey.clear(); // Overrides B2G1
+  } else if (spinFreeShipping && couponCode) {
+    couponApplied = couponCode;
+    // B2G1 still applies if they have free shipping? Let's say yes, or let's clear it
   } else if (couponCode !== "NONE" && totalFreeUnits > 0) {
     discount = b2g1Discount;
-    couponApplied = "B2G1";
+    couponApplied = couponCode && couponCode.startsWith("VL-") ? couponCode : "B2G1";
   } else {
     freeCountByKey.clear();
   }
@@ -77,14 +101,18 @@ export function computeCart(
     const k = `${item.id}|${item.size}|${item.color}`;
     const freeUnits = freeCountByKey.get(k) ?? 0;
     const lineSubtotal = product.price * item.qty;
-    const lineDiscount =
-      couponApplied === "FIRST50" ? lineSubtotal * 0.5 : product.price * freeUnits;
+    
+    let lineDiscount = 0;
+    if (couponApplied === "FIRST50") lineDiscount = lineSubtotal * 0.5;
+    else if (fortuneDiscount > 0) lineDiscount = Math.round(lineSubtotal * fortuneDiscount);
+    else lineDiscount = product.price * freeUnits;
+    
     return { item, product, freeUnits, lineSubtotal, lineDiscount };
   });
 
   const afterDiscount = Math.max(0, subtotal - discount);
   const shipping =
-    subtotal === 0 ? 0 : afterDiscount >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING;
+    subtotal === 0 ? 0 : (afterDiscount >= FREE_SHIPPING_THRESHOLD || spinFreeShipping) ? 0 : STANDARD_SHIPPING;
   const tax = Math.round(afterDiscount * GST_RATE);
   const total = afterDiscount + shipping + tax;
 

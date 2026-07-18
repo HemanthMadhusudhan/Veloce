@@ -9,7 +9,7 @@ const GRID_SIZES =
   "(min-width: 1280px) 320px, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 const LIST_SIZES = "(min-width: 640px) 160px, 128px";
 
-export function ProductCard({ p, view = "grid" }: { p: Product; view?: "grid" | "list" }) {
+export function ProductCard({ p, view = "grid", priority = false }: { p: Product; view?: "grid" | "list"; priority?: boolean }) {
   const { wishlist, toggleWishlist, addToCart } = useShop();
   const wished = wishlist.includes(p.id);
   const quickAdd = () => addToCart({ id: p.id, qty: 1, size: p.sizes[0], color: p.colors[0] });
@@ -27,6 +27,8 @@ export function ProductCard({ p, view = "grid" }: { p: Product; view?: "grid" | 
             alt={p.name}
             sizes={LIST_SIZES}
             imgClassName="h-full w-full object-cover transition-transform duration-700 lg:group-hover:scale-105"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
           />
         </Link>
         <div className="flex min-w-0 flex-1 flex-col justify-between">
@@ -90,6 +92,8 @@ export function ProductCard({ p, view = "grid" }: { p: Product; view?: "grid" | 
           sizes={GRID_SIZES}
           className="absolute inset-0 h-full w-full"
           imgClassName="h-full w-full object-cover transition-transform duration-[900ms] ease-out lg:group-hover:scale-[1.06]"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
         />
         {p.images[1] && (
           <Picture
@@ -100,6 +104,17 @@ export function ProductCard({ p, view = "grid" }: { p: Product; view?: "grid" | 
             imgClassName="h-full w-full object-cover"
           />
         )}
+
+        {/* Wishlist Button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            toggleWishlist(p.id);
+          }}
+          className="absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white/80 backdrop-blur shadow-sm transition hover:bg-white sm:h-8 sm:w-8"
+        >
+          <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${wished ? "fill-brand text-brand" : "text-gray-500"}`} />
+        </button>
 
         {/* Save Badge */}
         {p.compareAt && p.compareAt > p.price && (

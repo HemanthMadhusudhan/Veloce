@@ -7,7 +7,7 @@ type Props = {
   className?: string;
   imgClassName?: string;
   loading?: "eager" | "lazy";
-  fetchpriority?: "high" | "low" | "auto";
+  fetchPriority?: "high" | "low" | "auto";
   decoding?: "async" | "sync" | "auto";
   aspect?: string; // e.g. "4/5", "16/9"
 };
@@ -24,7 +24,7 @@ export function Picture({
   className,
   imgClassName = "h-full w-full object-cover",
   loading = "lazy",
-  fetchpriority,
+  fetchPriority,
   decoding = "async",
   aspect,
 }: Props) {
@@ -42,7 +42,7 @@ export function Picture({
         loading={loading}
         decoding={decoding}
         // @ts-expect-error non-standard but supported by Chromium/Safari
-        fetchpriority={fetchpriority}
+        fetchPriority={fetchPriority}
         style={style}
       />
     );
@@ -60,7 +60,7 @@ export function Picture({
         loading={loading}
         decoding={decoding}
         // @ts-expect-error non-standard but supported by Chromium/Safari
-        fetchpriority={fetchpriority}
+        fetchPriority={fetchPriority}
         style={style}
       />
     </picture>

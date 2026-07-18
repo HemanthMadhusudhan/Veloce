@@ -104,60 +104,68 @@ function ProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:py-16">
-      <div className="flex flex-col gap-4 sm:gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-20">
+      {/* Header section with glassmorphic banner */}
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-surface/30 p-4 sm:p-12 mb-4 sm:mb-8 backdrop-blur-md">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-transparent opacity-50" />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <button
+              onClick={() => (history.length > 1 ? history.back() : nav({ to: "/" }))}
+              className="mb-4 inline-flex items-center gap-1.5 text-[10px] sm:text-xs uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Back to Store
+            </button>
+            <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.3em] text-brand font-semibold mb-2">
+              Veloce Member
+            </div>
+            <h1 className="font-display text-2xl sm:text-5xl font-bold tracking-tight text-foreground drop-shadow-sm">
+              My Account
+            </h1>
+            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-sm text-muted-foreground bg-black/20 w-fit px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-white/5">
+              <Mail className="h-3.5 w-3.5" />
+              {userEmail}
+            </div>
+          </div>
           <button
-            onClick={() => (history.length > 1 ? history.back() : nav({ to: "/" }))}
-            className="mb-2 sm:mb-3 inline-flex items-center gap-1 text-[9px] sm:text-[11px] uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
+            onClick={handleLogout}
+            className="group inline-flex items-center justify-center gap-1.5 sm:gap-2 self-stretch sm:self-end rounded-full bg-white/5 border border-white/10 px-4 py-2 sm:px-6 sm:py-3 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] transition hover:bg-brand hover:text-foreground hover:border-brand"
           >
-            <ArrowLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Back
+            <LogOut className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:-translate-x-0.5 transition-transform" /> Sign out
           </button>
-          <div className="text-[8px] sm:text-[10px] uppercase tracking-[0.3em] gold-text">
-            Members
-          </div>
-          <h1 className="mt-1 sm:mt-2 font-display text-xl sm:text-4xl font-bold tracking-tight">
-            My account
-          </h1>
-          <div className="mt-1 sm:mt-2 flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-            <Mail className="h-3 w-3 sm:h-4 sm:w-4" />
-            {userEmail}
-          </div>
         </div>
-        <button
-          onClick={handleLogout}
-          className="inline-flex items-center gap-1.5 self-start rounded-full border border-border/70 px-3 py-1.5 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.24em] hover:border-brand hover:text-brand"
-        >
-          <LogOut className="h-3 w-3 sm:h-4 sm:w-4" /> Sign out
-        </button>
       </div>
 
-      <div className="mt-5 sm:mt-8 grid gap-4 sm:gap-6 lg:grid-cols-[220px_1fr]">
-        <nav className="flex flex-row gap-1.5 sm:gap-2 overflow-x-auto lg:flex-col">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[240px_1fr]">
+        {/* Glassmorphic Sidebar */}
+        <nav className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:overflow-visible pb-2 lg:pb-0 scrollbar-none">
           <TabBtn
             active={tab === "orders"}
             onClick={() => setTab("orders")}
-            icon={<Package className="h-3 w-3 sm:h-4 sm:w-4" />}
+            icon={<Package className="h-4 w-4" />}
           >
             Orders
           </TabBtn>
           <TabBtn
             active={tab === "address"}
             onClick={() => setTab("address")}
-            icon={<MapPin className="h-3 w-3 sm:h-4 sm:w-4" />}
+            icon={<MapPin className="h-4 w-4" />}
           >
             Address
           </TabBtn>
           <TabBtn
             active={tab === "support"}
             onClick={() => setTab("support")}
-            icon={<LifeBuoy className="h-3 w-3 sm:h-4 sm:w-4" />}
+            icon={<LifeBuoy className="h-4 w-4" />}
           >
             Support
           </TabBtn>
         </nav>
 
-        <div className="min-w-0 min-h-[200px] sm:min-h-[300px] rounded-2xl sm:rounded-3xl border border-border/60 bg-white/[0.02] p-3.5 sm:p-8">
+        {/* Content Area */}
+        <div className="min-w-0 min-h-[300px] sm:min-h-[400px] rounded-3xl border border-white/10 bg-surface/20 p-5 sm:p-10 backdrop-blur-md shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+          <div className="relative z-10">
           {tab === "orders" && (
             <div>
               <h2 className="font-display text-base sm:text-xl font-semibold">Order history</h2>
@@ -336,6 +344,7 @@ function ProfilePage() {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
@@ -356,7 +365,11 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-3 py-1.5 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs uppercase tracking-[0.18em] sm:tracking-[0.22em] transition ${active ? "border-brand bg-brand/10 text-brand" : "border-border/60 text-muted-foreground hover:text-foreground"}`}
+      className={`flex items-center gap-2.5 sm:gap-3 whitespace-nowrap rounded-xl sm:rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 text-[11px] sm:text-[13px] font-medium tracking-wide transition-all ${
+        active
+          ? "bg-brand/10 text-brand border border-brand/20 shadow-sm"
+          : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"
+      }`}
     >
       {icon} {children}
     </button>
