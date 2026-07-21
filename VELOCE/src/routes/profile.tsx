@@ -54,7 +54,7 @@ function ProfilePage() {
   const { userEmail, signOut, orders, profile, updateProfile } = useShop();
   const { getById } = useCatalog();
   const [tab, setTab] = useState<"orders" | "address" | "support" | "menu" | "overview" | "settings">(
-    typeof window !== "undefined" && window.innerWidth < 640 ? "menu" : "orders"
+    "menu"
   );
   const [addr, setAddr] = useState<Address>(DEFAULT_ADDR);
   const [saved, setSaved] = useState(false);

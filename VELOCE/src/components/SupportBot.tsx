@@ -120,7 +120,8 @@ export function SupportBot() {
       setMessages(currentHistory);
     } catch (err: any) {
       console.error("Bot Error:", err);
-      setMessages((prev) => [...prev, { id: Date.now().toString(), role: "bot", text: "I apologize, but I am having trouble connecting to the network right now. Please try again later or contact https://t.me/veloce_jersey on Telegram." }]);
+      const fallbackReply = generateFallbackResponse(userMsg.text);
+      setMessages((prev) => [...prev, { id: Date.now().toString(), role: "bot", text: fallbackReply }]);
     } finally {
       setIsTyping(false);
     }
@@ -224,6 +225,38 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
     }
 
     return await response.json();
+  };
+
+  const generateFallbackResponse = (text: string) => {
+    const lower = text.toLowerCase();
+    if (lower.includes("shipping") || lower.includes("delivery") || lower.includes("time")) {
+      return "We offer free shipping on orders over ₹499! Standard delivery takes 3-5 business days depending on your location.";
+    }
+    if (lower.includes("track") || lower.includes("status") || lower.includes("where is my order")) {
+      return "Once your order is shipped, you will receive a tracking link via SMS and email. You can also track it directly from your account page!";
+    }
+    if (lower.includes("return") || lower.includes("exchange") || lower.includes("refund")) {
+      return "We have a 4-day easy exchange policy. Just ensure the tags are intact and the item is unworn. Contact our Telegram support to initiate an exchange.";
+    }
+    if (lower.includes("size") || lower.includes("fit")) {
+      return "Our jerseys are true to size. For player version (authentic) jerseys, we recommend going one size up as they have an athletic, tighter fit.";
+    }
+    if (lower.includes("authentic") || lower.includes("fake") || lower.includes("real") || lower.includes("quality")) {
+      return "All our items come with a 100% authenticity guarantee. We curate official merchandise directly from the clubs and constructors.";
+    }
+    if (lower.includes("pay") || lower.includes("cod") || lower.includes("cash on delivery")) {
+      return "We accept all major Credit/Debit Cards, UPI, and Net Banking. We also offer Cash on Delivery (COD) for most pin codes!";
+    }
+    if (lower.includes("custom") || lower.includes("print") || lower.includes("name")) {
+      return "Yes! We offer custom name and number printing on most football jerseys. Just select the personalization option on the product page.";
+    }
+    if (lower.includes("wash") || lower.includes("care") || lower.includes("clean")) {
+      return "To keep your jersey fresh, wash it inside out on a cold, gentle cycle. Do not iron directly on the prints or logos!";
+    }
+    if (lower.includes("contact") || lower.includes("human") || lower.includes("support") || lower.includes("talk")) {
+      return "We don't use email support. For the fastest response, please reach out to our human support team on Telegram at @VeloceSupport (Mon-Sat, 9 AM to 6 PM).";
+    }
+    return "I'm currently a basic virtual assistant, but I can help with questions about shipping, tracking, returns, sizes, payments, or authenticity! For more complex queries, please message our support team on Telegram at @VeloceSupport.";
   };
 
   return (

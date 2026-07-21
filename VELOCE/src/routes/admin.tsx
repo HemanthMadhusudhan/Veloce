@@ -382,14 +382,14 @@ function EditProductDrawer({
     description: product.description,
     colors: product.colors.join(", "),
     sizes: product.sizes.join(", "),
-    images: product.images.join("\n"),
+    images: [...product.images],
     rating: product.rating ?? 4.8,
     reviews: product.reviews ?? 0,
   });
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
 
   const handleCropComplete = (croppedImageUrl: string) => {
-    setF((s) => ({ ...s, images: [s.images, croppedImageUrl].filter(Boolean).join("\n") }));
+    setF((s) => ({ ...s, images: [...s.images, croppedImageUrl] }));
     setCropImageUrl(null);
   };
 
@@ -419,7 +419,7 @@ function EditProductDrawer({
               className={inputCls}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Team">
               <TeamCombobox
                 value={f.team}
@@ -435,7 +435,7 @@ function EditProductDrawer({
               />
             </Field>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Field label="Price ₹">
               <input
                 type="number"
@@ -461,7 +461,7 @@ function EditProductDrawer({
               />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Rating (0-5)">
               <input
                 type="number"
@@ -483,7 +483,7 @@ function EditProductDrawer({
               />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Badge">
               <input
                 value={f.badge}
@@ -513,30 +513,6 @@ function EditProductDrawer({
               className={inputCls}
             />
           </Field>
-          <Field label="Images (URLs one per line — or upload files)">
-            <textarea
-              rows={5}
-              value={f.images}
-              onChange={(e) => setF({ ...f, images: e.target.value })}
-              className={inputCls + " font-mono text-xs"}
-            />
-            <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-none border border-gray-300 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-black">
-              Upload image
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={async (e) => {
-                  const files = Array.from(e.target.files ?? []);
-                  if (files.length > 0) {
-                    const url = await fileToDataUrl(files[0]);
-                    setCropImageUrl(url);
-                  }
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          </Field>
           <Field label="Description">
             <textarea
               rows={4}
@@ -546,26 +522,77 @@ function EditProductDrawer({
             />
           </Field>
 
-          {f.images.trim() && (
-            <div>
-              <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Preview
-              </div>
-              <div className="flex gap-2 overflow-x-auto">
-                {f.images
-                  .split("\n")
-                  .filter(Boolean)
-                  .map((u, i) => (
-                    <img
-                      key={i}
-                      src={u.trim()}
-                      alt=""
-                      className="h-24 w-20 shrink-0 rounded object-cover"
-                    />
-                  ))}
-              </div>
+          <div>
+            <div className="mb-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              Images (Drag or use buttons to reorder)
             </div>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {f.images.map((u, i) => (
+                <div key={i} className="relative group">
+                  <img src={u} alt="" className="h-24 w-20 shrink-0 rounded object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setF(s => ({ ...s, images: s.images.filter((_, idx) => idx !== i) }))}
+                    className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow opacity-0 group-hover:opacity-100 transition-opacity md:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                  <div className="absolute bottom-1 flex w-full justify-between px-1 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (i === 0) return;
+                        const imgs = [...f.images];
+                        [imgs[i - 1], imgs[i]] = [imgs[i], imgs[i - 1]];
+                        setF(s => ({ ...s, images: imgs }));
+                      }}
+                      className="flex h-6 w-6 items-center justify-center rounded bg-black/70 text-white hover:bg-black"
+                    >
+                      <span className="text-[10px]">◀</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (i === f.images.length - 1) return;
+                        const imgs = [...f.images];
+                        [imgs[i], imgs[i + 1]] = [imgs[i + 1], imgs[i]];
+                        setF(s => ({ ...s, images: imgs }));
+                      }}
+                      className="flex h-6 w-6 items-center justify-center rounded bg-black/70 text-white hover:bg-black"
+                    >
+                      <span className="text-[10px]">▶</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black">
+                <Plus className="h-4 w-4" /> Upload
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files ?? []);
+                    if (files.length > 0) {
+                      const url = await fileToDataUrl(files[0]);
+                      setCropImageUrl(url);
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const u = prompt("Paste an image URL");
+                  if (u) setF(s => ({ ...s, images: [...s.images, u.trim()] }));
+                }}
+                className="flex h-24 w-20 flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black"
+              >
+                <ImageIcon className="h-4 w-4" /> URL
+              </button>
+            </div>
+          </div>
         </div>
         {err && (
           <div className="mt-4 rounded-none border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
@@ -598,7 +625,6 @@ function EditProductDrawer({
                     .map((s) => s.trim())
                     .filter(Boolean),
                   images: f.images
-                    .split("\n")
                     .map((s) => s.trim())
                     .filter(Boolean),
                   rating: f.rating,
@@ -1100,7 +1126,7 @@ function NewProductRow({
     
     series: "" as "" | "legends",
     price: 5000,
-    compareAt: 0,
+    compareAt: [4999, 5999, 6999, 3599, 3499, 4499][Math.floor(Math.random() * 6)],
     stock: 20,
     tag: "New Piece",
     badge: "",
