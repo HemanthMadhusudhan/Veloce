@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Search, Heart, ShoppingBag, User, Menu, X, Trash2, Clock, TrendingUp, Minus, Plus, ChevronDown, ChevronRight, Gift, Truck, ShieldCheck, RefreshCw, Banknote, Settings, Home, Store, MoreHorizontal, MessageSquare } from "lucide-react";
 import { Logo } from "./Logo";
@@ -9,10 +9,12 @@ import { LEAGUES, FOOTBALL_QUICK_LINKS } from "@/lib/leagues";
 import { useCatalog } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
 import { computeCart } from "@/lib/pricing";
-import { TEAM_LOGOS } from "@/lib/logos";
+import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams } from "@/lib/logos";
 
 const NAV = [
   { label: "Formula 1", to: "/shop/f1" as const },
+  { label: "Basketball", to: "/shop/basketball" as const },
+  { label: "Cricket", to: "/shop/cricket" as const },
   { label: "Shop All", to: "/shop" as const },
 ];
 const FOOTBALL_SUB = [
@@ -25,7 +27,9 @@ export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [zonesOpen, setZonesOpen] = useState(false);
+  const [spinOpen, setSpinOpen] = useState(false);
   const { cart, wishlist, openCart, openSearch, isAdmin, userEmail, signOut } = useShop();
+  const nav = useNavigate();
   const cartCount = cart.reduce((a, b) => a + b.qty, 0);
 
   useEffect(() => {
@@ -36,33 +40,21 @@ export function SiteNav() {
   }, []);
 
   return (
-    <nav className="fixed inset-x-0 top-12 z-50 flex justify-center px-4 sm:top-14">
-      <div className={`glass flex w-full max-w-6xl items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 sm:px-6 sm:py-3 ${scrolled ? "scale-[0.98] shadow-2xl shadow-black/40" : ""}`}>
+    <nav className="fixed inset-x-0 top-12 z-50 flex justify-center px-4 sm:top-0 sm:px-0">
+      <div className={`glass flex w-full max-w-6xl items-center justify-between px-4 py-2.5 transition-all duration-500 sm:max-w-full sm:rounded-none sm:px-8 sm:py-1.5 ${scrolled ? "shadow-2xl shadow-black/40" : "rounded-full"}`}>
         <Logo />
         <div className="hidden items-center gap-6 md:flex">
           <FootballMenu />
-          {NAV.map((l) => (
-            <Link key={l.to} to={l.to} className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
-              {l.label}
-            </Link>
-          ))}
-          <div className="relative" onMouseEnter={() => setZonesOpen(true)} onMouseLeave={() => setZonesOpen(false)}>
-            <button className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground">
-              Zones <ChevronDown className="h-3 w-3" />
-            </button>
-            {zonesOpen && (
-              <div className="absolute left-1/2 top-full -translate-x-1/2 pt-3">
-                <div className="glass w-56 rounded-2xl p-2">
-                  {ZONES.map((z) => (
-                    <Link key={z.slug} to="/zone/$slug" params={{ slug: z.slug }} className="flex items-center justify-between rounded-xl px-3 py-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:bg-white/10 hover:text-foreground">
-                      <span>{z.name}</span>
-                      <span className="text-[9px] text-brand">{z.category === "f1" ? "F1" : "FB"}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <F1Menu />
+          <BasketballMenu />
+          <CricketMenu />
+          <Link to="/shop/worldcup" className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            World Cup
+          </Link>
+          <Link to="/shop" className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            Shop All
+          </Link>
+
           {isAdmin && (
             <Link
               to="/admin"
@@ -74,6 +66,13 @@ export function SiteNav() {
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <IconChip onClick={openSearch} label="Search"><Search className="h-4 w-4" /></IconChip>
+          <IconChip onClick={() => {
+            if (window.innerWidth >= 640 && !userEmail) {
+              nav({ to: "/login" });
+            } else {
+              setSpinOpen(true);
+            }
+          }} label="Spin" className="hidden sm:inline-flex"><Gift className="h-4 w-4 text-yellow-500" /></IconChip>
           {isAdmin ? (
             <>
               <Link to="/admin" className="hidden sm:block"><IconChip label="Admin"><Settings className="h-4 w-4" /></IconChip></Link>
@@ -82,7 +81,22 @@ export function SiteNav() {
           ) : (
             <>
               <Link to={userEmail ? "/profile" : "/login"} className="hidden sm:block"><IconChip label={userEmail ? "Profile" : "Account"}><User className="h-4 w-4" /></IconChip></Link>
-              <button onClick={openCart} className="relative">
+              <Link to="/wishlist" className="relative" onClick={(e) => {
+                if (window.innerWidth >= 640 && !userEmail) {
+                  e.preventDefault();
+                  nav({ to: "/login" });
+                }
+              }}>
+                <IconChip label="Wishlist"><Heart className="h-4 w-4" /></IconChip>
+                {wishlist.length > 0 && <Dot>{wishlist.length}</Dot>}
+              </Link>
+              <button onClick={() => {
+                if (window.innerWidth >= 640 && !userEmail) {
+                  nav({ to: "/login" });
+                } else {
+                  nav({ to: "/checkout" });
+                }
+              }} className="relative">
                 <IconChip label="Bag"><ShoppingBag className="h-4 w-4" /></IconChip>
                 {cartCount > 0 && <Dot>{cartCount}</Dot>}
               </button>
@@ -151,6 +165,7 @@ export function SiteNav() {
           </div>
         </div>
       )}
+      <FortuneSpin open={spinOpen} onClose={() => setSpinOpen(false)} />
     </nav>
   );
 }
@@ -171,7 +186,7 @@ function IconChip({ children, onClick, label, className }: { children: ReactNode
   );
 }
 function Dot({ children }: { children: ReactNode }) {
-  return <span className="pointer-events-none absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 font-mono text-[9px] font-bold text-foreground">{children}</span>;
+  return <span className="pointer-events-none absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 font-mono text-[9px] font-bold text-white">{children}</span>;
 }
 
 function FootballMenu() {
@@ -182,27 +197,26 @@ function FootballMenu() {
         Football <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full w-[720px] max-w-[92vw] -translate-x-1/2 pt-3">
-          <div className="glass grid grid-cols-3 gap-6 rounded-2xl p-6">
-            {LEAGUES.map((l) => (
-              <div key={l.league}>
-                <div className="mb-2 text-[9px] uppercase tracking-[0.28em] text-brand">{l.league}</div>
-                <ul className="space-y-1.5">
-                  {l.teams.map((t) => (
-                    <li key={t}>
-                      <Link to="/shop/football" search={{ team: t } as never} className="block text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
-                        {t}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div className="col-span-3 border-t border-border/40 pt-3">
-              <div className="mb-2 text-[9px] uppercase tracking-[0.28em] text-brand">Collections</div>
+        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
+               <span>Football Jerseys</span>
+            </div>
+            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
+              {footballTeams.map(([t, logo]) => (
+                <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                </Link>
+              ))}
+            </div>
+            <div className="border-t border-border/40 pt-4 mt-2">
+              <div className="mb-3 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Collections</div>
               <div className="flex flex-wrap gap-2">
                 {FOOTBALL_QUICK_LINKS.map((q) => (
-                  <Link key={q.label} to={q.to as never} className="rounded-full border border-border/60 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:border-foreground hover:text-foreground">
+                  <Link key={q.label} to={q.to as never} className="rounded-full border border-border/60 px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground hover:border-black hover:text-black hover:bg-black/5 transition-all">
                     {q.label}
                   </Link>
                 ))}
@@ -215,44 +229,93 @@ function FootballMenu() {
   );
 }
 
-export function MobileBottomNav() {
-  const [spinOpen, setSpinOpen] = useState(false);
-  const { userEmail, wishlist } = useShop();
-
+function F1Menu() {
+  const [open, setOpen] = useState(false);
   return (
-    <>
-      <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between border-t border-border/50 bg-background/95 backdrop-blur-md px-6 py-2 sm:hidden">
-        <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-          <Home className="h-5 w-5" />
-          <span className="text-[10px]">Home</span>
-        </Link>
-        <Link to="/shop" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-          <Store className="h-5 w-5" />
-          <span className="text-[10px]">Shop</span>
-        </Link>
-        <button onClick={() => window.dispatchEvent(new Event("toggleSupportBot"))} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-          <MessageSquare className="h-5 w-5" />
-          <span className="text-[10px]">Support</span>
-        </button>
-        <Link to="/wishlist" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-          <div className="relative">
-            <Heart className="h-5 w-5" />
-            {wishlist.length > 0 && (
-              <span className="absolute -right-1.5 -top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-brand px-1 text-[8px] font-bold text-foreground">
-                {wishlist.length}
-              </span>
-            )}
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <Link to="/shop/f1" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+        Formula 1 <ChevronDown className="h-3 w-3" />
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
+               <span>Formula 1 Merch</span>
+            </div>
+            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
+              {f1Teams.map(([t, logo]) => (
+                <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                </Link>
+              ))}
+            </div>
           </div>
-          <span className="text-[10px]">Wishlist</span>
-        </Link>
-        <button onClick={() => setSpinOpen(true)} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-          <Gift className="h-5 w-5 text-brand" />
-          <span className="text-[10px] text-brand font-bold">Spin</span>
-        </button>
-      </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-      <FortuneSpin open={spinOpen} onClose={() => setSpinOpen(false)} />
-    </>
+function BasketballMenu() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <Link to="/shop/basketball" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+        Basketball <ChevronDown className="h-3 w-3" />
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
+               <span>Basketball Jerseys</span>
+            </div>
+            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
+              {basketballTeams.map(([t, logo]) => (
+                <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CricketMenu() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <Link to="/shop/cricket" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+        Cricket <ChevronDown className="h-3 w-3" />
+      </Link>
+      {open && (
+        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
+               <span>Cricket Jerseys</span>
+            </div>
+            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
+              {cricketTeams.map(([t, logo]) => (
+                <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -261,7 +324,7 @@ export function PerksStrip() {
     { icon: RefreshCw, label: "4-DAY EASY EXCHANGE" },
     { icon: ShieldCheck, label: "100% Authentic" },
     { icon: Banknote, label: "COD AVAILABLE" },
-    { icon: Truck, label: "FREE SHIPPING OVER ₹499" },
+    { icon: Truck, label: "FREE SHIPPING ON ALL ORDERS" },
   ];
   return (
     <section className="mx-auto mt-6 sm:mt-20 max-w-7xl px-5 sm:px-6">
@@ -280,32 +343,114 @@ export function PerksStrip() {
 }
 
 export function SiteFooter() {
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+
+  const toggleAccordion = (title: string) => {
+    setOpenAccordion(openAccordion === title ? null : title);
+  };
+
+  const footerData = [
+    {
+      title: "FOOTBALL",
+      links: [
+        ["All Football", "/shop/football"],
+        ["Retro Collection", "/shop/retro"],
+        ["World Cup", "/shop/worldcup"],
+      ]
+    },
+    {
+      title: "FORMULA 1",
+      links: [
+        ["All Formula 1", "/shop/f1"],
+        ["Ferrari", "/shop/f1?team=Ferrari"],
+        ["Red Bull", "/shop/f1?team=Red%20Bull"],
+        ["Mercedes", "/shop/f1?team=Mercedes"],
+      ]
+    },
+    {
+      title: "CRICKET",
+      links: [
+        ["All Cricket", "/shop/cricket"],
+        ["India", "/shop/cricket?team=India"],
+        ["CSK", "/shop/cricket?team=Chennai%20Super%20Kings"],
+        ["RCB", "/shop/cricket?team=Royal%20Challengers%20Bangalore"],
+      ]
+    },
+    {
+      title: "BASKETBALL",
+      links: [
+        ["All Basketball", "/shop/basketball"],
+        ["Lakers", "/shop/basketball?team=Los%20Angeles%20Lakers"],
+        ["Bulls", "/shop/basketball?team=Chicago%20Bulls"],
+        ["Warriors", "/shop/basketball?team=Golden%20State%20Warriors"],
+      ]
+    }
+  ];
+
   return (
-    <footer className="mt-16 sm:mt-32 border-t border-border/50 bg-background">
-      <div className="mx-auto max-w-7xl px-6 py-10 sm:py-16">
-        <div className="grid gap-8 grid-cols-2 sm:grid-cols-4">
-          <div className="col-span-2 sm:col-span-1 mb-4 sm:mb-0">
-            <Logo />
-            <p className="mt-4 max-w-xs text-sm text-muted-foreground">Elite football jerseys and Formula 1 team merchandise. Engineered precision. Cinematic detail.</p>
+    <footer className="mt-16 sm:mt-32 bg-[#1f1f1f] text-white">
+      <div className="mx-auto max-w-7xl">
+        {/* Mobile Accordions */}
+        <div className="flex flex-col sm:hidden">
+          {footerData.map((col) => (
+            <div key={col.title} className="border-b border-white/10">
+              <button 
+                onClick={() => toggleAccordion(col.title)}
+                className="w-full px-6 py-4 flex items-center justify-between font-bold text-[15px] tracking-wide"
+              >
+                {col.title}
+                <ChevronDown className={`h-4 w-4 transition-transform ${openAccordion === col.title ? 'rotate-180' : ''}`} />
+              </button>
+              {openAccordion === col.title && (
+                <div className="px-6 pb-4 flex flex-col gap-3">
+                  {col.links.map(([l, h]) => (
+                    <a key={l} href={h} className="text-sm text-gray-300 hover:text-white transition-colors">
+                      {l}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          <div className="px-6 py-6 border-b border-white/10">
+            <button className="w-full border border-white/20 bg-[#181818] py-3 flex items-center justify-center gap-2 rounded-sm text-sm font-bold tracking-wide">
+              <img src="https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg" alt="India" loading="lazy" className="w-5 h-3.5 object-cover" />
+              INDIA
+            </button>
           </div>
-          <FooterCol title="Shop" links={[["Football","/shop/football"],["Formula 1","/shop/f1"],["World Cup","/shop/worldcup"],["Retro","/shop/retro"]]} />
-          <FooterCol title="Company" links={[["About","/info/about"],["Journal","/info/journal"],["Sustainability","/info/sustainability"],["Careers","/info/careers"]]} />
-        <FooterCol title="Support" links={[["Contact","/info/contact"],["Shipping","/info/shipping"],["Returns","/info/returns"],["FAQ","/info/faq"]]} />
         </div>
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border/50 pt-8 text-xs text-muted-foreground sm:flex-row">
-          <div>© {new Date().getFullYear()} Veloce Atelier. All rights reserved.</div>
-          <div className="flex gap-6"><Link to="/info/privacy-policy" className="hover:text-foreground">Privacy</Link><Link to="/info/terms-and-conditions" className="hover:text-foreground">Terms</Link><span>Cookies</span></div>
+
+        {/* Desktop Grid */}
+        <div className="hidden sm:grid gap-8 grid-cols-5 px-6 py-16">
+          <div className="col-span-1 mb-4 sm:mb-0">
+            <Logo />
+            <p className="mt-4 max-w-xs text-sm text-gray-400">Elite jerseys and merchandise. Engineered precision. Cinematic detail.</p>
+          </div>
+          {footerData.map((col) => (
+            <FooterCol key={col.title} title={col.title} links={col.links as [string, string][]} />
+          ))}
+        </div>
+
+        {/* Footer Bottom */}
+        <div className="flex flex-col items-start justify-between gap-4 px-6 py-8 text-xs text-gray-400 sm:flex-row border-t border-white/10">
+          <div>© {new Date().getFullYear()} Veloce Wear Atelier. All rights reserved.</div>
+          <div className="flex gap-6">
+            <a href="/info/privacy-policy" className="hover:text-white">Privacy</a>
+            <a href="/info/terms-and-conditions" className="hover:text-white">Terms</a>
+            <a href="/info/cookies" className="hover:text-white">Cookies</a>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
+
 function FooterCol({ title, links }: { title: string; links: [string, string][] }) {
   return (
     <div>
-      <div className="mb-3 text-[10px] uppercase tracking-[0.28em] text-foreground">{title}</div>
-      <ul className="space-y-2">
-        {links.map(([l, h]) => <li key={l}><a href={h} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{l}</a></li>)}
+      <div className="mb-4 font-bold text-[15px] tracking-wide text-white">{title}</div>
+      <ul className="space-y-3">
+        {links.map(([l, h]) => <li key={l}><a href={h} className="text-sm text-gray-400 transition-colors hover:text-white">{l}</a></li>)}
       </ul>
     </div>
   );
@@ -346,7 +491,7 @@ export function CartDrawer() {
             <ul className="divide-y divide-border/50">
               {lines.map(({ item, product, freeUnits: fu, lineSubtotal, lineDiscount }) => (
                 <li key={item.id + item.size + item.color + (item.customName || "") + (item.customNumber || "")} className="flex gap-4 py-4">
-                  <img src={product.images[0]} alt={product.name} className="h-24 w-20 rounded-lg object-cover" />
+                  <img src={product.images[0]} alt={product.name} loading="lazy" className="h-24 w-20 rounded-lg object-cover" />
                   <div className="flex flex-1 min-w-0 flex-col justify-between">
                     <div className="flex justify-between gap-2">
                       <div className="min-w-0">
@@ -474,7 +619,7 @@ export function SearchDialog() {
               {results.map((p) => (
                 <li key={p.id}>
                   <button onClick={() => go(p.id)} className="flex w-full items-center gap-4 px-1 py-3 text-left hover:bg-white/10">
-                    <img src={p.images[0]} alt="" className="h-12 w-10 rounded object-cover" />
+                    <img src={p.images[0]} alt="" loading="lazy" className="h-12 w-10 rounded object-cover" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{p.name}</div>
                       <div className="text-[11px] text-muted-foreground">{p.team}{p.driver ? ` · ${p.driver}` : ""}</div>
@@ -491,63 +636,148 @@ export function SearchDialog() {
   );
 }
 
+export function PopupModals() {
+  const { cartPopupItem, setCartPopupItem, wishlistPopupItem, setWishlistPopupItem } = useShop();
+  const { products } = useCatalog();
+  const nav = useNavigate();
+
+  if (!cartPopupItem && !wishlistPopupItem) return null;
+
+  const close = () => {
+    setCartPopupItem(null);
+    setWishlistPopupItem(null);
+  };
+
+  const isCart = !!cartPopupItem;
+  const item = cartPopupItem || wishlistPopupItem;
+  if (!item) return null;
+
+  const product = products.find((p) => p.id === item.id);
+  if (!product) return null;
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-sm bg-white text-black font-sans shadow-2xl overflow-hidden relative">
+        <div className="flex items-center justify-between p-5 pb-3">
+          <h2 className="text-xl font-bold">{isCart ? "Added to cart" : "Added to wishlist"}</h2>
+          <button onClick={close} className="text-black hover:opacity-70 p-1">
+            <X className="h-5 w-5 stroke-[2.5]" />
+          </button>
+        </div>
+        
+        <div className="p-5 pt-3">
+          <div className="flex gap-4">
+            <img src={product.images[0]} alt={product.name} loading="lazy" className="w-[100px] h-[100px] object-cover bg-gray-100" />
+            <div className="flex flex-col text-[13px] leading-tight">
+              <span className="font-bold mb-1">{product.name}</span>
+              <span className="text-gray-600 mb-0.5">Color: PUMA Black</span>
+              <span className="text-gray-600 mb-1.5">Size: {item.size || "S"}</span>
+              <span className="font-sans">₹{product.price.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+          
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            {isCart ? (
+              <button onClick={() => { close(); nav({ to: "/checkout" }); }} className="w-full bg-[#181818] text-white py-3.5 text-[14px] font-bold uppercase hover:bg-black">
+                VIEW CART ({cartPopupItem.qty}) & CHECKOUT
+              </button>
+            ) : (
+              <Link to="/wishlist" onClick={close} className="block text-center w-full bg-[#181818] text-white py-3.5 text-[14px] font-bold uppercase hover:bg-black">
+                VIEW WISHLIST
+              </Link>
+            )}
+            
+            {isCart && (
+              <p className="text-[11px] text-gray-500 mt-4 leading-relaxed">
+                By continuing, I confirm that I have read and accept the <a href="#" className="underline hover:text-black">Terms and Conditions</a> and the <a href="#" className="underline hover:text-black">Privacy Policy</a>.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SiteChrome({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const isHome = location.pathname === "/";
   return (
     <>
       <div className="hidden sm:block"><SiteNav /></div>
       <MobileTopNav />
-      <main className="pt-0 sm:pt-32 pb-16 sm:pb-0 w-full overflow-x-hidden">{children}</main>
+      <main className={`pt-0 pb-16 w-full overflow-x-hidden ${isHome ? "sm:pt-0 sm:pb-0" : "sm:pt-20 sm:pb-8"}`}>{children}</main>
       <SiteFooter />
-      <CartDrawer />
+      {/* <CartDrawer /> */}
       <SearchDialog />
-      <MobileBottomNav />
+      <PopupModals />
     </>
   );
 }
 
 export function MobileTopNav() {
-  const { cart, openCart, openSearch, userEmail } = useShop();
+  const nav = useNavigate();
+  const { cart, openCart, openSearch, userEmail, wishlist } = useShop();
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = cart.reduce((a, b) => a + b.qty, 0);
   const [spinOpen, setSpinOpen] = useState(false);
+  const [f1Open, setF1Open] = useState(false);
   const [footballOpen, setFootballOpen] = useState(false);
+  const [basketballOpen, setBasketballOpen] = useState(false);
+  const [cricketOpen, setCricketOpen] = useState(false);
   const [zonesOpen, setZonesOpen] = useState(false);
-
-  const f1Teams = ["Ferrari", "Mercedes", "Red Bull", "McLaren", "Alpine", "Aston Martin"];
-  const footballTeams = Object.entries(TEAM_LOGOS).filter(([t]) => !f1Teams.includes(t));
+  const cricketOpenState = useState(false);
 
   return (
     <div className="sm:hidden sticky top-0 inset-x-0 z-[100]">
+      {/* Promo Bar */}
+      <div className="w-full bg-[#f4f4f4] text-black text-[9px] font-bold uppercase tracking-wider text-center py-1">
+        FREE RETURNS AND EXCHANGES.
+      </div>
       {/* Main Bar */}
-      <div className="flex items-center justify-between bg-background/95 backdrop-blur-md px-4 py-3 border-b border-border/40 shadow-sm">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setMenuOpen(true)} className="text-foreground active:scale-95 transition-transform">
-            <Menu className="h-[26px] w-[26px] stroke-[2.5]" />
+      <div className="relative flex items-center justify-between bg-[#181818] px-4 py-4 shadow-md">
+        <div className="flex items-center gap-3 z-10">
+          <button onClick={() => setMenuOpen(true)} className="text-white active:scale-95 transition-transform">
+            <Menu className="h-6 w-6 stroke-[2]" />
           </button>
-          <button onClick={openSearch} className="text-foreground active:scale-95 transition-transform">
-            <Search className="h-5 w-5 stroke-[2.5]" />
+          <button onClick={openSearch} className="text-white active:scale-95 transition-transform">
+            <Search className="h-5 w-5 stroke-[2]" />
           </button>
         </div>
         
-        <Link to="/" className="flex-1 flex justify-center">
-          <div className="font-display font-black tracking-tighter text-2xl text-brand flex flex-col leading-none items-center -mr-2">
-            <span>VELOCE</span>
-            <span className="text-[9px] tracking-[0.3em] ml-1">WEAR</span>
-          </div>
-        </Link>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Link to="/" className="pointer-events-auto flex items-center justify-center">
+            <img
+              src="/logo.png?v=3"
+              alt="Veloce Wear"
+              loading="eager"
+              fetchPriority="high"
+              className="h-12 w-auto object-contain scale-150 brightness-0 invert"
+            />
+          </Link>
+        </div>
         
-        <div className="flex items-center gap-3">
-          <button onClick={openCart} className="relative text-foreground active:scale-95 transition-transform">
-            <ShoppingBag className="h-5 w-5 stroke-[2.5]" />
+        <div className="flex items-center gap-3 z-10">
+          <Link to={userEmail ? "/profile" : "/login"} className="text-white active:scale-95 transition-transform">
+            <User className="h-6 w-6 stroke-[2]" />
+          </Link>
+          <Link to="/wishlist" className="relative text-white active:scale-95 transition-transform">
+            <Heart className="h-6 w-6 stroke-[2]" />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
+                {wishlist.length}
+              </span>
+            )}
+          </Link>
+          <button onClick={() => nav({ to: "/checkout" })} className="relative text-white active:scale-95 transition-transform">
+            <ShoppingBag className="h-6 w-6 stroke-[2]" />
             {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-[#f65c29] px-1 text-[9px] font-bold text-white shadow-sm">
+              <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
                 {cartCount}
               </span>
             )}
           </button>
-          <Link to={userEmail ? "/profile" : "/login"} className="text-foreground active:scale-95 transition-transform">
-            <User className="h-6 w-6 stroke-[2]" />
-          </Link>
+
         </div>
       </div>
 
@@ -565,14 +795,16 @@ export function MobileTopNav() {
               </button>
               
               <div className="flex-1 flex justify-center mr-2">
-                <div className="relative font-display font-black text-[22px] text-brand flex flex-col leading-none items-center">
-                   <div className="absolute inset-0 bg-white/40 blur-[15px] rounded-full scale-[2] animate-pulse pointer-events-none mix-blend-screen" />
-                   <span className="relative z-10 drop-shadow-[0_0_10px_rgba(255,0,0,0.3)]">VELOCE</span>
-                </div>
+                <img
+                  src="/logo.png?v=3"
+                  alt="Veloce Wear"
+                  loading="lazy"
+                  className="h-12 w-auto object-contain scale-150 invert drop-shadow-sm"
+                />
               </div>
               
               <div className="flex items-center gap-4">
-                <button onClick={() => { setMenuOpen(false); openCart(); }} className="relative text-foreground active:scale-90 transition-transform">
+                <button onClick={() => { setMenuOpen(false); nav({ to: "/checkout" }); }} className="relative text-foreground active:scale-90 transition-transform">
                   <ShoppingBag className="h-6 w-6 stroke-[2]" />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f65c29] px-1 text-[9px] font-bold text-white">
@@ -601,7 +833,7 @@ export function MobileTopNav() {
                     {footballTeams.map(([t, logo]) => (
                       <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                         <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                          <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
                         </div>
                         <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
                       </Link>
@@ -610,9 +842,76 @@ export function MobileTopNav() {
                 )}
               </div>
               
-              <Link to="/shop/f1" onClick={() => setMenuOpen(false)} className="text-foreground font-bold text-[15px] tracking-wide">
-                Formula 1 Store
-              </Link>
+              <div className="flex flex-col gap-4">
+                <button onClick={() => setBasketballOpen(!basketballOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
+                  <span>Basketball Jerseys</span>
+                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${basketballOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {basketballOpen && (
+                  <div className="grid grid-cols-4 gap-3 pt-2">
+                    {basketballTeams.map(([t, logo]) => (
+                      <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                        </div>
+                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <button onClick={() => setCricketOpen(!cricketOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
+                  <span>Cricket Jerseys</span>
+                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${cricketOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {cricketOpen && (
+                  <div className="flex flex-col gap-3 pt-2">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1">Internationals</div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {cricketInternationalTeams.map(([t, logo]) => (
+                        <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                          </div>
+                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1 mt-2">IPL</div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {cricketIPLTeams.map(([t, logo]) => (
+                        <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                          </div>
+                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <button onClick={() => setF1Open(!f1Open)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
+                  <span>Formula 1 Store</span>
+                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${f1Open ? 'rotate-180' : ''}`} />
+                </button>
+                {f1Open && (
+                  <div className="grid grid-cols-4 gap-3 pt-2">
+                    {f1Teams.map(([t, logo]) => (
+                      <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                        </div>
+                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
               
               <Link to="/shop/worldcup" onClick={() => setMenuOpen(false)} className="text-foreground font-bold text-[15px] tracking-wide">
                 FIFA World Cup
@@ -622,25 +921,15 @@ export function MobileTopNav() {
                 Retro Jerseys
               </Link>
 
-              <button onClick={() => { setMenuOpen(false); setSpinOpen(true); }} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-2">
-                Fortune Spin <Gift className="h-4 w-4 text-[#f65c29]" />
+              <button onClick={() => { 
+                setMenuOpen(false); 
+                if (!userEmail) nav({ to: "/login" });
+                else setSpinOpen(true); 
+              }} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-2">
+                Lucky Wheel <Gift className="h-4 w-4 text-foreground" />
               </button>
 
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setZonesOpen(!zonesOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>Player/Driver Zones</span>
-                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${zonesOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {zonesOpen && (
-                  <div className="flex flex-col gap-4 pl-3 border-l-2 border-border/40 ml-1 mt-1">
-                    {ZONES.map(z => (
-                      <Link key={z.slug} to="/zone/$slug" params={{ slug: z.slug }} onClick={() => setMenuOpen(false)} className="text-muted-foreground text-sm font-semibold hover:text-foreground">
-                        {z.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+
             </div>
           </div>
         </div>

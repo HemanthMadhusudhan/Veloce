@@ -41,7 +41,7 @@ export function Picture({
         className={[imgClassName, className].filter(Boolean).join(" ")}
         loading={loading}
         decoding={decoding}
-        // @ts-expect-error non-standard but supported by Chromium/Safari
+        
         fetchPriority={fetchPriority}
         style={style}
       />
@@ -59,7 +59,7 @@ export function Picture({
         className={imgClassName}
         loading={loading}
         decoding={decoding}
-        // @ts-expect-error non-standard but supported by Chromium/Safari
+        
         fetchPriority={fetchPriority}
         style={style}
       />

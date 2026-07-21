@@ -5,16 +5,17 @@ export type Prize = {
   label: string;
   code: string;
   color: string;
+  textColor: string;
   weight: number;
 };
 
 const PRIZES: Prize[] = [
-  { label: "10% OFF", code: "VELOCE10", color: "#E51E4E", weight: 30 }, // 30% chance
-  { label: "20% OFF", code: "VELOCE20", color: "#222222", weight: 30 }, // 30% chance
-  { label: "30% OFF", code: "VELOCE30", color: "#E51E4E", weight: 5 },  // 5% chance
-  { label: "40% OFF", code: "VELOCE40", color: "#222222", weight: 1 },  // 1% chance
-  { label: "BUY 1 GET 1", code: "B2G1", color: "#E51E4E", weight: 14 }, // 14% chance
-  { label: "NO LUCK", code: "NONE", color: "#222222", weight: 20 },     // 20% chance
+  { label: "10% OFF", code: "VELOCE10", color: "#111111", textColor: "#FFFFFF", weight: 30 }, // 30% chance
+  { label: "20% OFF", code: "VELOCE20", color: "#FFFFFF", textColor: "#111111", weight: 30 }, // 30% chance
+  { label: "30% OFF", code: "VELOCE30", color: "#111111", textColor: "#FFFFFF", weight: 5 },  // 5% chance
+  { label: "40% OFF", code: "VELOCE40", color: "#FFFFFF", textColor: "#111111", weight: 1 },  // 1% chance
+  { label: "BUY 1 GET 1", code: "B2G1", color: "#111111", textColor: "#FFFFFF", weight: 14 }, // 14% chance
+  { label: "NO LUCK", code: "NONE", color: "#FFFFFF", textColor: "#111111", weight: 20 },     // 20% chance
 ];
 
 function canSpinToday(): boolean {
@@ -123,7 +124,7 @@ export function FortuneSpin({ open, onClose }: { open: boolean; onClose: () => v
         </button>
 
         <div className="text-center mb-8">
-          <h2 className="font-display text-3xl font-bold uppercase tracking-widest text-brand">Daily Spin</h2>
+          <h2 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">Lucky Wheel</h2>
           <p className="mt-2 text-xs text-muted-foreground">Spin the wheel to win a daily discount. Resets at 7 AM.</p>
         </div>
 
@@ -131,12 +132,12 @@ export function FortuneSpin({ open, onClose }: { open: boolean; onClose: () => v
         <div className="relative w-[280px] h-[280px] sm:w-[320px] sm:h-[320px] mb-8">
           {/* Pointer */}
           <div className="absolute -top-4 left-1/2 z-10 h-8 w-6 -translate-x-1/2 drop-shadow-xl">
-            <div className="h-0 w-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-white" />
+            <div className="h-0 w-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-[#111111]" />
           </div>
 
           {/* The Wheel */}
           <div 
-            className="w-full h-full rounded-full border-4 border-white shadow-[0_0_20px_rgba(229,30,78,0.3)] overflow-hidden transition-transform duration-[5000ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+            className="w-full h-full rounded-full border-[6px] border-[#111111] shadow-[0_0_30px_rgba(0,0,0,0.15)] overflow-hidden transition-transform duration-[5000ms] ease-[cubic-bezier(0.2,0.8,0.2,1)]"
             style={{ 
               transform: `rotate(${rotation}deg)`,
               background: `conic-gradient(from -30deg, 
@@ -158,8 +159,8 @@ export function FortuneSpin({ open, onClose }: { open: boolean; onClose: () => v
                     style={{ transform: `rotate(${angle}deg)` }}
                   >
                     <span 
-                      className="block text-center text-xs font-bold uppercase tracking-wider text-white"
-                      style={{ transform: 'rotate(0deg)' }}
+                      className="block text-center text-xs font-bold uppercase tracking-wider"
+                      style={{ transform: 'rotate(0deg)', color: p.textColor }}
                     >
                       {p.label}
                     </span>
@@ -169,8 +170,8 @@ export function FortuneSpin({ open, onClose }: { open: boolean; onClose: () => v
             </div>
             
             {/* Center dot */}
-            <div className="absolute top-1/2 left-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white bg-background z-20 flex items-center justify-center shadow-inner">
-              <Gift className="h-5 w-5 text-brand" />
+            <div className="absolute top-1/2 left-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#111111] bg-white z-20 flex items-center justify-center shadow-md">
+              <Gift className="h-5 w-5 text-[#111111]" />
             </div>
           </div>
         </div>

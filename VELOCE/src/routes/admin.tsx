@@ -22,8 +22,10 @@ import {
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { useCatalog } from "@/lib/catalog-store";
-import { CATEGORY_LABEL, ZONES, type Category, type Product, type Zone } from "@/lib/catalog";
+import { CATEGORY_LABEL, type Category, type Product } from "@/lib/catalog";
 import { DEFAULT_DROPS, useDrops, type Drop } from "@/lib/drops";
+import { uploadImage } from "@/lib/upload";
+import { formatOrderId } from "@/lib/format";
 import { formatINR } from "@/lib/format";
 import { useShop, type OrderStatus } from "@/lib/store";
 import {
@@ -41,9 +43,10 @@ import {
 } from "@/lib/admin-users.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { ImageCropper } from "@/components/ImageCropper";
+import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, allLogoEntries } from "@/lib/logos";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Veloce" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin — Veloce Wear" }, { name: "robots", content: "noindex" }] }),
   component: () => (
     <SiteChrome>
       <AdminGate />
@@ -63,7 +66,7 @@ function AdminGate() {
         </p>
         <Link
           to="/login"
-          className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-background"
+          className="mt-6 inline-block rounded-none bg-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white"
         >
           Sign in
         </Link>
@@ -90,7 +93,7 @@ function Admin() {
         </p>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-2 border-b border-border/50 pb-2">
+      <div className="mt-8 flex flex-wrap gap-2 border-b border-gray-300 pb-2">
         <TabBtn
           active={tab === "products"}
           onClick={() => setTab("products")}
@@ -177,7 +180,7 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] uppercase tracking-[0.22em] transition ${active ? "bg-foreground text-background" : "border border-border/60 text-muted-foreground hover:border-foreground hover:text-foreground"}`}
+      className={`inline-flex items-center gap-2 rounded-none px-6 py-3 text-[13px] font-bold uppercase tracking-widest transition ${active ? "bg-black text-white" : "border border-gray-300 text-black hover:border-black hover:bg-gray-50"}`}
     >
       {icon}
       {children}
@@ -212,31 +215,33 @@ function ProductsTab() {
     <>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search name or team"
-            className="w-64 rounded-full border border-border/70 bg-transparent py-2 pl-9 pr-4 text-xs outline-none focus:border-foreground"
+            className="w-80 rounded-none border border-gray-300 bg-white py-3 pl-12 pr-4 text-[14px] text-black outline-none focus:border-black transition-colors"
           />
         </div>
         <select
           value={cat}
           onChange={(e) => setCat(e.target.value as Category | "all")}
-          className="rounded-full border border-border/70 bg-transparent px-3 py-2 text-xs outline-none"
+          className="rounded-none border border-gray-300 bg-white px-4 py-3 text-[14px] text-black outline-none focus:border-black transition-colors"
         >
           <option value="all">All categories</option>
           <option value="football">Football</option>
           <option value="f1">Formula 1</option>
           <option value="worldcup">World Cup</option>
           <option value="retro">Retro</option>
+          <option value="basketball">Basketball</option>
+          <option value="cricket">Cricket</option>
         </select>
         <div className="ml-auto flex gap-2">
           <button
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-background"
+            className="inline-flex items-center gap-2 rounded-none bg-black px-6 py-3 text-[13px] font-bold uppercase tracking-widest text-white hover:bg-gray-900 transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" /> New
+            <Plus className="h-4 w-4" /> New
           </button>
         </div>
       </div>
@@ -251,9 +256,9 @@ function ProductsTab() {
         />
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border/50">
+      <div className="mt-6 overflow-x-auto rounded-none border border-gray-300">
         <table className="w-full min-w-[720px] text-sm">
-          <thead className="bg-card/40 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          <thead className="bg-gray-50 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3 text-left">Product</th>
               <th className="px-4 py-3 text-left">Category</th>
@@ -277,7 +282,7 @@ function ProductsTab() {
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">
                   {CATEGORY_LABEL[p.category]}
-                  {p.zone ? ` · Zone` : ""}
+                  
                   {p.series ? ` · Legends` : ""}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -285,7 +290,7 @@ function ProductsTab() {
                     type="number"
                     value={p.price}
                     onChange={(e) => updateProduct(p.id, { price: Number(e.target.value) })}
-                    className="w-24 rounded border border-border/60 bg-transparent px-2 py-1 text-right font-mono text-xs"
+                    className="w-24 rounded border border-gray-300 bg-transparent px-2 py-1 text-right font-mono text-xs"
                   />
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -293,7 +298,7 @@ function ProductsTab() {
                     type="number"
                     value={p.stock}
                     onChange={(e) => updateProduct(p.id, { stock: Number(e.target.value) })}
-                    className={`w-20 rounded border bg-transparent px-2 py-1 text-right font-mono text-xs ${p.stock < 10 ? "border-brand text-brand" : "border-border/60"}`}
+                    className={`w-20 rounded border bg-transparent px-2 py-1 text-right font-mono text-xs ${p.stock < 10 ? "border-brand text-brand" : "border-gray-300"}`}
                   />
                 </td>
                 <td className="px-4 py-3">
@@ -301,14 +306,14 @@ function ProductsTab() {
                     value={p.badge ?? ""}
                     onChange={(e) => updateProduct(p.id, { badge: e.target.value || undefined })}
                     placeholder="—"
-                    className="w-24 rounded border border-border/60 bg-transparent px-2 py-1 text-xs"
+                    className="w-24 rounded border border-gray-300 bg-transparent px-2 py-1 text-xs"
                   />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setEditing(p.id)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="text-muted-foreground hover:text-black"
                       aria-label="Edit"
                     >
                       <Pencil className="h-4 w-4" />
@@ -395,14 +400,14 @@ function EditProductDrawer({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="h-full w-full max-w-lg overflow-y-auto border-l border-border/50 bg-background p-6 shadow-2xl"
+        className="h-full w-full max-w-lg overflow-y-auto border-l border-gray-300 bg-background p-6 shadow-2xl"
       >
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[10px] uppercase tracking-[0.28em] text-brand">Editing</div>
             <div className="font-display text-xl font-semibold">{product.name}</div>
           </div>
-          <button onClick={onClose} className="rounded-full border border-border/60 p-2">
+          <button onClick={onClose} className="rounded-none border border-gray-300 p-2">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -416,10 +421,10 @@ function EditProductDrawer({
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Team">
-              <input
+              <TeamCombobox
                 value={f.team}
-                onChange={(e) => setF({ ...f, team: e.target.value })}
-                className={inputCls}
+                onChange={(v) => setF({ ...f, team: v })}
+                category={product.category}
               />
             </Field>
             <Field label="Tag">
@@ -515,7 +520,7 @@ function EditProductDrawer({
               onChange={(e) => setF({ ...f, images: e.target.value })}
               className={inputCls + " font-mono text-xs"}
             />
-            <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">
+            <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-none border border-gray-300 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-black">
               Upload image
               <input
                 type="file"
@@ -563,7 +568,7 @@ function EditProductDrawer({
           )}
         </div>
         {err && (
-          <div className="mt-4 rounded-lg border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
+          <div className="mt-4 rounded-none border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
             {err}
           </div>
         )}
@@ -605,13 +610,13 @@ function EditProductDrawer({
                 setLoading(false);
               }
             }}
-            className="flex-1 rounded-full bg-foreground py-3 text-xs font-semibold uppercase tracking-[0.24em] text-background disabled:opacity-50"
+            className="flex-1 rounded-none bg-black py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white disabled:opacity-50"
           >
             {loading ? "Saving..." : "Save changes"}
           </button>
           <button
             onClick={onClose}
-            className="rounded-full border border-border/70 px-5 py-3 text-xs uppercase tracking-[0.24em]"
+            className="rounded-none border border-gray-300 px-5 py-3 text-xs uppercase tracking-[0.24em]"
           >
             Cancel
           </button>
@@ -629,7 +634,7 @@ function EditProductDrawer({
 }
 
 const inputCls =
-  "w-full rounded border border-border/60 bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground";
+  "w-full rounded-none border border-gray-300 bg-white px-4 py-3 text-[14px] text-black outline-none focus:border-black transition-colors";
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -654,7 +659,7 @@ function SiteImagesTab() {
         </p>
         <button
           onClick={reset}
-          className="inline-flex items-center gap-2 rounded-full border border-border/70 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hover:text-brand"
+          className="inline-flex items-center gap-2 rounded-none border border-gray-300 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hover:text-brand"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Reset all
         </button>
@@ -741,9 +746,9 @@ function SiteImageRow({
   };
 
   return (
-    <div className="rounded-2xl border border-border/50 p-4">
+    <div className="rounded-none border border-gray-300 p-4">
       <div className="flex items-start gap-4">
-        <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg border border-border/40 bg-surface">
+        <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-none border border-border/40 bg-surface">
           {isVideoUrl(current) ? (
             <video
               src={current}
@@ -765,7 +770,7 @@ function SiteImageRow({
           <div className="flex items-center gap-2">
             <div className="font-display text-sm font-semibold">{label}</div>
             {overridden && (
-              <span className="rounded-full border border-brand/50 bg-brand/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-brand">
+              <span className="rounded-none border border-brand/50 bg-brand/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-brand">
                 Custom
               </span>
             )}
@@ -784,7 +789,7 @@ function SiteImageRow({
         {uploadError && <div className="text-xs text-red-400">{uploadError}</div>}
         <div className="flex flex-wrap items-center gap-2">
           <label
-            className={`inline-flex cursor-pointer items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground ${uploading ? "pointer-events-none opacity-50" : ""}`}
+            className={`inline-flex cursor-pointer items-center gap-2 rounded-none border border-gray-300 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-black ${uploading ? "pointer-events-none opacity-50" : ""}`}
           >
             {uploading ? "Uploading…" : "Upload file"}
             <input
@@ -797,7 +802,7 @@ function SiteImageRow({
           </label>
           <button
             onClick={() => onSave(draft || null)}
-            className="rounded-full bg-foreground px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-background"
+            className="rounded-none bg-black px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-white"
           >
             Save
           </button>
@@ -807,7 +812,7 @@ function SiteImageRow({
               onSave(null);
             }}
             disabled={!overridden}
-            className="rounded-full border border-border/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground disabled:opacity-40"
+            className="rounded-none border border-gray-300 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground disabled:opacity-40"
           >
             Reset
           </button>
@@ -815,7 +820,7 @@ function SiteImageRow({
             href={defaultUrl}
             target="_blank"
             rel="noreferrer"
-            className="ml-auto text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+            className="ml-auto text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-black"
           >
             Default ↗
           </a>
@@ -872,7 +877,7 @@ function OrdersTab() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] ${filter === s ? "border-foreground bg-foreground text-background" : "border-border/60 text-muted-foreground"}`}
+            className={`rounded-none border px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] ${filter === s ? "border-black bg-black text-white" : "border-gray-300 text-muted-foreground"}`}
           >
             {s} · {stats[s]}
           </button>
@@ -880,20 +885,20 @@ function OrdersTab() {
       </div>
 
       {list.length === 0 && (
-        <div className="mt-10 rounded-2xl border border-dashed border-border/50 p-10 text-center text-sm text-muted-foreground">
+        <div className="mt-10 rounded-none border border-dashed border-gray-300 p-10 text-center text-sm text-muted-foreground">
           No orders yet. Place one from the storefront and it will appear here.
         </div>
       )}
 
       <div className="mt-6 grid gap-3">
         {list.map((o) => (
-          <div key={o.id} className="rounded-2xl border border-border/50 p-4 sm:p-5">
+          <div key={o.id} className="rounded-none border border-gray-300 p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs">{o.id}</span>
+                  <span className="font-mono text-xs">{formatOrderId(o.id)}</span>
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[0.22em] ${STATUS_STYLE[o.status]}`}
+                    className={`rounded-none border px-2 py-0.5 text-[9px] uppercase tracking-[0.22em] ${STATUS_STYLE[o.status]}`}
                   >
                     {o.status}
                   </span>
@@ -910,7 +915,7 @@ function OrdersTab() {
                 <select
                   value={o.status}
                   onChange={(e) => updateOrderStatus(o.id, e.target.value as OrderStatus)}
-                  className="rounded-full border border-border/60 bg-transparent px-3 py-1.5 text-[11px] uppercase tracking-[0.2em]"
+                  className="rounded-none border border-gray-300 bg-transparent px-3 py-1.5 text-[11px] uppercase tracking-[0.2em]"
                 >
                   <option value="awaiting_payment">Awaiting payment</option>
                   <option value="pending">Pending</option>
@@ -920,7 +925,7 @@ function OrdersTab() {
                   <option value="cancelled">Cancelled</option>
                 </select>
                 <button
-                  onClick={() => confirm(`Delete order ${o.id}?`) && removeOrder(o.id)}
+                  onClick={() => confirm(`Delete order ${formatOrderId(o.id)}?`) && removeOrder(o.id)}
                   className="text-muted-foreground hover:text-brand"
                   aria-label="Delete order"
                 >
@@ -976,7 +981,7 @@ function OrdersTab() {
               </div>
             </div>
             {o.payment?.method === "upi" && (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/40 bg-card/40 px-3 py-2 text-[11px]">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-none border border-border/40 bg-gray-50 px-3 py-2 text-[11px]">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                   <span className="uppercase tracking-[0.22em] text-muted-foreground">
                     {o.payment.mode === "cod" ? "COD (₹80 Prepaid)" : "UPI"}
@@ -1004,13 +1009,13 @@ function OrdersTab() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => updateOrderStatus(o.id, "processing")}
-                      className="rounded-full border border-emerald-500/50 bg-emerald-500/15 px-3 py-1 uppercase tracking-[0.2em] text-emerald-300 hover:bg-emerald-500/25"
+                      className="rounded-none border border-emerald-500/50 bg-emerald-500/15 px-3 py-1 uppercase tracking-[0.2em] text-emerald-300 hover:bg-emerald-500/25"
                     >
                       Mark paid
                     </button>
                     <button
                       onClick={() => updateOrderStatus(o.id, "cancelled")}
-                      className="rounded-full border border-rose-500/50 bg-rose-500/10 px-3 py-1 uppercase tracking-[0.2em] text-rose-300 hover:bg-rose-500/20"
+                      className="rounded-none border border-rose-500/50 bg-rose-500/10 px-3 py-1 uppercase tracking-[0.2em] text-rose-300 hover:bg-rose-500/20"
                     >
                       Reject
                     </button>
@@ -1022,6 +1027,58 @@ function OrdersTab() {
         ))}
       </div>
     </>
+  );
+}
+
+function TeamCombobox({ value, onChange, category }: { value: string, onChange: (v: string) => void, category: Category }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  
+  const options = useMemo(() => {
+    let list = allLogoEntries;
+    if (category === "f1") list = f1Teams;
+    else if (category === "basketball") list = basketballTeams;
+    else if (category === "cricket") list = cricketTeams;
+    else if (category === "football" || category === "worldcup" || category === "retro") list = footballTeams;
+
+    if (!search) return list;
+    return list.filter(([t]) => t.toLowerCase().includes(search.toLowerCase()));
+  }, [category, search]);
+
+  return (
+    <div className="relative w-full">
+      <input
+        type="text"
+        value={open ? search : value}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => { setOpen(true); setSearch(value); }}
+        onBlur={() => setTimeout(() => setOpen(false), 200)}
+        placeholder="Type or select a team..."
+        className="w-full rounded-none border border-gray-300 bg-white px-4 py-3 text-[14px] text-black outline-none focus:border-black transition-colors"
+      />
+      {open && (
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-none border border-gray-300 bg-white shadow-lg">
+          {options.length === 0 ? (
+            <div className="p-4 text-[13px] text-gray-500 text-center">No matching logos. You can still use this custom name.</div>
+          ) : (
+            options.map(([t, logo]) => (
+              <div
+                key={t}
+                onMouseDown={(e) => { e.preventDefault(); onChange(t); setOpen(false); }}
+                className="flex cursor-pointer items-center gap-3 px-4 py-3 text-[14px] hover:bg-gray-50 border-b border-gray-100 last:border-0"
+              >
+                <img src={logo} alt="" className="h-6 w-6 object-contain" />
+                <span>{t}</span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1040,7 +1097,7 @@ function NewProductRow({
     team: "",
     driver: "",
     category: "football" as Category,
-    zone: "" as "" | Zone,
+    
     series: "" as "" | "legends",
     price: 5000,
     compareAt: 0,
@@ -1052,8 +1109,8 @@ function NewProductRow({
     colors: "Default",
     sizes: "S, M, L, XL",
     images: [] as string[],
-    rating: 4.8,
-    reviews: 124,
+    rating: Number((4.0 + Math.random() * 1).toFixed(1)),
+    reviews: Math.floor(Math.random() * 200) + 10,
   });
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
 
@@ -1083,7 +1140,7 @@ function NewProductRow({
       .replace(/(^-|-$)/g, "");
 
   return (
-    <div className="mt-4 rounded-2xl border border-brand/40 bg-card/40 p-5">
+    <div className="mt-4 rounded-none border border-brand/40 bg-gray-50 p-5">
       <div className="mb-3 text-[10px] uppercase tracking-[0.24em] text-brand">New product</div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="ID (slug)">
@@ -1103,10 +1160,10 @@ function NewProductRow({
           />
         </Field>
         <Field label="Team">
-          <input
+          <TeamCombobox
             value={f.team}
-            onChange={(e) => setF({ ...f, team: e.target.value })}
-            className={inputCls}
+            onChange={(v) => setF({ ...f, team: v })}
+            category={f.category}
           />
         </Field>
         <Field label="Category">
@@ -1119,22 +1176,11 @@ function NewProductRow({
             <option value="f1">Formula 1</option>
             <option value="worldcup">World Cup</option>
             <option value="retro">Retro</option>
+            <option value="basketball">Basketball</option>
+            <option value="cricket">Cricket</option>
           </select>
         </Field>
-        <Field label="Zone (optional)">
-          <select
-            value={f.zone}
-            onChange={(e) => setF({ ...f, zone: e.target.value as "" | Zone })}
-            className={inputCls}
-          >
-            <option value="">— None —</option>
-            {ZONES.map((z) => (
-              <option key={z.slug} value={z.slug}>
-                {z.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+        
         <Field label="Special edition">
           <select
             value={f.series}
@@ -1253,13 +1299,13 @@ function NewProductRow({
               <img src={u} alt="" className="h-20 w-16 rounded object-cover" />
               <button
                 onClick={() => removeImg(i)}
-                className="absolute -right-1 -top-1 rounded-full bg-background/90 p-0.5 shadow"
+                className="absolute -right-1 -top-1 rounded-none bg-background/90 p-0.5 shadow"
               >
                 <X className="h-3 w-3" />
               </button>
             </div>
           ))}
-          <label className="flex h-20 w-16 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-border/60 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-foreground hover:text-foreground">
+          <label className="flex h-20 w-16 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black">
             <Plus className="h-4 w-4" /> Upload
             <input
               type="file"
@@ -1274,7 +1320,7 @@ function NewProductRow({
           <button
             type="button"
             onClick={addUrl}
-            className="flex h-20 w-16 flex-col items-center justify-center gap-1 rounded border border-dashed border-border/60 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-foreground hover:text-foreground"
+            className="flex h-20 w-16 flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black"
           >
             <ImageIcon className="h-4 w-4" /> URL
           </button>
@@ -1288,7 +1334,7 @@ function NewProductRow({
         />
       )}
       {err && (
-        <div className="mt-3 rounded-lg border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
+        <div className="mt-3 rounded-none border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
           {err}
         </div>
       )}
@@ -1306,7 +1352,7 @@ function NewProductRow({
                 id,
                 name: f.name,
                 category: f.category,
-                zone: f.zone || undefined,
+                
                 series: f.series || undefined,
                 team: f.team,
                 driver: f.driver || undefined,
@@ -1335,13 +1381,13 @@ function NewProductRow({
               setLoading(false);
             }
           }}
-          className="rounded-full bg-foreground px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-background disabled:opacity-50"
+          className="rounded-none bg-black px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-white disabled:opacity-50"
         >
           {loading ? "Saving..." : "Save product"}
         </button>
         <button
           onClick={onCancel}
-          className="rounded-full border border-border/70 px-5 py-2 text-[11px] uppercase tracking-[0.22em]"
+          className="rounded-none border border-gray-300 px-5 py-2 text-[11px] uppercase tracking-[0.22em]"
         >
           Cancel
         </button>
@@ -1391,7 +1437,7 @@ function InventoryTab() {
   return (
     <>
       {low.length > 0 && (
-        <div className="mb-6 flex items-start gap-3 rounded-xl border border-brand/40 bg-brand/10 p-4 text-xs">
+        <div className="mb-6 flex items-start gap-3 rounded-none border border-brand/40 bg-brand/10 p-4 text-xs">
           <AlertCircle className="h-4 w-4 text-brand" />
           <div>
             <b className="text-brand">Low stock alert · {low.length} items</b>
@@ -1403,7 +1449,7 @@ function InventoryTab() {
         {products.map((p) => (
           <div
             key={p.id}
-            className={`rounded-2xl border p-4 ${p.stock < 10 ? "border-brand/60" : "border-border/50"}`}
+            className={`rounded-none border p-4 ${p.stock < 10 ? "border-brand/60" : "border-gray-300"}`}
           >
             <div className="flex items-start gap-3">
               <img src={p.images[0]} alt="" className="h-14 w-11 rounded object-cover" />
@@ -1416,7 +1462,7 @@ function InventoryTab() {
               <div className="text-right">
                 <div className="font-mono text-xs">{formatINR(p.price)}</div>
                 <div className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Total: <span className="font-mono text-foreground">{p.stock}</span>
+                  Total: <span className="font-mono text-black">{p.stock}</span>
                 </div>
               </div>
             </div>
@@ -1431,10 +1477,10 @@ function InventoryTab() {
                     return (
                       <div
                         key={size}
-                        className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-1.5"
+                        className="flex items-center justify-between rounded-none border border-border/40 px-3 py-1.5"
                       >
                         <span className="text-xs font-medium w-10">{size}</span>
-                        <div className="inline-flex items-center rounded-full border border-border/70">
+                        <div className="inline-flex items-center rounded-none border border-gray-300">
                           <button
                             onClick={() => updateSizeStock(p, size, sizeVal - 1)}
                             className="px-2.5 py-0.5 text-sm"
@@ -1454,7 +1500,7 @@ function InventoryTab() {
                           </button>
                           <button
                             onClick={() => updateSizeStock(p, size, sizeVal + 10)}
-                            className="border-l border-border/70 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em]"
+                            className="border-l border-gray-300 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em]"
                           >
                             +10
                           </button>
@@ -1469,7 +1515,7 @@ function InventoryTab() {
                 <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Stock
                 </div>
-                <div className="inline-flex items-center rounded-full border border-border/70">
+                <div className="inline-flex items-center rounded-none border border-gray-300">
                   <button
                     onClick={() =>
                       updateProduct(p.id, { stock: Math.max(0, p.stock - 1) }).catch((e) =>
@@ -1493,7 +1539,7 @@ function InventoryTab() {
                     onClick={() =>
                       updateProduct(p.id, { stock: p.stock + 10 }).catch((e) => alert(e.message))
                     }
-                    className="border-l border-border/70 px-3 py-1 text-[10px] uppercase tracking-[0.2em]"
+                    className="border-l border-gray-300 px-3 py-1 text-[10px] uppercase tracking-[0.2em]"
                   >
                     +10
                   </button>
@@ -1510,14 +1556,14 @@ function InventoryTab() {
 /* ---------- CATEGORIES TAB ---------- */
 function CategoriesTab() {
   const { products } = useCatalog();
-  const cats: Category[] = ["football", "f1", "worldcup", "retro"];
+  const cats: Category[] = ["football", "f1", "basketball", "cricket", "worldcup", "retro"];
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {cats.map((c) => {
         const items = products.filter((p) => p.category === c);
         const stock = items.reduce((a, b) => a + b.stock, 0);
         return (
-          <div key={c} className="rounded-2xl border border-border/50 p-6">
+          <div key={c} className="rounded-none border border-gray-300 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.24em] text-brand">Category</div>
@@ -1586,7 +1632,7 @@ function DropsTab() {
       <div className="mb-4 flex justify-end">
         <button
           onClick={add}
-          className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-background"
+          className="inline-flex items-center gap-2 rounded-none bg-black px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-white"
         >
           <Plus className="h-3.5 w-3.5" /> New drop
         </button>
@@ -1600,7 +1646,7 @@ function DropsTab() {
           return (
             <div
               key={d.id}
-              className="grid gap-4 rounded-2xl border border-border/50 p-5 md:grid-cols-[1fr_auto]"
+              className="grid gap-4 rounded-none border border-gray-300 p-5 md:grid-cols-[1fr_auto]"
             >
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
@@ -1610,7 +1656,7 @@ function DropsTab() {
                   <input
                     value={d.name}
                     onChange={(e) => update(d.id, { name: e.target.value })}
-                    className="mt-1 w-full rounded border border-border/60 bg-transparent px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
@@ -1620,7 +1666,7 @@ function DropsTab() {
                   <input
                     value={d.eyebrow}
                     onChange={(e) => update(d.id, { eyebrow: e.target.value })}
-                    className="mt-1 w-full rounded border border-border/60 bg-transparent px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
@@ -1630,7 +1676,7 @@ function DropsTab() {
                   <select
                     value={d.productId}
                     onChange={(e) => update(d.id, { productId: e.target.value })}
-                    className="mt-1 w-full rounded border border-border/60 bg-transparent px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm"
                   >
                     {products.map((x) => (
                       <option key={x.id} value={x.id}>
@@ -1647,13 +1693,13 @@ function DropsTab() {
                     type="datetime-local"
                     value={toLocalInput(d.endsAt)}
                     onChange={(e) => update(d.id, { endsAt: new Date(e.target.value).getTime() })}
-                    className="mt-1 w-full rounded border border-border/60 bg-transparent px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded border border-gray-300 bg-transparent px-3 py-2 text-sm"
                   />
                 </div>
                 <div className="sm:col-span-2 text-[11px] text-muted-foreground">
                   {p ? (
                     <>
-                      Preview: <b className="text-foreground">{p.name}</b> · {formatINR(p.price)} ·{" "}
+                      Preview: <b className="text-black">{p.name}</b> · {formatINR(p.price)} ·{" "}
                       {days}d {hours}h remaining
                     </>
                   ) : (
@@ -1664,7 +1710,7 @@ function DropsTab() {
               <div className="flex md:flex-col items-start gap-2">
                 <button
                   onClick={() => remove(d.id)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-brand"
+                  className="inline-flex items-center gap-2 rounded-none border border-gray-300 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-brand"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
                 </button>
@@ -1749,19 +1795,19 @@ function UsersTab() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search email or name"
-            className="w-72 rounded-full border border-border/70 bg-transparent py-2 pl-9 pr-4 text-xs outline-none focus:border-foreground"
+            className="w-72 rounded-none border border-gray-300 bg-transparent py-2 pl-9 pr-4 text-xs outline-none focus:border-black"
           />
         </div>
         <button
           onClick={reload}
-          className="ml-auto inline-flex items-center gap-2 rounded-full border border-border/70 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hover:text-foreground"
+          className="ml-auto inline-flex items-center gap-2 rounded-none border border-gray-300 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hover:text-black"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Refresh
         </button>
       </div>
 
       {err && (
-        <div className="mt-4 rounded-lg border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
+        <div className="mt-4 rounded-none border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
           {err}
         </div>
       )}
@@ -1771,9 +1817,9 @@ function UsersTab() {
       )}
 
       {users !== null && (
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-border/50">
+        <div className="mt-6 overflow-x-auto rounded-none border border-gray-300">
           <table className="w-full min-w-[900px] text-sm">
-            <thead className="bg-card/40 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <thead className="bg-gray-50 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left">User</th>
                 <th className="px-4 py-3 text-left">Provider</th>
@@ -1807,7 +1853,7 @@ function UsersTab() {
                     </td>
                     <td className="px-4 py-3">
                       {isAdmin ? (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-brand/50 bg-brand/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-brand">
+                        <span className="inline-flex items-center gap-1 rounded-none border border-brand/50 bg-brand/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-brand">
                           <Shield className="h-3 w-3" />
                           Admin
                         </span>
@@ -1817,7 +1863,7 @@ function UsersTab() {
                         </span>
                       )}
                       {u.disabled && (
-                        <span className="ml-2 rounded-full border border-rose-500/50 bg-rose-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-rose-400">
+                        <span className="ml-2 rounded-none border border-rose-500/50 bg-rose-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-rose-400">
                           Disabled
                         </span>
                       )}
@@ -1839,7 +1885,7 @@ function UsersTab() {
                         <button
                           disabled={b}
                           onClick={() => setEditing(u)}
-                          className="text-muted-foreground hover:text-foreground disabled:opacity-40"
+                          className="text-muted-foreground hover:text-black disabled:opacity-40"
                           aria-label="Edit"
                         >
                           <Pencil className="h-4 w-4" />
@@ -1950,7 +1996,7 @@ function EditUserDrawer({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="h-full w-full max-w-md overflow-y-auto border-l border-border/50 bg-background p-6 shadow-2xl"
+        className="h-full w-full max-w-md overflow-y-auto border-l border-gray-300 bg-background p-6 shadow-2xl"
       >
         <div className="flex items-center justify-between">
           <div>
@@ -1959,7 +2005,7 @@ function EditUserDrawer({
             </div>
             <div className="font-display text-lg font-semibold">{user.email}</div>
           </div>
-          <button onClick={onClose} className="rounded-full border border-border/60 p-2">
+          <button onClick={onClose} className="rounded-none border border-gray-300 p-2">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -2012,13 +2058,13 @@ function EditUserDrawer({
         <div className="mt-6 flex gap-2">
           <button
             onClick={() => onSave(f)}
-            className="flex-1 rounded-full bg-foreground py-3 text-xs font-semibold uppercase tracking-[0.24em] text-background"
+            className="flex-1 rounded-none bg-black py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white"
           >
             Save changes
           </button>
           <button
             onClick={onClose}
-            className="rounded-full border border-border/70 px-5 py-3 text-xs uppercase tracking-[0.24em]"
+            className="rounded-none border border-gray-300 px-5 py-3 text-xs uppercase tracking-[0.24em]"
           >
             Cancel
           </button>
@@ -2043,16 +2089,16 @@ function HotSellingTab() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <div className="rounded-2xl border border-border/50 p-6">
+      <div className="rounded-none border border-gray-300 p-6">
         <h2 className="font-display text-xl font-bold">Current Hot Selling Kits</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          These appear in the mobile app carousel (maximum 7).
+          These appear in the mobile app carousel (maximum 15).
         </p>
         <div className="mt-4 space-y-2">
           {selectedProducts.map((p, i) => (
             <div
               key={p.id}
-              className="flex items-center justify-between rounded-xl border border-border/40 p-2 bg-card/40"
+              className="flex items-center justify-between rounded-none border border-border/40 p-2 bg-gray-50"
             >
               <div className="flex items-center gap-3 text-sm">
                 <span className="font-mono text-xs text-muted-foreground w-4">{i + 1}.</span>
@@ -2061,35 +2107,35 @@ function HotSellingTab() {
               </div>
               <button
                 onClick={() => setHotSellingIds(hotSellingIds.filter((id) => id !== p.id))}
-                className="rounded-full bg-brand/10 p-2 text-brand hover:bg-brand/20 transition-colors"
+                className="rounded-none bg-brand/10 p-2 text-brand hover:bg-brand/20 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
           {selectedProducts.length === 0 && (
-            <div className="rounded-xl border border-dashed border-border/50 p-6 text-center text-xs text-muted-foreground">
+            <div className="rounded-none border border-dashed border-gray-300 p-6 text-center text-xs text-muted-foreground">
               No kits selected. Default logic will be used.
             </div>
           )}
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border/50 p-6">
+      <div className="rounded-none border border-gray-300 p-6">
         <h2 className="font-display text-xl font-bold">Add Kits</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Select kits to feature on the homepage.
         </p>
-        {selectedProducts.length >= 7 ? (
+        {selectedProducts.length >= 15 ? (
           <div className="mt-4 rounded border border-brand/50 bg-brand/10 p-3 text-xs text-brand">
-            You have reached the maximum of 7 featured kits. Remove some to add others.
+            You have reached the maximum of 15 featured kits. Remove some to add others.
           </div>
         ) : (
           <div className="mt-4 h-[400px] overflow-y-auto pr-2 space-y-2">
             {availableProducts.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center justify-between rounded-xl border border-border/40 p-2"
+                className="flex items-center justify-between rounded-none border border-border/40 p-2"
               >
                 <div className="flex items-center gap-3 text-sm">
                   {p.images[0] && (
@@ -2102,7 +2148,7 @@ function HotSellingTab() {
                 </div>
                 <button
                   onClick={() => setHotSellingIds([...hotSellingIds, p.id])}
-                  className="rounded-full bg-foreground px-3 py-1 text-[10px] uppercase tracking-wider text-background hover:bg-foreground/80 transition-colors"
+                  className="rounded-none bg-black px-3 py-1 text-[10px] uppercase tracking-wider text-white hover:bg-black/80 transition-colors"
                 >
                   Add
                 </button>

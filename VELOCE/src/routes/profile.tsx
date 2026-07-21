@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useShop } from "@/lib/store";
+import { formatOrderId } from "@/lib/format";
 import { useCatalog } from "@/lib/catalog-store";
+import { SiteChrome } from "@/components/chrome";
 import {
   MapPin,
   Package,
@@ -12,12 +14,19 @@ import {
   Phone,
   Save,
   ArrowLeft,
+  Heart,
+  ClipboardList,
+  SlidersHorizontal
 } from "lucide-react";
 import { type AppUser } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/profile")({
-  head: () => ({ meta: [{ title: "My Account — Veloce" }] }),
-  component: ProfilePage,
+  head: () => ({ meta: [{ title: "My Account — Veloce Wear" }] }),
+  component: () => (
+    <SiteChrome>
+      <ProfilePage />
+    </SiteChrome>
+  ),
 });
 
 type Address = {
@@ -29,7 +38,7 @@ type Address = {
   state: string;
   pincode: string;
 };
-const ADDR_KEY = "veloce.profile.address.v1";
+const ADDR_KEY = "veloce wear.profile.address.v1";
 const DEFAULT_ADDR: Address = {
   name: "",
   phone: "",
@@ -44,9 +53,13 @@ function ProfilePage() {
   const nav = useNavigate();
   const { userEmail, signOut, orders, profile, updateProfile } = useShop();
   const { getById } = useCatalog();
-  const [tab, setTab] = useState<"orders" | "address" | "support">("orders");
+  const [tab, setTab] = useState<"orders" | "address" | "support" | "menu" | "overview" | "settings">(
+    typeof window !== "undefined" && window.innerWidth < 640 ? "menu" : "orders"
+  );
   const [addr, setAddr] = useState<Address>(DEFAULT_ADDR);
   const [saved, setSaved] = useState(false);
+  const [viewingOrder, setViewingOrder] = useState<any>(null);
+  const firstName = profile?.fullName?.split(" ")[0] || (addr.name ? addr.name.split(" ")[0] : null) || "User";
 
   useEffect(() => {
     if (!userEmail) nav({ to: "/login", replace: true });
@@ -74,7 +87,7 @@ function ProfilePage() {
   if (!userEmail) return null;
 
   const myOrders = orders.filter(
-    (o) => !o.customer.email || o.customer.email.toLowerCase() === userEmail.toLowerCase(),
+    (o) => !o.customer?.email || o.customer.email.toLowerCase() === userEmail.toLowerCase(),
   );
 
   const saveAddress = async () => {
@@ -104,6 +117,8 @@ function ProfilePage() {
   };
 
   return (
+    <>
+    <div className="hidden">
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-20">
       {/* Header section with glassmorphic banner */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-surface/30 p-4 sm:p-12 mb-4 sm:mb-8 backdrop-blur-md">
@@ -117,7 +132,7 @@ function ProfilePage() {
               <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Back to Store
             </button>
             <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.3em] text-brand font-semibold mb-2">
-              Veloce Member
+              Veloce Wear Member
             </div>
             <h1 className="font-display text-2xl sm:text-5xl font-bold tracking-tight text-foreground drop-shadow-sm">
               My Account
@@ -194,7 +209,7 @@ function ProfilePage() {
                       <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                         <div className="min-w-0">
                           <div className="font-mono text-[9px] sm:text-xs text-muted-foreground truncate">
-                            {o.id}
+                            {formatOrderId(o.id)}
                           </div>
                           <div className="text-[11px] sm:text-sm">
                             {new Date(o.createdAt).toLocaleString()}
@@ -205,13 +220,14 @@ function ProfilePage() {
                             {o.status}
                           </span>
                           <div className="font-display text-sm sm:text-lg font-semibold">
-                            ₹{o.total.toLocaleString("en-IN")}
+                            ₹{(o.total || 0).toLocaleString("en-IN")}
                           </div>
                         </div>
                       </div>
                       <div className="mt-2 sm:mt-3 divide-y divide-border/40 border-t border-border/40">
-                        {o.items.map((it, i) => {
-                          const p = getById(it.id);
+                        {(o.items || []).map((it, i) => {
+                          if (!it) return null;
+                          const p = it.id ? getById(it.id) : null;
                           return (
                             <div
                               key={i}
@@ -219,15 +235,15 @@ function ProfilePage() {
                             >
                               <div className="min-w-0 flex-1 pr-2">
                                 <div className="truncate font-medium text-[11px] sm:text-sm">
-                                  {p?.name ?? it.id}
+                                  {p?.name ?? it?.id ?? "Unknown Item"}
                                 </div>
                                 <div className="text-[10px] sm:text-xs text-muted-foreground">
-                                  {it.size} · {it.color} · Qty {it.qty}
+                                  {it?.size ?? "N/A"} · {it?.color ?? "Default"} · Qty {it?.qty ?? 1}
                                 </div>
                               </div>
                               {p && (
                                 <div className="text-[11px] sm:text-sm shrink-0 ml-2">
-                                  ₹{(p.price * it.qty).toLocaleString("en-IN")}
+                                  ₹{(p.price * (it?.qty ?? 1)).toLocaleString("en-IN")}
                                 </div>
                               )}
                             </div>
@@ -349,6 +365,25 @@ function ProfilePage() {
       </div>
     </div>
   );
+    </div>
+    <div className="block mx-auto max-w-2xl sm:shadow-2xl sm:border sm:border-border/20 sm:my-8 overflow-hidden sm:rounded-xl bg-white sm:min-h-0 min-h-screen">
+      <PumaMobileProfile 
+        userEmail={userEmail} 
+        profile={profile} 
+        handleLogout={handleLogout} 
+        tab={tab} 
+        setTab={setTab} 
+        addr={addr} 
+        setAddr={setAddr} 
+        saveAddress={saveAddress} 
+        saved={saved} 
+        myOrders={orders} 
+        firstName={firstName}
+        getById={getById}
+      />
+    </div>
+    </>
+  );
 }
 
 function TabBtn({
@@ -401,5 +436,345 @@ function Input({
         className="w-full min-w-0 rounded-lg border border-border/70 bg-transparent px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm outline-none focus:border-foreground"
       />
     </label>
+  );
+}
+
+function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr, setAddr, saveAddress, saved, myOrders, firstName, getById }: any) {
+  const [viewingOrder, setViewingOrder] = useState<any>(null);
+  if (tab === "menu") {
+    return (
+      <div className="flex flex-col bg-[#f4f4f4] text-black font-sans pb-8">
+        <div className="bg-white p-6 pt-8 border-b border-gray-200">
+          <h1 className="text-[20px] font-bold text-black tracking-tight">Hello, {firstName}</h1>
+        </div>
+        
+        <div className="bg-[#f4f4f4] flex flex-col mt-4">
+          <button onClick={() => setTab("overview")} className="flex items-center p-4 px-6 active:bg-gray-200 transition-colors">
+            <UserIcon className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
+            <div className="text-[14px] font-bold text-black">
+               Account Overview
+            </div>
+          </button>
+          
+          <button onClick={() => setTab("orders")} className="flex items-center p-4 px-6 active:bg-gray-200 transition-colors">
+            <Package className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
+            <div className="text-[14px] font-bold text-black">
+               My Orders
+            </div>
+          </button>
+          
+          <Link to="/wishlist" className="flex items-center p-4 px-6 active:bg-gray-200 transition-colors">
+            <Heart className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
+            <div className="text-[14px] font-bold text-black">
+               Wishlist
+            </div>
+          </Link>
+
+          <button onClick={() => setTab("address")} className="flex items-center p-4 px-6 active:bg-gray-200 transition-colors">
+            <ClipboardList className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
+            <div className="text-[14px] font-bold text-black">
+               Addresses
+            </div>
+          </button>
+          
+          <button onClick={() => setTab("settings")} className="flex items-center p-4 px-6 active:bg-gray-200 transition-colors">
+            <SlidersHorizontal className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
+            <div className="text-[14px] font-bold text-black">
+               Account Settings
+            </div>
+          </button>
+        </div>
+
+        <div className="bg-[#f4f4f4] px-6 py-10 flex flex-col gap-10">
+          <button onClick={() => setTab("support")} className="text-left text-[15px] font-bold text-black">
+            Need Help?
+          </button>
+          
+          <button onClick={handleLogout} className="text-left text-[13px] font-bold text-black underline tracking-wide uppercase">
+            LOGOUT
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  if (tab === "address") {
+    return (
+      <div className="flex flex-col bg-white text-black font-sans pb-8">
+        <button onClick={() => setTab("menu")} className="flex items-center gap-2 p-5 text-[11px] font-bold uppercase tracking-widest text-black border-b border-gray-200 active:bg-gray-50">
+          <ArrowLeft className="h-4 w-4" /> BACK TO MY ACCOUNT
+        </button>
+        <div className="p-5">
+          <h2 className="text-[20px] font-normal uppercase tracking-wide text-black mb-6">Address Book</h2>
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">First Name *</label>
+              <input value={addr.name} onChange={(e) => setAddr({...addr, name: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Last Name</label>
+              <input className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Address *</label>
+              <input value={addr.line1} onChange={(e) => setAddr({...addr, line1: e.target.value})} placeholder="House no. and street name" className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Postcode *</label>
+              <input value={addr.pincode} onChange={(e) => setAddr({...addr, pincode: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">City *</label>
+              <input value={addr.city} onChange={(e) => setAddr({...addr, city: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">State *</label>
+              <div className="relative">
+                <select value={addr.state} onChange={(e) => setAddr({...addr, state: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black appearance-none bg-white">
+                  <option value="">Select State</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="West Bengal">West Bengal</option>
+                </select>
+              </div>
+            </div>
+            
+            <h3 className="text-[17px] font-light text-black mt-6 mb-4">Enter Contact Info</h3>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Email *</label>
+              <input value={userEmail} disabled className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none opacity-80" />
+            </div>
+            
+            <div className="flex flex-col">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Phone *</label>
+              <input value={addr.phone} onChange={(e) => setAddr({...addr, phone: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+            </div>
+
+            <button onClick={saveAddress} className="w-full bg-[#181818] text-white p-4 text-[13px] font-bold tracking-widest uppercase mt-6 mb-2 hover:bg-black">
+              {saved ? "Saved" : "Save Address"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for overview/orders/settings/support
+  return (
+    <div className="flex flex-col bg-white text-black font-sans pb-8">
+      {tab !== "orders" && (
+        <button onClick={() => setTab("menu")} className="flex items-center gap-2 p-5 text-[11px] font-bold uppercase tracking-widest text-black border-b border-gray-200 active:bg-gray-50">
+          <ArrowLeft className="h-4 w-4" /> BACK TO MY ACCOUNT
+        </button>
+      )}
+      <div className={tab === "orders" ? "p-0" : "p-5"}>
+        {tab === "overview" && (
+          <div>
+            <h2 className="text-[20px] font-normal uppercase tracking-wide text-black mb-6">Account Overview</h2>
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">First Name</label>
+                <input value={addr.name} onChange={(e) => setAddr({...addr, name: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Email</label>
+                <input value={userEmail} disabled className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none opacity-80" />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Phone Number</label>
+                <input value={addr.phone} onChange={(e) => setAddr({...addr, phone: e.target.value})} className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none focus:outline-none focus:border-black" />
+              </div>
+              <button onClick={saveAddress} className="w-full bg-[#181818] text-white p-4 text-[13px] font-bold tracking-widest uppercase mt-4 hover:bg-black">
+                {saved ? "Saved" : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {tab === "orders" && (
+          <div className="px-5 pt-5 pb-8">
+            {viewingOrder ? (
+              <>
+                <button onClick={() => setViewingOrder(null)} className="flex items-center gap-2 text-[13px] font-bold text-black mb-6">
+                  <ArrowLeft className="h-4 w-4" /> Back to Order History
+                </button>
+                <div className="bg-[#f4f4f4] p-4 sm:p-6 mb-6">
+                  <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-wide">Order Details</h1>
+                </div>
+                
+                <div className="mb-8 px-2 sm:px-0">
+                  <div className="text-[14px] sm:text-[15px] mb-2">Order number <span className="font-bold">{formatOrderId(viewingOrder.id)}</span></div>
+                  <div className="text-[14px] sm:text-[15px] mb-1">Date ordered <span className="font-bold">{new Date(viewingOrder.createdAt).toLocaleDateString('en-GB')}</span></div>
+                  <div className="text-[14px] sm:text-[15px] mb-1">Status <span className="font-bold">{viewingOrder.status.toUpperCase()}</span></div>
+                </div>
+
+                <div className="bg-[#f4f4f4] p-4 sm:p-6 mb-6">
+                  <h2 className="text-[18px] sm:text-[20px] font-bold uppercase tracking-wide">Items Ordered</h2>
+                </div>
+                
+                <div className="mb-8 px-2 sm:px-0">
+                  {viewingOrder.items?.map((it: any, i: number) => {
+                    const p = getById ? getById(it.id) : null;
+                    return (
+                      <div key={i} className="flex gap-4 sm:gap-6 py-6 border-b border-gray-200 last:border-0">
+                        <div className="w-24 sm:w-32 shrink-0 bg-[#f4f4f4] p-2">
+                          <img src={p?.images[0]} alt={p?.name} className="w-full h-auto object-cover" />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                          <h3 className="text-[15px] sm:text-[17px] font-bold mb-3">{p?.name ?? it.id}</h3>
+                          <div className="text-[12px] sm:text-[13px] text-gray-600 space-y-0.5 mb-3">
+                            <div>Color: <span className="text-black">{it.color}</span></div>
+                            <div>Size: <span className="text-black">{it.size}</span></div>
+                          </div>
+                          <div className="text-[12px] sm:text-[13px] mb-3">
+                            Quantity: <span className="text-black">{it.qty}</span>
+                          </div>
+                          <div className="text-[14px] sm:text-[16px] font-bold text-[#b30000]">
+                            ₹{(p?.price ?? 0).toLocaleString("en-IN")}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="border border-gray-200 p-6 sm:p-8 mb-6">
+                  <h2 className="text-[18px] sm:text-[20px] font-bold uppercase tracking-wide mb-6">Order Summary</h2>
+                  <div className="space-y-3 text-[13px] sm:text-[14px] font-bold uppercase tracking-wider mb-6">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal</span>
+                      <span>₹{(viewingOrder.subtotal || viewingOrder.total || 0).toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Shipping Costs</span>
+                      <span>{(viewingOrder.shipping || 0) === 0 ? "FREE" : `₹${viewingOrder.shipping?.toLocaleString("en-IN")}`}</span>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-200 pt-6 flex justify-between items-center">
+                    <span className="text-[18px] sm:text-[20px] font-bold uppercase tracking-wide">Order Total</span>
+                    <span className="text-[18px] sm:text-[20px] font-bold">₹{(viewingOrder.total || 0).toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="text-[11px] font-bold text-gray-500 mt-1 uppercase tracking-widest">
+                    Prices Include GST
+                  </div>
+                </div>
+
+                {viewingOrder.customer && (
+                  <div className="border border-gray-200 p-6 sm:p-8 mb-8">
+                    <h2 className="text-[18px] sm:text-[20px] font-bold uppercase tracking-wide mb-6">Addresses</h2>
+                    <div className="mb-6">
+                      <h3 className="text-[13px] sm:text-[14px] font-bold mb-4">Shipping Address:</h3>
+                      <div className="text-[14px] sm:text-[15px] leading-relaxed text-gray-800">
+                        {viewingOrder.customer.name}<br />
+                        {viewingOrder.customer.address}<br />
+                        {viewingOrder.customer.city}<br />
+                        {viewingOrder.customer.state} {viewingOrder.customer.pincode}<br />
+                        IN
+                      </div>
+                    </div>
+                    <div className="mb-6">
+                      <h3 className="text-[13px] sm:text-[14px] font-bold mb-4">Contact Info:</h3>
+                      <div className="text-[14px] sm:text-[15px] text-gray-800">
+                        {viewingOrder.customer.email}<br />
+                        {viewingOrder.customer.phone}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <button onClick={() => setTab("menu")} className="flex items-center gap-2 text-[13px] font-bold text-black mb-6">
+                  <ArrowLeft className="h-4 w-4" /> My Account
+                </button>
+                <div className="text-[14px] font-bold text-black mb-1">Order history</div>
+            <h2 className="text-[28px] font-bold text-black tracking-tight mb-8">My account</h2>
+            
+            <div className="mb-8">
+              <label className="text-[11px] font-bold uppercase tracking-widest text-black mb-2 block">Select Date</label>
+              <div className="border border-gray-300 p-3 text-[14px] flex justify-between items-center cursor-pointer">
+                Last six months
+                <ArrowLeft className="h-4 w-4 -rotate-90" />
+              </div>
+            </div>
+
+            {(!myOrders || myOrders.length === 0) ? (
+              <div className="text-[14px] text-gray-500">You haven't placed any orders yet.</div>
+            ) : (
+              <div className="space-y-12">
+                {myOrders.map((o: any) => {
+                  const firstItem = (o.items || [])[0];
+                  const p = firstItem && getById ? getById(firstItem.id) : null;
+                  return (
+                    <div key={o.id} className="flex flex-col">
+                      <div className="text-[24px] font-bold text-black tracking-tight mb-2">{formatOrderId(o.id)}</div>
+                      <button onClick={() => setViewingOrder(o)} className="text-[12px] font-bold uppercase tracking-widest text-black underline text-left mb-6 w-fit">VIEW ORDER</button>
+                      
+                      {p && (
+                        <div className="flex gap-4 mb-6">
+                          <div className="w-32 bg-[#f4f4f4] p-2 shrink-0">
+                            <img src={p.images[0]} alt={p.name} className="w-full h-auto object-cover" />
+                          </div>
+                          <div className="flex flex-col flex-1 py-1">
+                            <div className="flex justify-between items-start gap-4">
+                              <span className="text-[14px] font-bold leading-tight">{p.name}</span>
+                              <span className="text-[14px] font-bold whitespace-nowrap">₹{(p.price || 0).toLocaleString("en-IN")}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="text-[14px] space-y-1.5 text-black">
+                        <div><span className="font-bold">Date ordered:</span> {new Date(o.createdAt).toLocaleDateString("en-GB")}</div>
+                        <div><span className="font-bold">Order status:</span> {o.status.toUpperCase()}</div>
+                        <div><span className="font-bold">Shipped to:</span> {o.customer?.name || addr?.name || firstName || userEmail?.split("@")[0]}</div>
+                        <div><span className="font-bold">Items:</span> {o.items?.reduce((acc: number, it: any) => acc + (it.qty || 1), 0) || 0}</div>
+                        <div><span className="font-bold">Order Total:</span> ₹{(o.total || 0).toLocaleString("en-IN")}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+              </>
+            )}
+          </div>
+        )}
+        
+        {tab === "support" && (
+          <div>
+            <h2 className="text-[20px] font-normal uppercase tracking-wide text-black mb-6">Support</h2>
+            <div className="space-y-4">
+              <a href="mailto:support@veloce.in" className="block border p-4 text-[13px] font-bold uppercase text-black hover:bg-gray-50">Email Us: support@veloce.in</a>
+              <a href="https://t.me/VeloceJerseys" className="block border p-4 text-[13px] font-bold uppercase text-black hover:bg-gray-50">Telegram: @VeloceJerseys</a>
+            </div>
+          </div>
+        )}
+
+        {tab === "settings" && (
+          <div>
+            <h2 className="text-[20px] font-normal uppercase tracking-wide text-black mb-6">Account Settings</h2>
+            <div className="space-y-4">
+               <div className="flex flex-col">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-black mb-1.5">Email</label>
+                  <input value={userEmail || ""} disabled className="w-full border border-gray-300 p-3 text-[14px] text-black rounded-none opacity-80" />
+               </div>
+               <button onClick={handleLogout} className="w-full bg-[#181818] text-white p-4 text-[13px] font-bold tracking-widest uppercase mt-4 hover:bg-black">
+                 LOG OUT
+               </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

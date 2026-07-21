@@ -13,8 +13,9 @@ import appCss from "../styles.css?url";
 import { ShopProvider } from "@/lib/store";
 import { CatalogProvider } from "@/lib/catalog-store";
 import { SiteImagesProvider } from "@/lib/site-images";
-import { PromoBanner } from "@/components/PromoBanner";
+
 import { SupportBot } from "@/components/SupportBot";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -50,6 +51,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
+        <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-md text-left overflow-auto max-h-48 text-xs text-red-600 font-mono">
+          <div className="font-bold">{error.name}: {error.message}</div>
+          <div className="mt-2 whitespace-pre-wrap opacity-80">{error.stack}</div>
+        </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -77,27 +82,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Veloce — Elite Football Jerseys & Formula 1 Merchandise" },
+      { title: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
       {
         name: "description",
         content:
-          "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide.",
+          "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
       },
-      { name: "author", content: "Veloce" },
-      { name: "theme-color", content: "#0a0a0c" },
-      { property: "og:title", content: "Veloce — Elite Football Jerseys & Formula 1 Merchandise" },
+      { name: "author", content: "Veloce Wear" },
+      { name: "theme-color", content: "#ffffff" },
+      { property: "og:title", content: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
       {
         property: "og:description",
         content:
-          "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide.",
+          "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Veloce — Elite Football Jerseys & Formula 1 Merchandise" },
+      { name: "twitter:title", content: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
       {
         name: "twitter:description",
         content:
-          "Veloce curates authentic match-day football kits and official Formula 1 team merchandise. Engineered precision. Cinematic detail. Delivered worldwide.",
+          "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
       },
     ],
     links: [
@@ -105,7 +110,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.png?v=3", type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -142,10 +147,11 @@ function RootComponent() {
       <CatalogProvider>
         <ShopProvider>
           <SiteImagesProvider>
-            <PromoBanner />
+
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
             <SupportBot />
+            <Toaster />
           </SiteImagesProvider>
         </ShopProvider>
       </CatalogProvider>

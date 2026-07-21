@@ -121,6 +121,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         .order("created_at", { ascending: false });
       if (error) throw error;
       const mapped = (data || []).map(mapDbRowToProduct);
+      
+      const demoProductRaw = defaultProductsRaw.find((p: any) => p.id === "demo-product-1rs");
+      if (demoProductRaw && !mapped.some(p => p.id === "demo-product-1rs")) {
+        mapped.push(mapDbRowToProduct(demoProductRaw));
+      }
+
       setProducts(mapped);
       LIVE = mapped;
       if (typeof window !== "undefined") {

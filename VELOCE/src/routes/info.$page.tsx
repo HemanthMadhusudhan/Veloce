@@ -24,13 +24,13 @@ const PAGES: Record<
   { title: string; subtitle: string; icon: React.ElementType; content: () => React.ReactNode }
 > = {
   about: {
-    title: "About Veloce",
+    title: "About Veloce Wear",
     subtitle: "Our Story",
     icon: Users,
     content: () => (
       <div className="space-y-6">
         <p className="text-muted-foreground leading-relaxed">
-          Veloce was born from a simple belief — every jersey tells a story. Founded in 2024, we set
+          Veloce Wear was born from a simple belief — every jersey tells a story. Founded in 2024, we set
           out to bring premium, authentic football jerseys and Formula 1 merchandise to fans across
           India, at prices that don't break the bank.
         </p>
@@ -70,7 +70,7 @@ const PAGES: Record<
               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
               <span>
                 <strong className="text-foreground">Fan-First Service:</strong> 4-day easy exchange,
-                free shipping over ₹499, and a team that actually cares.
+                free shipping on all orders, and a team that actually cares.
               </span>
             </li>
           </ul>
@@ -141,7 +141,7 @@ const PAGES: Record<
     content: () => (
       <div className="space-y-6">
         <p className="text-muted-foreground leading-relaxed">
-          At Veloce, we believe that premium quality and environmental responsibility can go hand in
+          At Veloce Wear, we believe that premium quality and environmental responsibility can go hand in
           hand. Here's how we're working to reduce our footprint while delivering the best jerseys
           to you.
         </p>
@@ -185,11 +185,11 @@ const PAGES: Record<
       <div className="space-y-6">
         <p className="text-muted-foreground leading-relaxed">
           We're always looking for passionate people who love sports and want to build something
-          extraordinary. At Veloce, you won't just work — you'll be part of a team that's changing
+          extraordinary. At Veloce Wear, you won't just work — you'll be part of a team that's changing
           how fans experience merchandise.
         </p>
         <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
-          <h3 className="font-display text-lg font-semibold">Why Veloce?</h3>
+          <h3 className="font-display text-lg font-semibold">Why Veloce Wear?</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-3">
               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-brand shrink-0" />
@@ -250,7 +250,7 @@ const PAGES: Record<
           <div className="rounded-2xl border border-border/50 bg-card/40 p-6 text-center space-y-3">
             <MapPin className="h-6 w-6 mx-auto text-brand" />
             <h3 className="font-display text-sm font-semibold">Address</h3>
-            <p className="text-sm text-muted-foreground">Veloce HQ, Mumbai, Maharashtra, India</p>
+            <p className="text-sm text-muted-foreground">Veloce Wear HQ, Mumbai, Maharashtra, India</p>
           </div>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
@@ -296,13 +296,8 @@ const PAGES: Record<
               </thead>
               <tbody className="text-muted-foreground">
                 <tr className="border-b border-border/30">
-                  <td className="py-3">Above ₹499</td>
+                  <td className="py-3">All Orders</td>
                   <td className="py-3 text-brand font-semibold">FREE</td>
-                  <td className="py-3">5–7 business days</td>
-                </tr>
-                <tr className="border-b border-border/30">
-                  <td className="py-3">Below ₹499</td>
-                  <td className="py-3">₹79</td>
                   <td className="py-3">5–7 business days</td>
                 </tr>
                 <tr>
@@ -425,7 +420,7 @@ const PAGES: Record<
           },
           {
             q: "How long does delivery take?",
-            a: "Standard delivery takes 5–7 business days across India. Express delivery (₹149) gets your order to you in 2–3 business days. Free shipping on orders above ₹499.",
+            a: "Standard delivery takes 5–7 business days across India. Express delivery (₹149) gets your order to you in 2–3 business days. Free shipping on all orders.",
           },
           {
             q: "How does COD work?",
@@ -449,6 +444,78 @@ const PAGES: Record<
             <p className="text-sm text-muted-foreground leading-relaxed">{item.a}</p>
           </div>
         ))}
+      </div>
+    ),
+  },
+  "privacy-policy": {
+    title: "Privacy Policy",
+    subtitle: "Your Data",
+    icon: Shield,
+    content: () => (
+      <div className="space-y-6">
+        <p className="text-muted-foreground leading-relaxed">
+          At Veloce Wear, we are committed to protecting your privacy and ensuring that your personal data is handled safely and responsibly.
+        </p>
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
+          <h3 className="font-display text-lg font-semibold">Information Collection</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We collect information when you register, place an order, subscribe to our newsletter, or fill out a form. This may include your name, email address, phone number, and shipping address.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
+          <h3 className="font-display text-lg font-semibold">Data Protection</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We implement a variety of security measures to maintain the safety of your personal information when you place an order or enter, submit, or access your personal information.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  "terms-and-conditions": {
+    title: "Terms and Conditions",
+    subtitle: "Legal Info",
+    icon: FileText,
+    content: () => (
+      <div className="space-y-6">
+        <p className="text-muted-foreground leading-relaxed">
+          By accessing and using Veloce Wear, you accept and agree to be bound by the terms and provision of this agreement.
+        </p>
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
+          <h3 className="font-display text-lg font-semibold">Use of the Site</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            You may use the site for personal and lawful purposes only. You must not use the site in any way that causes, or may cause, damage to the site or impairment of the availability or accessibility of the site.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
+          <h3 className="font-display text-lg font-semibold">Product Information</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We make every effort to display as accurately as possible the colors and images of our products. However, we cannot guarantee that your computer monitor's display of any color will be accurate.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  "cookies": {
+    title: "Cookie Policy",
+    subtitle: "Web Tracking",
+    icon: Shield,
+    content: () => (
+      <div className="space-y-6">
+        <p className="text-muted-foreground leading-relaxed">
+          Our website uses cookies to enhance your browsing experience and provide personalized content.
+        </p>
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
+          <h3 className="font-display text-lg font-semibold">What are Cookies?</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Cookies are small files that a site or its service provider transfers to your computer's hard drive through your Web browser (if you allow) that enables the site's or service provider's systems to recognize your browser and capture and remember certain information.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/50 bg-card/40 p-6 space-y-4">
+          <h3 className="font-display text-lg font-semibold">Managing Cookies</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            You can choose to have your computer warn you each time a cookie is being sent, or you can choose to turn off all cookies. You do this through your browser settings.
+          </p>
+        </div>
       </div>
     ),
   },

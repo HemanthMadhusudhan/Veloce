@@ -5,16 +5,16 @@ import { ShopInner } from "./shop";
 export const Route = createFileRoute("/shop/")({
   head: () => ({
     meta: [
-      { title: "Shop — Veloce" },
+      { title: "Shop — Veloce Wear" },
       {
         name: "description",
-        content: "Shop every football jersey and Formula 1 piece in the Veloce collection.",
+        content: "Shop every football jersey and Formula 1 piece in the Veloce Wear collection.",
       },
     ],
   }),
   component: () => (
     <SiteChrome>
-      <ShopInner title="Shop All" subtitle="The full Veloce collection." />
+      <ShopInner title="Shop All" subtitle="The full Veloce Wear collection." />
     </SiteChrome>
   ),
 });

@@ -19,10 +19,10 @@ export type SiteImageSlot =
   | "worldcup-banner"
   | "category-football"
   | "category-f1"
-  | "zone-messi"
-  | "zone-ronaldo"
-  | "zone-verstappen"
-  | "zone-hamilton"
+  | "nav-grid-football"
+  | "nav-grid-f1"
+  | "nav-grid-basketball"
+  | "nav-grid-cricket"
   | "promo-popup";
 
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
@@ -52,24 +52,24 @@ export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description:
     description: "Homepage tile linking to /shop/f1.",
   },
   {
-    slot: "zone-messi",
-    label: "Player Zone · Leo Messi (Image or Video)",
-    description: "Background for Leo Messi's player zone card.",
+    slot: "nav-grid-football",
+    label: "Nav Grid · Football (Image)",
+    description: "Background for the Football block in the homepage grid.",
   },
   {
-    slot: "zone-ronaldo",
-    label: "Player Zone · Cristiano Ronaldo (Image or Video)",
-    description: "Background for Cristiano Ronaldo's player zone card.",
+    slot: "nav-grid-f1",
+    label: "Nav Grid · F1 (Image)",
+    description: "Background for the F1 block in the homepage grid.",
   },
   {
-    slot: "zone-verstappen",
-    label: "Player Zone · Max Verstappen (Image or Video)",
-    description: "Background for Max Verstappen's player zone card.",
+    slot: "nav-grid-basketball",
+    label: "Nav Grid · Basketball (Image)",
+    description: "Background for the Basketball block in the homepage grid.",
   },
   {
-    slot: "zone-hamilton",
-    label: "Player Zone · Lewis Hamilton (Image or Video)",
-    description: "Background for Lewis Hamilton's player zone card.",
+    slot: "nav-grid-cricket",
+    label: "Nav Grid · Cricket (Image)",
+    description: "Background for the Cricket block in the homepage grid.",
   },
   {
     slot: "promo-popup",
@@ -84,10 +84,10 @@ const DEFAULTS: Record<SiteImageSlot, string> = {
   "worldcup-banner": "",
   "category-football": "",
   "category-f1": "",
-  "zone-messi": "",
-  "zone-ronaldo": "",
-  "zone-verstappen": "",
-  "zone-hamilton": "",
+  "nav-grid-football": "",
+  "nav-grid-f1": "",
+  "nav-grid-basketball": "",
+  "nav-grid-cricket": "",
   "promo-popup": "",
 };
 

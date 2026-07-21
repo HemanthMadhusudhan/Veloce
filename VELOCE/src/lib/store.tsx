@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode, useCallback } from "react";
 import { supabase, type AppUser } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 function usePersistedState<T>(key: string, initial: T): [T, (v: T | ((p: T) => T)) => void] {
   const [state, setState] = useState<T>(initial);
@@ -66,7 +67,13 @@ export type Order = {
 type ShopCtx = {
   cart: CartItem[];
   cartOpen: boolean;
+  setCartOpen: (open: boolean) => void;
   searchOpen: boolean;
+  setSearchOpen: (open: boolean) => void;
+  cartPopupItem: CartItem | null;
+  setCartPopupItem: (item: CartItem | null) => void;
+  wishlistPopupItem: { id: string } | null;
+  setWishlistPopupItem: (item: { id: string } | null) => void;
   wishlist: string[];
   recent: string[];
   isAdmin: boolean;
@@ -110,12 +117,14 @@ type ShopCtx = {
 const Ctx = createContext<ShopCtx | null>(null);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = usePersistedState<CartItem[]>("veloce.cart", []);
-  const [wishlist, setWishlist] = usePersistedState<string[]>("veloce.wishlist", []);
-  const [recent, setRecent] = usePersistedState<string[]>("veloce.recent", []);
-  const [orders, setOrders] = usePersistedState<Order[]>("veloce.orders", []);
+  const [cart, setCart] = usePersistedState<CartItem[]>("veloce wear.cart", []);
+  const [wishlist, setWishlist] = usePersistedState<string[]>("veloce wear.wishlist", []);
+  const [recent, setRecent] = usePersistedState<string[]>("veloce wear.recent", []);
+  const [orders, setOrders] = usePersistedState<Order[]>("veloce wear.orders", []);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartPopupItem, setCartPopupItem] = useState<CartItem | null>(null);
+  const [wishlistPopupItem, setWishlistPopupItem] = useState<{ id: string } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -273,9 +282,11 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         setUserEmail(null);
         setProfile(null);
         setIsAdmin(false);
-        setOrders([]);
-        setCart([]);
-        setWishlist([]);
+        if (event === "SIGNED_OUT") {
+          setOrders([]);
+          setCart([]);
+          setWishlist([]);
+        }
       }
       setAuthLoading(false);
     };
@@ -342,7 +353,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         }
         return [...prev, i];
       });
-      setCartOpen(true);
+      setCartPopupItem(i);
     },
     [setCart],
   );
@@ -393,7 +404,15 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const toggleWishlist = useCallback(
     (id: string) => {
-      setWishlist((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+      setWishlist((prev) => {
+        if (prev.includes(id)) {
+          toast.success("Removed from wishlist");
+          return prev.filter((x) => x !== id);
+        } else {
+          setWishlistPopupItem({ id });
+          return [...prev, id];
+        }
+      });
     },
     [setWishlist],
   );
@@ -497,7 +516,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       value={{
         cart,
         cartOpen,
+        setCartOpen,
         searchOpen,
+        setSearchOpen,
+        cartPopupItem,
+        setCartPopupItem,
+        wishlistPopupItem,
+        setWishlistPopupItem,
         wishlist,
         recent,
         isAdmin,

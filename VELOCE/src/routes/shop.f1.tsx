@@ -5,7 +5,7 @@ import { ShopInner } from "./shop";
 export const Route = createFileRoute("/shop/f1")({
   head: () => ({
     meta: [
-      { title: "Formula 1 — Veloce" },
+      { title: "Formula 1 — Veloce Wear" },
       {
         name: "description",
         content: "Official Formula 1 team merchandise. Paddock-grade kit, on your terms.",

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import {
   Heart,
   ShoppingBag,
@@ -18,14 +18,15 @@ import { useCatalog, getLiveProduct } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
 import { useShop } from "@/lib/store";
 import { useSiteImage } from "@/lib/site-images";
+import { TEAM_LOGOS } from "@/lib/logos";
 
 export const Route = createFileRoute("/product/$id")({
   loader: ({ params }) => ({ id: params.id, product: getLiveProduct(params.id) ?? null }),
   head: ({ loaderData }) => ({
     meta: [
-      { title: loaderData?.product ? `${loaderData.product.name} — Veloce` : "Product — Veloce" },
-      { name: "description", content: loaderData?.product?.description ?? "Veloce product." },
-      { property: "og:title", content: loaderData?.product?.name ?? "Veloce" },
+      { title: loaderData?.product ? `${loaderData.product.name} — Veloce Wear` : "Product — Veloce Wear" },
+      { name: "description", content: loaderData?.product?.description ?? "Veloce Wear product." },
+      { property: "og:title", content: loaderData?.product?.name ?? "Veloce Wear" },
       { property: "og:description", content: loaderData?.product?.description ?? "" },
     ],
   }),
@@ -86,9 +87,27 @@ function Pdp() {
   const [spin, setSpin] = useState(false);
   const dragRef = useRef<{ x: number; r: number } | null>(null);
 
+  const [showStickyAdd, setShowStickyAdd] = useState(false);
+  const inlineAddRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = inlineAddRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyAdd(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const [customized, setCustomized] = useState(false);
   const [customName, setCustomName] = useState("");
   const [customNumber, setCustomNumber] = useState("");
+  
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
   const wished = wishlist.includes(product.id);
   const related = useMemo(
@@ -148,17 +167,17 @@ function Pdp() {
         <div>
           <div className="flex flex-col sm:flex-row gap-4">
             {/* MOBILE ONLY GALLERY */}
-            <div className="flex w-full overflow-x-auto snap-x snap-mandatory gap-3 pb-2 sm:hidden scrollbar-hide">
+            <div className="flex -mx-4 w-[calc(100%+2rem)] sm:w-full sm:-mx-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
               {product.images.map((img, i) => (
                 <div
                   key={i}
-                  className="relative aspect-[4/5] w-[90%] shrink-0 snap-center overflow-hidden rounded-2xl bg-surface"
+                  className="relative aspect-[4/5] w-full shrink-0 snap-center overflow-hidden bg-surface"
                 >
                   <img src={img} alt="" className="h-full w-full object-cover" />
                 </div>
               ))}
               {product.has360 && (
-                <div className="relative aspect-[4/5] w-[90%] shrink-0 snap-center flex items-center justify-center overflow-hidden rounded-2xl bg-surface border border-border/50">
+                <div className="relative aspect-[4/5] w-full shrink-0 snap-center flex items-center justify-center overflow-hidden bg-surface border-l border-border/50">
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <RotateCw className="h-8 w-8" />
                     <span className="text-[10px] uppercase tracking-[0.15em]">
@@ -170,7 +189,7 @@ function Pdp() {
             </div>
 
             {/* DESKTOP ONLY SIDEBAR & MAIN IMAGE */}
-            <div className="hidden w-20 shrink-0 flex-col gap-3 sm:flex">
+            <div className="hidden">
               {product.images.map((img, i) => (
                 <button
                   key={i}
@@ -196,7 +215,7 @@ function Pdp() {
               )}
             </div>
             <div
-              className="relative aspect-[4/5] flex-1 overflow-hidden rounded-2xl bg-surface hidden sm:block"
+              className="hidden"
               onMouseMove={onMouseMove}
               onMouseLeave={() => setZoom(null)}
               onPointerDown={spin ? startDrag : undefined}
@@ -252,7 +271,7 @@ function Pdp() {
             </section>
           )}
 
-          <section className="hidden sm:grid sm:mt-12 sm:gap-8 sm:grid-cols-2">
+          <section className="hidden">
             <div>
               <div className="text-[10px] uppercase tracking-[0.24em] text-brand">Details</div>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -278,7 +297,14 @@ function Pdp() {
             <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
               {product.tag}
             </div>
-            <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{product.name}</h1>
+            <div className="flex items-start justify-between gap-4 mt-1">
+              <h1 className="font-display text-3xl font-bold tracking-tight">{product.name}</h1>
+              {TEAM_LOGOS[product.team] && (
+                <div className="w-14 h-14 bg-white rounded-xl border border-border/40 p-2 shadow-sm shrink-0 flex items-center justify-center">
+                  <img src={TEAM_LOGOS[product.team]} alt={product.team} className="w-full h-full object-contain filter drop-shadow-sm" />
+                </div>
+              )}
+            </div>
             <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Star className="h-3.5 w-3.5 fill-brand text-brand" />
@@ -316,7 +342,7 @@ function Pdp() {
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                 <span>Size</span>
-                <button className="text-brand">Size guide</button>
+                <button onClick={() => setSizeGuideOpen(true)} className="text-brand hover:underline transition">Size guide</button>
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {product.sizes.map((s) => {
@@ -434,47 +460,47 @@ function Pdp() {
               </div>
             )}
 
-            {/* ADD TO BAG & WISHLIST BUTTONS */}
-            <div className="mt-6 flex flex-col gap-3">
-              {product.stock <= 0 ? (
-                <div className="flex w-full items-center justify-center gap-2 rounded-full border border-border/50 bg-surface/50 py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground cursor-not-allowed">
-                  Out of Stock
-                </div>
-              ) : (
+            {/* ADD TO BAG & WISHLIST BUTTONS (INLINE) */}
+            <div ref={inlineAddRef} className="mt-6 flex flex-col gap-3">
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() =>
-                    addToCart(
-                      {
-                        id: product.id,
-                        qty,
-                        size,
-                        color,
-                        ...(customized && customName ? { customName } : {}),
-                        ...(customized && customNumber ? { customNumber } : {}),
-                      },
-                      product.stockBySize?.[size] !== undefined
-                        ? product.stockBySize[size]
-                        : product.stock,
-                    )
-                  }
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-4 sm:py-3.5 text-[13px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-background transition hover:bg-brand hover:text-foreground active:bg-brand active:text-foreground"
+                  onClick={() => toggleWishlist(product.id)}
+                  className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center border transition rounded-sm ${wished ? "border-brand text-brand bg-brand/5" : "border-border/70 hover:border-foreground active:border-foreground bg-surface/50 sm:bg-transparent"}`}
                 >
-                  <ShoppingBag className="h-5 w-5 sm:h-4 sm:w-4" /> Add to Bag ·{" "}
-                  {formatINR(product.price * qty)}
+                  <Heart className={`h-6 w-6 ${wished ? "fill-brand" : ""}`} strokeWidth={1.5} />
                 </button>
-              )}
-              <button
-                onClick={() => toggleWishlist(product.id)}
-                className={`inline-flex w-full items-center justify-center gap-2 rounded-full border py-3 sm:py-2.5 text-[12px] sm:text-[11px] uppercase tracking-[0.2em] transition ${wished ? "border-brand text-brand bg-brand/5" : "border-border/70 hover:border-foreground active:border-foreground bg-surface/50 sm:bg-transparent"}`}
-              >
-                <Heart className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${wished ? "fill-brand" : ""}`} />{" "}
-                {wished ? "Saved" : "Add to Wishlist"}
-              </button>
+                {product.stock <= 0 ? (
+                  <div className="flex h-[52px] flex-1 items-center justify-center border border-border/50 bg-surface/50 text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground rounded-sm cursor-not-allowed">
+                    Out of Stock
+                  </div>
+                ) : (
+                  <button
+                    onClick={() =>
+                      addToCart(
+                        {
+                          id: product.id,
+                          qty,
+                          size,
+                          color,
+                          ...(customized && customName ? { customName } : {}),
+                          ...(customized && customNumber ? { customNumber } : {}),
+                        },
+                        product.stockBySize?.[size] !== undefined
+                          ? product.stockBySize[size]
+                          : product.stock,
+                      )
+                    }
+                    className="flex h-[52px] flex-1 items-center justify-center bg-[#181818] text-[15px] font-bold uppercase tracking-widest text-white transition hover:bg-black active:bg-black rounded-sm"
+                  >
+                    ADD TO CART
+                  </button>
+                )}
+              </div>
             </div>
 
             <ul className="mt-6 space-y-3 border-t border-border/50 pt-5 text-xs text-muted-foreground">
               <li className="flex items-center gap-3">
-                <Truck className="h-4 w-4 text-foreground" /> Free express shipping over ₹499
+                <Truck className="h-4 w-4 text-foreground" /> Free express shipping on all orders
               </li>
               <li className="flex items-center gap-3">
                 <ShieldCheck className="h-4 w-4 text-foreground" /> Verified authentic · lifetime
@@ -486,7 +512,7 @@ function Pdp() {
             </ul>
 
             {/* MOBILE DETAILS & SPECS (Hidden on Desktop) */}
-            <div className="mt-8 flex flex-col gap-8 border-t border-border/50 pt-8 sm:hidden">
+            <div className="mt-8 flex flex-col gap-8 border-t border-border/50 pt-8">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.24em] text-brand">Details</div>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -542,6 +568,71 @@ function Pdp() {
               <X className="h-5 w-5" />
             </button>
             <video src={filmVideo} autoPlay controls playsInline className="h-full w-full" />
+          </div>
+        </div>
+      )}
+
+      {/* SMART STICKY ADD TO CART BAR (MOBILE ONLY) */}
+      <div 
+        className={`fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/30 px-4 py-3 sm:px-6 sm:py-4 transition-transform duration-300 shadow-[0_-10px_20px_rgba(0,0,0,0.08)] ${showStickyAdd ? "translate-y-0" : "translate-y-full"}`}
+      >
+        {product.stock <= 0 ? (
+          <div className="flex h-[52px] w-full items-center justify-center border border-border/50 bg-surface/50 text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground rounded-sm cursor-not-allowed">
+            Out of Stock
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              addToCart(
+                {
+                  id: product.id,
+                  qty,
+                  size,
+                  color,
+                  ...(customized && customName ? { customName } : {}),
+                  ...(customized && customNumber ? { customNumber } : {}),
+                },
+                product.stockBySize?.[size] !== undefined
+                  ? product.stockBySize[size]
+                  : product.stock,
+              );
+              window.scrollTo({ top: 0, behavior: 'smooth' }); // Optional UX enhancement
+            }}
+            className="flex h-[52px] w-full items-center justify-center bg-[#181818] text-[15px] font-bold uppercase tracking-widest text-white transition active:bg-black rounded-sm"
+          >
+            ADD TO CART
+          </button>
+        )}
+      </div>
+
+      {/* SIZE GUIDE MODAL */}
+      {sizeGuideOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="relative w-full max-w-md rounded-2xl bg-background border border-border/50 shadow-2xl p-6 animate-in zoom-in-95">
+            <button onClick={() => setSizeGuideOpen(false)} className="absolute right-4 top-4 rounded-full p-2 hover:bg-surface text-muted-foreground hover:text-foreground transition">
+              <X className="h-4 w-4" />
+            </button>
+            <h3 className="text-xl font-bold font-display uppercase tracking-wider mb-4">Size Guide</h3>
+            <p className="text-sm text-muted-foreground mb-6">Measurements are in inches. For player versions, we recommend going one size up as they have a tighter, athletic fit.</p>
+            
+            <div className="overflow-hidden rounded-xl border border-border/50">
+              <table className="w-full text-sm">
+                <thead className="bg-surface text-muted-foreground">
+                  <tr>
+                    <th className="py-3 px-4 text-left font-medium uppercase text-[10px] tracking-widest">Size</th>
+                    <th className="py-3 px-4 text-left font-medium uppercase text-[10px] tracking-widest">Chest</th>
+                    <th className="py-3 px-4 text-left font-medium uppercase text-[10px] tracking-widest">Length</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  <tr><td className="py-3 px-4 font-bold">S</td><td className="py-3 px-4 text-muted-foreground">38"</td><td className="py-3 px-4 text-muted-foreground">27"</td></tr>
+                  <tr><td className="py-3 px-4 font-bold">M</td><td className="py-3 px-4 text-muted-foreground">40"</td><td className="py-3 px-4 text-muted-foreground">28"</td></tr>
+                  <tr><td className="py-3 px-4 font-bold">L</td><td className="py-3 px-4 text-muted-foreground">42"</td><td className="py-3 px-4 text-muted-foreground">29"</td></tr>
+                  <tr><td className="py-3 px-4 font-bold">XL</td><td className="py-3 px-4 text-muted-foreground">44"</td><td className="py-3 px-4 text-muted-foreground">30"</td></tr>
+                  <tr><td className="py-3 px-4 font-bold">XXL</td><td className="py-3 px-4 text-muted-foreground">46"</td><td className="py-3 px-4 text-muted-foreground">31"</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

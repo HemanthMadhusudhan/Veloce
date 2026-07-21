@@ -23,8 +23,8 @@ export type CartTotals = {
 
 // India GST + shipping (INR)
 const GST_RATE = 0;
-const FREE_SHIPPING_THRESHOLD = 499;
-const STANDARD_SHIPPING = 80;
+const FREE_SHIPPING_THRESHOLD = 0;
+const STANDARD_SHIPPING = 0;
 
 export function computeCart(
   cart: CartItem[],
@@ -39,14 +39,34 @@ export function computeCart(
   const itemCount = enriched.reduce((a, b) => a + b.item.qty, 0);
   const subtotal = enriched.reduce((a, b) => a + b.product.price * b.item.qty, 0);
 
-  // Expand into individual units for B2G1 (cheapest per every 3 is free)
+  let bogoDivisor = 3; // Default is B2G1 (Buy 2 Get 1)
+
+  // Check for unique Fortune Spin coupon codes
+  let fortuneDiscount = 0;
+  let spinFreeShipping = false;
+  try {
+    const savedPrize = localStorage.getItem("veloce_last_prize");
+    if (savedPrize) {
+      const prize = JSON.parse(savedPrize);
+      if (prize.code === couponCode) {
+        if (prize.label === "10% OFF") fortuneDiscount = 0.1;
+        else if (prize.label === "20% OFF") fortuneDiscount = 0.2;
+        else if (prize.label === "30% OFF") fortuneDiscount = 0.3;
+        else if (prize.label === "40% OFF") fortuneDiscount = 0.4;
+        else if (prize.label === "BUY 1 GET 1") bogoDivisor = 2; // B1G1
+        else if (prize.label === "FREE SHIP") spinFreeShipping = true;
+      }
+    }
+  } catch (e) {}
+
+  // Expand into individual units for BOGO logic (cheapest per every N is free)
   const units: { id: string; size: string; color: string; price: number }[] = [];
   for (const { item, product } of enriched) {
     for (let i = 0; i < item.qty; i++) {
       units.push({ id: item.id, size: item.size, color: item.color, price: product.price });
     }
   }
-  const totalFreeUnits = Math.floor(units.length / 3);
+  const totalFreeUnits = Math.floor(units.length / bogoDivisor);
   const sortedAsc = [...units].sort((a, b) => a.price - b.price);
   const freeSlice = sortedAsc.slice(0, totalFreeUnits);
 
@@ -61,23 +81,6 @@ export function computeCart(
 
   let discount = 0;
   let couponApplied: string | null = null;
-  let spinFreeShipping = false;
-
-  // Check for unique Fortune Spin coupon codes
-  let fortuneDiscount = 0;
-  try {
-    const savedPrize = localStorage.getItem("veloce_last_prize");
-    if (savedPrize) {
-      const prize = JSON.parse(savedPrize);
-      if (prize.code === couponCode) {
-        if (prize.label === "10% OFF") fortuneDiscount = 0.1;
-        else if (prize.label === "20% OFF") fortuneDiscount = 0.2;
-        else if (prize.label === "30% OFF") fortuneDiscount = 0.3;
-        else if (prize.label === "40% OFF") fortuneDiscount = 0.4;
-        else if (prize.label === "FREE SHIP") spinFreeShipping = true;
-      }
-    }
-  } catch (e) {}
 
   if (couponCode === "FIRST50" && isFirstOrder) {
     discount = subtotal * 0.5;

@@ -14,10 +14,12 @@ export function ShopInner({
   title,
   subtitle,
   category,
+  bannerUrl,
 }: {
   title: string;
   subtitle: string;
   category?: Category;
+  bannerUrl?: string;
 }) {
   const { products } = useCatalog();
   const search = useSearch({ strict: false }) as { team?: string };
@@ -67,12 +69,24 @@ export function ShopInner({
   ).sort();
 
   return (
-    <div className="mx-auto max-w-7xl px-6 pt-8">
-      <header className="mb-10 flex flex-col gap-2">
-        <div className="text-[10px] uppercase tracking-[0.28em] text-brand">Collection</div>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">{title}</h1>
-        <p className="max-w-xl text-sm text-muted-foreground">{subtitle}</p>
-      </header>
+    <div className="mx-auto max-w-7xl px-6 pt-8 pb-12">
+      {bannerUrl ? (
+        <div className="relative mb-10 h-48 w-full overflow-hidden rounded-3xl sm:h-64 md:h-80">
+          <img src={bannerUrl} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
+          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10">
+            <div className="mb-2 text-[10px] uppercase tracking-[0.28em] text-brand drop-shadow-md">Collection</div>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-white drop-shadow-md sm:text-6xl">{title}</h1>
+            <p className="mt-2 max-w-xl text-sm text-white/80 drop-shadow-sm">{subtitle}</p>
+          </div>
+        </div>
+      ) : (
+        <header className="mb-10 flex flex-col gap-2">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-brand">Collection</div>
+          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">{title}</h1>
+          <p className="max-w-xl text-sm text-muted-foreground">{subtitle}</p>
+        </header>
+      )}
       <div className="flex flex-col gap-6 lg:flex-row">
         <FiltersPanel
           open={filtersOpen}

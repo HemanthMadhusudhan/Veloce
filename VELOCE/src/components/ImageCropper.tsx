@@ -95,7 +95,7 @@ export function ImageCropper({
             checkOrientation={false} // Helps with EXIF orientation issues
             wheelZoomRatio={0.1} // Smooth mouse wheel zoom
             zoom={onZoom}
-            className="veloce-cropper"
+            className="veloce wear-cropper"
           />
         </div>
 

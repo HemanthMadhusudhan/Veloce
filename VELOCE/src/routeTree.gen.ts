@@ -18,11 +18,12 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
-import { Route as ZoneSlugRouteImport } from './routes/zone.$slug'
 import { Route as ShopWorldcupRouteImport } from './routes/shop.worldcup'
 import { Route as ShopRetroRouteImport } from './routes/shop.retro'
 import { Route as ShopFootballRouteImport } from './routes/shop.football'
 import { Route as ShopF1RouteImport } from './routes/shop.f1'
+import { Route as ShopCricketRouteImport } from './routes/shop.cricket'
+import { Route as ShopBasketballRouteImport } from './routes/shop.basketball'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as InfoPageRouteImport } from './routes/info.$page'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -72,11 +73,6 @@ const ShopIndexRoute = ShopIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShopRoute,
 } as any)
-const ZoneSlugRoute = ZoneSlugRouteImport.update({
-  id: '/zone/$slug',
-  path: '/zone/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShopWorldcupRoute = ShopWorldcupRouteImport.update({
   id: '/worldcup',
   path: '/worldcup',
@@ -95,6 +91,16 @@ const ShopFootballRoute = ShopFootballRouteImport.update({
 const ShopF1Route = ShopF1RouteImport.update({
   id: '/f1',
   path: '/f1',
+  getParentRoute: () => ShopRoute,
+} as any)
+const ShopCricketRoute = ShopCricketRouteImport.update({
+  id: '/cricket',
+  path: '/cricket',
+  getParentRoute: () => ShopRoute,
+} as any)
+const ShopBasketballRoute = ShopBasketballRouteImport.update({
+  id: '/basketball',
+  path: '/basketball',
   getParentRoute: () => ShopRoute,
 } as any)
 const ProductIdRoute = ProductIdRouteImport.update({
@@ -125,11 +131,12 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
+  '/shop/basketball': typeof ShopBasketballRoute
+  '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
   '/shop/football': typeof ShopFootballRoute
   '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
-  '/zone/$slug': typeof ZoneSlugRoute
   '/shop/': typeof ShopIndexRoute
 }
 export interface FileRoutesByTo {
@@ -143,11 +150,12 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
+  '/shop/basketball': typeof ShopBasketballRoute
+  '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
   '/shop/football': typeof ShopFootballRoute
   '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
-  '/zone/$slug': typeof ZoneSlugRoute
   '/shop': typeof ShopIndexRoute
 }
 export interface FileRoutesById {
@@ -163,11 +171,12 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
+  '/shop/basketball': typeof ShopBasketballRoute
+  '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
   '/shop/football': typeof ShopFootballRoute
   '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
-  '/zone/$slug': typeof ZoneSlugRoute
   '/shop/': typeof ShopIndexRoute
 }
 export interface FileRouteTypes {
@@ -184,11 +193,12 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/info/$page'
     | '/product/$id'
+    | '/shop/basketball'
+    | '/shop/cricket'
     | '/shop/f1'
     | '/shop/football'
     | '/shop/retro'
     | '/shop/worldcup'
-    | '/zone/$slug'
     | '/shop/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -202,11 +212,12 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/info/$page'
     | '/product/$id'
+    | '/shop/basketball'
+    | '/shop/cricket'
     | '/shop/f1'
     | '/shop/football'
     | '/shop/retro'
     | '/shop/worldcup'
-    | '/zone/$slug'
     | '/shop'
   id:
     | '__root__'
@@ -221,11 +232,12 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/info/$page'
     | '/product/$id'
+    | '/shop/basketball'
+    | '/shop/cricket'
     | '/shop/f1'
     | '/shop/football'
     | '/shop/retro'
     | '/shop/worldcup'
-    | '/zone/$slug'
     | '/shop/'
   fileRoutesById: FileRoutesById
 }
@@ -241,7 +253,6 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   InfoPageRoute: typeof InfoPageRoute
   ProductIdRoute: typeof ProductIdRoute
-  ZoneSlugRoute: typeof ZoneSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -309,13 +320,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopIndexRouteImport
       parentRoute: typeof ShopRoute
     }
-    '/zone/$slug': {
-      id: '/zone/$slug'
-      path: '/zone/$slug'
-      fullPath: '/zone/$slug'
-      preLoaderRoute: typeof ZoneSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/shop/worldcup': {
       id: '/shop/worldcup'
       path: '/worldcup'
@@ -344,6 +348,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopF1RouteImport
       parentRoute: typeof ShopRoute
     }
+    '/shop/cricket': {
+      id: '/shop/cricket'
+      path: '/cricket'
+      fullPath: '/shop/cricket'
+      preLoaderRoute: typeof ShopCricketRouteImport
+      parentRoute: typeof ShopRoute
+    }
+    '/shop/basketball': {
+      id: '/shop/basketball'
+      path: '/basketball'
+      fullPath: '/shop/basketball'
+      preLoaderRoute: typeof ShopBasketballRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/product/$id': {
       id: '/product/$id'
       path: '/product/$id'
@@ -369,6 +387,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface ShopRouteChildren {
+  ShopBasketballRoute: typeof ShopBasketballRoute
+  ShopCricketRoute: typeof ShopCricketRoute
   ShopF1Route: typeof ShopF1Route
   ShopFootballRoute: typeof ShopFootballRoute
   ShopRetroRoute: typeof ShopRetroRoute
@@ -377,6 +397,8 @@ interface ShopRouteChildren {
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
+  ShopBasketballRoute: ShopBasketballRoute,
+  ShopCricketRoute: ShopCricketRoute,
   ShopF1Route: ShopF1Route,
   ShopFootballRoute: ShopFootballRoute,
   ShopRetroRoute: ShopRetroRoute,
@@ -398,7 +420,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   InfoPageRoute: InfoPageRoute,
   ProductIdRoute: ProductIdRoute,
-  ZoneSlugRoute: ZoneSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
