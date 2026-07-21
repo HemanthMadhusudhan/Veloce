@@ -151,7 +151,20 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         if (patch.name !== undefined) dbPatch.name = patch.name;
         if (patch.price !== undefined) dbPatch.price = patch.price;
         if (patch.compareAt !== undefined) dbPatch.compare_at = patch.compareAt;
-        if (patch.stock !== undefined) dbPatch.stock = patch.stock;
+        if (patch.stock !== undefined) {
+          dbPatch.stock = patch.stock;
+          if (patch.stockBySize === undefined) {
+            const existing = LIVE.find((p) => p.id === id);
+            if (existing && existing.sizes && existing.sizes.length > 0) {
+              const res: Record<string, number> = {};
+              existing.sizes.forEach((s) => (res[s] = 0));
+              for (let i = 0; i < patch.stock; i++) {
+                res[existing.sizes[Math.floor(Math.random() * existing.sizes.length)]]++;
+              }
+              dbPatch.stock_by_size = res;
+            }
+          }
+        }
         if (patch.stockBySize !== undefined) dbPatch.stock_by_size = patch.stockBySize;
         if (patch.badge !== undefined) dbPatch.badge = patch.badge;
         if (patch.tag !== undefined) dbPatch.tag = patch.tag;

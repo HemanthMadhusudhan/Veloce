@@ -27,7 +27,7 @@ export function useHotSelling() {
   }, []);
 
   const setIds = async (ids: string[]) => {
-    const limited = ids.slice(0, 7);
+    const limited = ids.slice(0, 15);
     setHotSellingIds(limited);
     try {
       await supabase.from("site_settings").upsert({ key: "hot_selling", value: limited });

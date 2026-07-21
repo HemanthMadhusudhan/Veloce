@@ -30,7 +30,8 @@ export function SiteNav() {
   const [spinOpen, setSpinOpen] = useState(false);
   const { cart, wishlist, openCart, openSearch, isAdmin, userEmail, signOut } = useShop();
   const nav = useNavigate();
-  const cartCount = cart.reduce((a, b) => a + b.qty, 0);
+  const { getById } = useCatalog();
+  const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -719,7 +720,8 @@ export function MobileTopNav() {
   const nav = useNavigate();
   const { cart, openCart, openSearch, userEmail, wishlist } = useShop();
   const [menuOpen, setMenuOpen] = useState(false);
-  const cartCount = cart.reduce((a, b) => a + b.qty, 0);
+  const { getById } = useCatalog();
+  const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
   const [spinOpen, setSpinOpen] = useState(false);
   const [f1Open, setF1Open] = useState(false);
   const [footballOpen, setFootballOpen] = useState(false);

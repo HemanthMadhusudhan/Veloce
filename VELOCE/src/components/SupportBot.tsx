@@ -87,7 +87,7 @@ export function SupportBot() {
             const p = products.find(p => p.id === call.args.productId);
             if (p) {
               const size = call.args.size || "M";
-              addToCart({ product: p, size, qty: 1 });
+              addToCart({ id: p.id, size, color: p.colors?.[0] || "", qty: 1 });
               openCart();
               functionResult = { success: true, message: `Added ${p.name} to cart in size ${size}` };
             } else {

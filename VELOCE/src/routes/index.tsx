@@ -11,7 +11,7 @@ import { ZONES, type Zone } from "@/lib/catalog";
 import { DEFAULT_DROPS, useDrops, type Drop } from "@/lib/drops";
 import { useSiteImage } from "@/lib/site-images";
 import { useShop } from "@/lib/store";
-import { TEAM_LOGOS } from "@/lib/logos";
+import { TEAM_LOGOS, f1TeamsList, basketballTeamsList, cricketTeamsList } from "@/lib/logos";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -1061,7 +1061,6 @@ const MobileKitsCarousel = React.memo(function MobileKitsCarousel() {
 
 const ShopByTeam = React.memo(function ShopByTeam() {
   const teams = Object.entries(TEAM_LOGOS);
-  const f1Teams = ["Ferrari", "Mercedes", "Red Bull", "McLaren", "Alpine", "Aston Martin"];
   const scrollProps = useMarquee(0.25);
 
   return (
@@ -1090,26 +1089,33 @@ const ShopByTeam = React.memo(function ShopByTeam() {
             ref={setIdx === 0 ? scrollProps.setRef : null}
             className="flex shrink-0 px-4 pb-4 gap-4 sm:px-0 sm:gap-6 sm:pr-6"
           >
-            {teams.map(([team, logo], i) => (
-              <Link
-                key={`${team}-${i}`}
-                to={f1Teams.includes(team) ? "/shop/f1" : "/shop/football"}
-                search={{ team } as never}
-                className="shrink-0 flex flex-col items-center gap-3 group/item w-[72px] sm:w-[140px] lg:w-[180px]"
-              >
-                <div className="w-[72px] h-[72px] sm:w-[140px] sm:h-[140px] lg:w-[180px] lg:h-[180px] rounded-full bg-white border border-border/50 shadow-sm flex items-center justify-center p-3.5 sm:p-6 lg:p-8 transition-all duration-300 group-hover/item:scale-110 group-hover/item:bg-gray-100 group-hover/item:border-white/20">
-                  <img
-                    src={logo}
-                    alt={team}
-                    loading="lazy"
-                    className="max-w-full max-h-full object-contain filter drop-shadow-md"
-                  />
-                </div>
-                <span className="text-[9px] sm:text-sm lg:text-base text-center font-semibold text-muted-foreground group-hover/item:text-foreground leading-tight">
-                  {team}
-                </span>
-              </Link>
-            ))}
+            {teams.map(([team, logo], i) => {
+              let shopPath = "/shop/football";
+              if (f1TeamsList.includes(team)) shopPath = "/shop/f1";
+              else if (basketballTeamsList.includes(team)) shopPath = "/shop/basketball";
+              else if (cricketTeamsList.includes(team)) shopPath = "/shop/cricket";
+              
+              return (
+                <Link
+                  key={`${team}-${i}`}
+                  to={shopPath as never}
+                  search={{ team } as never}
+                  className="shrink-0 flex flex-col items-center gap-3 group/item w-[72px] sm:w-[140px] lg:w-[180px]"
+                >
+                  <div className="w-[72px] h-[72px] sm:w-[140px] sm:h-[140px] lg:w-[180px] lg:h-[180px] rounded-full bg-white border border-border/50 shadow-sm flex items-center justify-center p-3.5 sm:p-6 lg:p-8 transition-all duration-300 group-hover/item:scale-110 group-hover/item:bg-gray-100 group-hover/item:border-white/20">
+                    <img
+                      src={logo}
+                      alt={team}
+                      loading="lazy"
+                      className="max-w-full max-h-full object-contain filter drop-shadow-md"
+                    />
+                  </div>
+                  <span className="text-[9px] sm:text-sm lg:text-base text-center font-semibold text-muted-foreground group-hover/item:text-foreground leading-tight">
+                    {team}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         ))}
       </div>

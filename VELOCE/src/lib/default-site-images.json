@@ -1,8 +1,54 @@
-[{"slot":"worldcup-banner","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/worldcup-banner/1783372056920.mp4"}, 
- {"slot":"zone-messi","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-messi/1783527504100.webp"}, 
- {"slot":"zone-verstappen","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-verstappen/1783527465310.webp"}, 
- {"slot":"zone-ronaldo","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-ronaldo/1783527400738.webp"}, 
- {"slot":"zone-hamilton","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-hamilton/1783527487266.webp"}, 
- {"slot":"category-football","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-football/1783528137168.webp"}, 
- {"slot":"category-f1","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-f1/1783528159835.webp"}, 
- {"slot":"hero","url":"https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero/1783528586878.webp"}]
+[
+  {
+    "slot": "nav-grid-football",
+    "url": "/images/nav-grid-football.webp"
+  },
+  {
+    "slot": "nav-grid-f1",
+    "url": "/images/nav-grid-f1.webp"
+  },
+  {
+    "slot": "nav-grid-basketball",
+    "url": "/images/nav-grid-basketball.webp"
+  },
+  {
+    "slot": "nav-grid-cricket",
+    "url": "/images/nav-grid-cricket.webp"
+  },
+  {
+    "slot": "promo-popup",
+    "url": "/images/promo-popup.png"
+  },
+  {
+    "slot": "worldcup-banner",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/worldcup-banner/1783372056920.mp4"
+  },
+  {
+    "slot": "zone-messi",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-messi/1783527504100.webp"
+  },
+  {
+    "slot": "zone-verstappen",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-verstappen/1783527465310.webp"
+  },
+  {
+    "slot": "zone-ronaldo",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-ronaldo/1783527400738.webp"
+  },
+  {
+    "slot": "zone-hamilton",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-hamilton/1783527487266.webp"
+  },
+  {
+    "slot": "category-football",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-football/1783528137168.webp"
+  },
+  {
+    "slot": "category-f1",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-f1/1783528159835.webp"
+  },
+  {
+    "slot": "hero",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero/1783528586878.webp"
+  }
+]
