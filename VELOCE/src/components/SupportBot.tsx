@@ -40,14 +40,27 @@ export function SupportBot() {
     return () => window.removeEventListener("toggleSupportBot", handleToggle);
   }, []);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const exactMatches: Record<string, string> = {
+    "What are your shipping details?": "We ship all over India! Delivery takes 6-8 days in metros and 10-12 days. Customized jerseys need 2-3 extra days. Every order is securely packed and delivered fast. COD available on eligible orders. For any queries, just chat with us",
+    "Player Version vs Fan Version - What's the difference?": "Sure! Here's the difference: Player Version: Slim fit, lightweight performance fabric with rubberised logos & sponsors. Fan Version: Regular fit, comfy fabric with embroidered logo & sponsors, perfect for casual wear. For more details you can see the video to the bottom of home page",
+    "Need help or have a special request?": "Contact us on Telegram @VeloceSupport for quick support and special requirements.",
+    "Do you accept bulk orders or custom name & number requests?": "Yes! For bulk orders, custom printing, or any special requests, please reach out to us on Telegram @VeloceSupport for direct assistance."
+  };
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", text: input.trim() };
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
+
+    const userMsg: Message = { id: Date.now().toString(), role: "user", text: text.trim() };
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
     setIsTyping(true);
+
+    if (exactMatches[text.trim()]) {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, { id: Date.now().toString(), role: "bot", text: exactMatches[text.trim()] }]);
+        setIsTyping(false);
+      }, 600);
+      return;
+    }
 
     try {
       let currentHistory = [...messages, userMsg];
@@ -125,6 +138,14 @@ export function SupportBot() {
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const currentInput = input;
+    setInput("");
+    await sendMessage(currentInput);
   };
 
   const generateGeminiResponse = async (history: Message[]) => {
@@ -324,6 +345,26 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
               </div>
             )}
           </div>
+
+          {/* Quick Actions / Suggested Questions */}
+          {messages.length === 1 && (
+            <div className="flex flex-wrap gap-2 p-3 bg-surface border-t border-border/50 overflow-y-auto max-h-[160px]">
+              {[
+                "What are your shipping details?",
+                "Player Version vs Fan Version - What's the difference?",
+                "Need help or have a special request?",
+                "Do you accept bulk orders or custom name & number requests?",
+              ].map((q) => (
+                <button
+                  key={q}
+                  onClick={() => sendMessage(q)}
+                  className="text-left text-[11px] border border-border/70 rounded-full px-3 py-1.5 hover:bg-foreground hover:text-background transition-colors text-foreground"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Input Area */}
           <div className="border-t border-border/50 bg-surface/30 p-3">

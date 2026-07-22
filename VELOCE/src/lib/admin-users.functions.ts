@@ -43,8 +43,20 @@ export async function setUserRole({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const ownerEmail = process.env.VITE_OWNER_EMAIL;
+  
+  if (user?.email !== ownerEmail) {
+    throw new Error("Only the owner can manage admin roles");
+  }
+
   if (!data.grant && data.role === "admin" && data.userId === user?.id) {
     throw new Error("You cannot remove your own admin role");
+  }
+
+  const { data: targetUser } = await supabase.from("users").select("email").eq("id", data.userId).single();
+  if (targetUser?.email === ownerEmail && !data.grant) {
+    throw new Error("You cannot demote the owner");
   }
   const { error } = await supabase
     .from("users")
@@ -60,6 +72,13 @@ export async function deleteUser({ data }: { data: { userId: string } }) {
     data: { user },
   } = await supabase.auth.getUser();
   if (data.userId === user?.id) throw new Error("You cannot delete your own account");
+
+  const ownerEmail = process.env.VITE_OWNER_EMAIL;
+  const { data: targetUser } = await supabase.from("users").select("email").eq("id", data.userId).single();
+  if (ownerEmail && targetUser?.email === ownerEmail) {
+    throw new Error("You cannot delete the owner account");
+  }
+
   const { error } = await supabase.from("users").delete().eq("id", data.userId);
   if (error) throw error;
   return { ok: true };
@@ -71,6 +90,13 @@ export async function setUserDisabled({ data }: { data: { userId: string; disabl
     data: { user },
   } = await supabase.auth.getUser();
   if (data.userId === user?.id) throw new Error("You cannot disable your own account");
+
+  const ownerEmail = process.env.VITE_OWNER_EMAIL;
+  const { data: targetUser } = await supabase.from("users").select("email").eq("id", data.userId).single();
+  if (ownerEmail && targetUser?.email === ownerEmail && data.disabled) {
+    throw new Error("You cannot disable the owner account");
+  }
+
   const { error } = await supabase
     .from("users")
     .update({ disabled: data.disabled })

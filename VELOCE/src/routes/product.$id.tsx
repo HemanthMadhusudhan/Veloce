@@ -75,7 +75,7 @@ function Pdp() {
       </div>
     );
   }
-  const { addToCart, toggleWishlist, wishlist } = useShop();
+  const { addToCart, toggleWishlist, wishlist, isAdmin } = useShop();
   const filmVideo = useSiteImage("film-video");
   const [videoOpen, setVideoOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -103,10 +103,6 @@ function Pdp() {
     return () => observer.disconnect();
   }, []);
 
-  const [customized, setCustomized] = useState(false);
-  const [customName, setCustomName] = useState("");
-  const [customNumber, setCustomNumber] = useState("");
-  
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
   const wished = wishlist.includes(product.id);
@@ -402,100 +398,42 @@ function Pdp() {
               </div>
             </div>
 
-            {/* Custom Printing Option */}
-            {product.category !== "f1" && (
-              <div className="mt-5 border-t border-border/40 pt-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={customized}
-                    onChange={(e) => {
-                      setCustomized(e.target.checked);
-                      if (!e.target.checked) {
-                        setCustomName("");
-                        setCustomNumber("");
-                      }
-                    }}
-                    className="accent-brand rounded border-border"
-                  />
-                  <span className="text-[10px] uppercase tracking-[0.24em] text-foreground">
-                    Add Custom Name & Number
-                  </span>
-                </label>
-
-                {customized && (
-                  <div className="mt-3 grid grid-cols-[1fr_80px] gap-2 animate-in slide-in-from-top-2 duration-200">
-                    <div>
-                      <div className="mb-1 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
-                        Custom Name
-                      </div>
-                      <input
-                        type="text"
-                        maxLength={12}
-                        value={customName}
-                        onChange={(e) =>
-                          setCustomName(e.target.value.toUpperCase().replace(/[^A-Z\s]/g, ""))
-                        }
-                        placeholder="e.g. MESSI"
-                        className="w-full rounded-lg border border-border/70 bg-transparent px-3 py-2 text-xs outline-none focus:border-foreground uppercase font-mono tracking-widest"
-                      />
-                    </div>
-                    <div>
-                      <div className="mb-1 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
-                        Number
-                      </div>
-                      <input
-                        type="text"
-                        maxLength={2}
-                        pattern="[0-9]*"
-                        inputMode="numeric"
-                        value={customNumber}
-                        onChange={(e) => setCustomNumber(e.target.value.replace(/\D/g, ""))}
-                        placeholder="10"
-                        className="w-full rounded-lg border border-border/70 bg-transparent px-3 py-2 text-center text-xs outline-none focus:border-foreground font-mono"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* ADD TO BAG & WISHLIST BUTTONS (INLINE) */}
             <div ref={inlineAddRef} className="mt-6 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => toggleWishlist(product.id)}
-                  className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center border transition rounded-sm ${wished ? "border-brand text-brand bg-brand/5" : "border-border/70 hover:border-foreground active:border-foreground bg-surface/50 sm:bg-transparent"}`}
-                >
-                  <Heart className={`h-6 w-6 ${wished ? "fill-brand" : ""}`} strokeWidth={1.5} />
-                </button>
-                {product.stock <= 0 ? (
-                  <div className="flex h-[52px] flex-1 items-center justify-center border border-border/50 bg-surface/50 text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground rounded-sm cursor-not-allowed">
-                    Out of Stock
-                  </div>
-                ) : (
+              {!isAdmin && (
+                <div className="flex items-center gap-3">
                   <button
-                    onClick={() =>
-                      addToCart(
-                        {
-                          id: product.id,
-                          qty,
-                          size,
-                          color,
-                          ...(customized && customName ? { customName } : {}),
-                          ...(customized && customNumber ? { customNumber } : {}),
-                        },
-                        product.stockBySize?.[size] !== undefined
-                          ? product.stockBySize[size]
-                          : product.stock,
-                      )
-                    }
-                    className="flex h-[52px] flex-1 items-center justify-center bg-[#181818] text-[15px] font-bold uppercase tracking-widest text-white transition hover:bg-black active:bg-black rounded-sm"
+                    onClick={() => toggleWishlist(product.id)}
+                    className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center border transition rounded-sm ${wished ? "border-brand text-brand bg-brand/5" : "border-border/70 hover:border-foreground active:border-foreground bg-surface/50 sm:bg-transparent"}`}
                   >
-                    ADD TO CART
+                    <Heart className={`h-6 w-6 ${wished ? "fill-brand" : ""}`} strokeWidth={1.5} />
                   </button>
-                )}
-              </div>
+                  {product.stock <= 0 ? (
+                    <div className="flex h-[52px] flex-1 items-center justify-center border border-border/50 bg-surface/50 text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground rounded-sm cursor-not-allowed">
+                      Out of Stock
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        addToCart(
+                          {
+                            id: product.id,
+                            qty,
+                            size,
+                            color,
+                          },
+                          product.stockBySize?.[size] !== undefined
+                            ? product.stockBySize[size]
+                            : product.stock,
+                        )
+                      }
+                      className="flex h-[52px] flex-1 items-center justify-center bg-[#181818] text-[15px] font-bold uppercase tracking-widest text-white transition hover:bg-black active:bg-black rounded-sm"
+                    >
+                      ADD TO CART
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             <ul className="mt-6 space-y-3 border-t border-border/50 pt-5 text-xs text-muted-foreground">
@@ -573,37 +511,37 @@ function Pdp() {
       )}
 
       {/* SMART STICKY ADD TO CART BAR (MOBILE ONLY) */}
-      <div 
-        className={`fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/30 px-4 py-3 sm:px-6 sm:py-4 transition-transform duration-300 shadow-[0_-10px_20px_rgba(0,0,0,0.08)] ${showStickyAdd ? "translate-y-0" : "translate-y-full"}`}
-      >
-        {product.stock <= 0 ? (
-          <div className="flex h-[52px] w-full items-center justify-center border border-border/50 bg-surface/50 text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground rounded-sm cursor-not-allowed">
-            Out of Stock
-          </div>
-        ) : (
-          <button
-            onClick={() => {
-              addToCart(
-                {
-                  id: product.id,
-                  qty,
-                  size,
-                  color,
-                  ...(customized && customName ? { customName } : {}),
-                  ...(customized && customNumber ? { customNumber } : {}),
-                },
-                product.stockBySize?.[size] !== undefined
-                  ? product.stockBySize[size]
-                  : product.stock,
-              );
-              window.scrollTo({ top: 0, behavior: 'smooth' }); // Optional UX enhancement
-            }}
-            className="flex h-[52px] w-full items-center justify-center bg-[#181818] text-[15px] font-bold uppercase tracking-widest text-white transition active:bg-black rounded-sm"
-          >
-            ADD TO CART
-          </button>
-        )}
-      </div>
+      {!isAdmin && (
+        <div 
+          className={`fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/30 px-4 py-3 sm:px-6 sm:py-4 transition-transform duration-300 shadow-[0_-10px_20px_rgba(0,0,0,0.08)] ${showStickyAdd ? "translate-y-0" : "translate-y-full"}`}
+        >
+          {product.stock <= 0 ? (
+            <div className="flex h-[52px] w-full items-center justify-center border border-border/50 bg-surface/50 text-[13px] font-semibold uppercase tracking-[0.24em] text-muted-foreground rounded-sm cursor-not-allowed">
+              Out of Stock
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                addToCart(
+                  {
+                    id: product.id,
+                    qty,
+                    size,
+                    color,
+                  },
+                  product.stockBySize?.[size] !== undefined
+                    ? product.stockBySize[size]
+                    : product.stock,
+                );
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Optional UX enhancement
+              }}
+              className="flex h-[52px] w-full items-center justify-center bg-[#181818] text-[15px] font-bold uppercase tracking-widest text-white transition active:bg-black rounded-sm"
+            >
+              ADD TO CART
+            </button>
+          )}
+        </div>
+      )}
 
       {/* SIZE GUIDE MODAL */}
       {sizeGuideOpen && (

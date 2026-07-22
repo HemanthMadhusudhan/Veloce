@@ -30,7 +30,6 @@ function LoginPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [showMockModal, setShowMockModal] = useState(false);
 
-  const [marketingChecked, setMarketingChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [offersChecked, setOffersChecked] = useState(false);
   const [keepLoggedChecked, setKeepLoggedChecked] = useState(false);
@@ -334,16 +333,6 @@ function LoginPage() {
               />
               
               <div className="mt-8 space-y-5">
-                <Checkbox 
-                  checked={marketingChecked} 
-                  onChange={setMarketingChecked}
-                  label={
-                    <>
-                      I would like to stay up to date with Veloce Wear. I agree to receive personalised marketing messages from Veloce Wear.<br/>
-                      <a href="#" className="underline font-semibold mt-1 inline-block">Read more</a>
-                    </>
-                  }
-                />
                 <Checkbox 
                   checked={termsChecked} 
                   onChange={setTermsChecked}

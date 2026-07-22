@@ -29,8 +29,6 @@ export type CartItem = {
   qty: number;
   size: string;
   color: string;
-  customName?: string;
-  customNumber?: string;
 };
 
 export type OrderStatus =
@@ -77,6 +75,7 @@ type ShopCtx = {
   wishlist: string[];
   recent: string[];
   isAdmin: boolean;
+  isOwner: boolean;
   userEmail: string | null;
   userId: string | null;
   authLoading: boolean;
@@ -99,15 +98,11 @@ type ShopCtx = {
     size: string,
     color: string,
     qty: number,
-    customName?: string,
-    customNumber?: string,
   ) => void;
   removeFromCart: (
     id: string,
     size: string,
     color: string,
-    customName?: string,
-    customNumber?: string,
   ) => void;
   clearCart: () => void;
   toggleWishlist: (id: string) => void;
@@ -128,6 +123,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState<AppUser | null>(null);
 
@@ -202,7 +198,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             };
           }
           setProfile(userProfile);
-          setIsAdmin(userProfile.role === "admin");
+          const ownerEmail = import.meta.env.VITE_OWNER_EMAIL;
+          const isThisOwner = !!ownerEmail && userProfile.email === ownerEmail;
+          setIsAdmin(userProfile.role === "admin" || isThisOwner);
+          setIsOwner(isThisOwner);
         } catch (err) {
           console.error("Failed to fetch user profile:", err);
         }
@@ -217,9 +216,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
               (item) =>
                 item.id === dbItem.id &&
                 item.size === dbItem.size &&
-                item.color === dbItem.color &&
-                item.customName === dbItem.customName &&
-                item.customNumber === dbItem.customNumber,
+                item.color === dbItem.color,
             );
             if (idx >= 0) {
               mergedCart[idx].qty = Math.max(mergedCart[idx].qty, dbItem.qty);
@@ -282,6 +279,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         setUserEmail(null);
         setProfile(null);
         setIsAdmin(false);
+        setIsOwner(false);
         if (event === "SIGNED_OUT") {
           setOrders([]);
           setCart([]);
@@ -338,9 +336,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           (x) =>
             x.id === i.id &&
             x.size === i.size &&
-            x.color === i.color &&
-            x.customName === i.customName &&
-            x.customNumber === i.customNumber,
+            x.color === i.color,
         );
         if (idx >= 0) {
           const copy = [...prev];
@@ -364,16 +360,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       size: string,
       color: string,
       qty: number,
-      customName?: string,
-      customNumber?: string,
     ) => {
       setCart((prev) =>
         prev.map((x) =>
           x.id === id &&
           x.size === size &&
-          x.color === color &&
-          x.customName === customName &&
-          x.customNumber === customNumber
+          x.color === color
             ? { ...x, qty: Math.max(1, qty) }
             : x,
         ),
@@ -383,16 +375,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   );
 
   const removeFromCart = useCallback(
-    (id: string, size: string, color: string, customName?: string, customNumber?: string) => {
+    (id: string, size: string, color: string) => {
       setCart((prev) =>
         prev.filter(
           (x) =>
             !(
               x.id === id &&
               x.size === size &&
-              x.color === color &&
-              x.customName === customName &&
-              x.customNumber === customNumber
+              x.color === color
             ),
         ),
       );
@@ -526,6 +516,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         wishlist,
         recent,
         isAdmin,
+        isOwner,
         userEmail,
         userId,
         authLoading,

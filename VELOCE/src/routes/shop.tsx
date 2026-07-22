@@ -35,13 +35,14 @@ export function ShopInner({
   }, [search.team]);
 
   const filtered = useMemo(() => {
-    let list = category
-      ? products.filter((p) =>
+    let list = [...products].reverse();
+    if (category) {
+      list = list.filter((p) =>
           category === "football"
             ? p.category === "football" || p.category === "worldcup"
             : p.category === category,
-        )
-      : products;
+        );
+    }
     if (team) list = list.filter((p) => p.team === team);
     list = list.filter((p) => p.price >= price[0] && p.price <= price[1]);
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Search, Heart, ShoppingBag, User, Menu, X, Trash2, Clock, TrendingUp, Minus, Plus, ChevronDown, ChevronRight, Gift, Truck, ShieldCheck, RefreshCw, Banknote, Settings, Home, Store, MoreHorizontal, MessageSquare } from "lucide-react";
+import { Search, Heart, ShoppingBag, User, Menu, X, Trash2, Clock, TrendingUp, Minus, Plus, ChevronDown, ChevronRight, Gift, Truck, ShieldCheck, RefreshCw, Banknote, Settings, Home, Store, MoreHorizontal, MessageSquare, Sparkles } from "lucide-react";
 import { Logo } from "./Logo";
 import { FortuneSpin } from "./FortuneSpin";
 import { useShop } from "@/lib/store";
@@ -9,7 +9,7 @@ import { LEAGUES, FOOTBALL_QUICK_LINKS } from "@/lib/leagues";
 import { useCatalog } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
 import { computeCart } from "@/lib/pricing";
-import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams } from "@/lib/logos";
+import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams, worldCupTeams } from "@/lib/logos";
 
 const NAV = [
   { label: "Formula 1", to: "/shop/f1" as const },
@@ -20,7 +20,6 @@ const NAV = [
 const FOOTBALL_SUB = [
   { label: "All Football", to: "/shop/football" as const },
   { label: "FIFA World Cup", to: "/shop/worldcup" as const },
-  { label: "Retro Collection", to: "/shop/retro" as const },
 ];
 
 export function SiteNav() {
@@ -49,9 +48,7 @@ export function SiteNav() {
           <F1Menu />
           <BasketballMenu />
           <CricketMenu />
-          <Link to="/shop/worldcup" className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
-            World Cup
-          </Link>
+          <WorldCupMenu />
           <Link to="/shop" className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
             Shop All
           </Link>
@@ -67,13 +64,26 @@ export function SiteNav() {
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <IconChip onClick={openSearch} label="Search"><Search className="h-4 w-4" /></IconChip>
-          <IconChip onClick={() => {
-            if (window.innerWidth >= 640 && !userEmail) {
-              nav({ to: "/login" });
-            } else {
-              setSpinOpen(true);
-            }
-          }} label="Spin" className="hidden sm:inline-flex"><Gift className="h-4 w-4 text-yellow-500" /></IconChip>
+
+          {!isAdmin && (
+            <button
+              onClick={() => {
+                if (window.innerWidth >= 640 && !userEmail) {
+                  nav({ to: "/login" });
+                } else {
+                  setSpinOpen(true);
+                }
+              }}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-black shadow-[0_0_15px_-3px_rgba(250,204,21,0.6)] transition-all hover:scale-105 animate-pulse"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-yellow-900 fill-yellow-400 group-hover:rotate-180 transition-transform duration-700">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+              </svg> Spin & Win
+            </button>
+          )}
+
           {isAdmin ? (
             <>
               <Link to="/admin" className="hidden sm:block"><IconChip label="Admin"><Settings className="h-4 w-4" /></IconChip></Link>
@@ -198,7 +208,7 @@ function FootballMenu() {
         Football <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>Football Jerseys</span>
@@ -230,6 +240,36 @@ function FootballMenu() {
   );
 }
 
+function WorldCupMenu() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <Link to="/shop/worldcup" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+        World Cup <ChevronDown className="h-3 w-3" />
+      </Link>
+      {open && (
+        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
+          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
+               <span>FIFA World Cup Teams</span>
+            </div>
+            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
+              {worldCupTeams.map(([t, logo]) => (
+                <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function F1Menu() {
   const [open, setOpen] = useState(false);
   return (
@@ -238,7 +278,7 @@ function F1Menu() {
         Formula 1 <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>Formula 1 Merch</span>
@@ -268,7 +308,7 @@ function BasketballMenu() {
         Basketball <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>Basketball Jerseys</span>
@@ -298,7 +338,7 @@ function CricketMenu() {
         Cricket <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-1/2 top-full w-[800px] max-w-[92vw] -translate-x-1/2 pt-3 z-50">
+        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>Cricket Jerseys</span>
@@ -355,7 +395,6 @@ export function SiteFooter() {
       title: "FOOTBALL",
       links: [
         ["All Football", "/shop/football"],
-        ["Retro Collection", "/shop/retro"],
         ["World Cup", "/shop/worldcup"],
       ]
     },
@@ -491,7 +530,7 @@ export function CartDrawer() {
           ) : (
             <ul className="divide-y divide-border/50">
               {lines.map(({ item, product, freeUnits: fu, lineSubtotal, lineDiscount }) => (
-                <li key={item.id + item.size + item.color + (item.customName || "") + (item.customNumber || "")} className="flex gap-4 py-4">
+                <li key={item.id + item.size + item.color} className="flex gap-4 py-4">
                   <img src={product.images[0]} alt={product.name} loading="lazy" className="h-24 w-20 rounded-lg object-cover" />
                   <div className="flex flex-1 min-w-0 flex-col justify-between">
                     <div className="flex justify-between gap-2">
@@ -499,11 +538,6 @@ export function CartDrawer() {
                         <div className="truncate font-display text-sm font-semibold">{product.name}</div>
                         <div className="text-[11px] text-muted-foreground">
                           {item.size} · {item.color}
-                          {(item.customName || item.customNumber) && (
-                            <div className="mt-1 font-mono text-[10px] text-brand uppercase tracking-wider font-semibold">
-                              Print: {item.customName || "NO NAME"} #{item.customNumber || "00"}
-                            </div>
-                          )}
                         </div>
                         {fu > 0 && <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand/20 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-brand"><Gift className="h-2.5 w-2.5" />{fu}× Free · B2G1</div>}
                       </div>
@@ -514,15 +548,15 @@ export function CartDrawer() {
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <div className="inline-flex items-center rounded-full border border-border/70">
-                        <button onClick={() => updateQty(item.id, item.size, item.color, item.qty - 1, item.customName, item.customNumber)} className="px-2 py-1"><Minus className="h-3 w-3" /></button>
+                        <button onClick={() => updateQty(item.id, item.size, item.color, item.qty - 1)} className="px-2 py-1"><Minus className="h-3 w-3" /></button>
                         <span className="w-6 text-center font-mono text-xs">{item.qty}</span>
                         <button onClick={() => {
                           const p = getById(item.id);
                           const available = p?.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : (p?.stock ?? 0);
-                          updateQty(item.id, item.size, item.color, Math.min(available, item.qty + 1), item.customName, item.customNumber);
+                          updateQty(item.id, item.size, item.color, Math.min(available, item.qty + 1));
                         }} className="px-2 py-1"><Plus className="h-3 w-3" /></button>
                       </div>
-                      <button onClick={() => removeFromCart(item.id, item.size, item.color, item.customName, item.customNumber)} className="text-muted-foreground hover:text-brand" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
+                      <button onClick={() => removeFromCart(item.id, item.size, item.color)} className="text-muted-foreground hover:text-brand" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </div>
                 </li>
@@ -718,7 +752,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
 export function MobileTopNav() {
   const nav = useNavigate();
-  const { cart, openCart, openSearch, userEmail, wishlist } = useShop();
+  const { cart, openCart, openSearch, userEmail, wishlist, isAdmin } = useShop();
   const [menuOpen, setMenuOpen] = useState(false);
   const { getById } = useCatalog();
   const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
@@ -727,18 +761,27 @@ export function MobileTopNav() {
   const [footballOpen, setFootballOpen] = useState(false);
   const [basketballOpen, setBasketballOpen] = useState(false);
   const [cricketOpen, setCricketOpen] = useState(false);
+  const [worldCupOpen, setWorldCupOpen] = useState(false);
   const [zonesOpen, setZonesOpen] = useState(false);
   const cricketOpenState = useState(false);
+  const [adminMobilePopup, setAdminMobilePopup] = useState(true);
 
   return (
     <div className="sm:hidden sticky top-0 inset-x-0 z-[100]">
+      {isAdmin && adminMobilePopup && (
+         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+           <div className="bg-[#181818] border border-border/20 rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center">
+              <h2 className="text-lg font-bold text-white mb-2">Desktop Recommended</h2>
+              <p className="text-sm text-gray-400 mb-6">For the best experience while managing the store, please use a laptop or PC.</p>
+              <button onClick={() => setAdminMobilePopup(false)} className="w-full bg-white text-black font-bold text-[13px] py-3 rounded-none uppercase tracking-widest active:scale-95 transition-transform">Continue anyway</button>
+           </div>
+         </div>
+      )}
       {/* Promo Bar */}
-      <div className="w-full bg-[#f4f4f4] text-black text-[9px] font-bold uppercase tracking-wider text-center py-1">
-        FREE RETURNS AND EXCHANGES.
-      </div>
+      <PromoSlider />
       {/* Main Bar */}
       <div className="relative flex items-center justify-between bg-[#181818] px-4 py-4 shadow-md">
-        <div className="flex items-center gap-3 z-10">
+        <div className="flex items-center gap-4 z-10">
           <button onClick={() => setMenuOpen(true)} className="text-white active:scale-95 transition-transform">
             <Menu className="h-6 w-6 stroke-[2]" />
           </button>
@@ -759,27 +802,30 @@ export function MobileTopNav() {
           </Link>
         </div>
         
-        <div className="flex items-center gap-3 z-10">
+        <div className="flex items-center gap-4 z-10">
           <Link to={userEmail ? "/profile" : "/login"} className="text-white active:scale-95 transition-transform">
             <User className="h-6 w-6 stroke-[2]" />
           </Link>
-          <Link to="/wishlist" className="relative text-white active:scale-95 transition-transform">
-            <Heart className="h-6 w-6 stroke-[2]" />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-          <button onClick={() => nav({ to: "/checkout" })} className="relative text-white active:scale-95 transition-transform">
-            <ShoppingBag className="h-6 w-6 stroke-[2]" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
-                {cartCount}
-              </span>
-            )}
-          </button>
-
+          {!isAdmin && (
+            <Link to="/wishlist" className="relative text-white active:scale-95 transition-transform">
+              <Heart className="h-6 w-6 stroke-[2]" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+          )}
+          {!isAdmin && (
+            <button onClick={() => nav({ to: "/checkout" })} className="relative text-white active:scale-95 transition-transform">
+              <ShoppingBag className="h-6 w-6 stroke-[2]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -915,29 +961,79 @@ export function MobileTopNav() {
                 )}
               </div>
               
-              <Link to="/shop/worldcup" onClick={() => setMenuOpen(false)} className="text-foreground font-bold text-[15px] tracking-wide">
-                FIFA World Cup
-              </Link>
+              <div className="flex flex-col gap-4">
+                <button onClick={() => setWorldCupOpen(!worldCupOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
+                  <span>FIFA World Cup</span>
+                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${worldCupOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {worldCupOpen && (
+                  <div className="grid grid-cols-4 gap-3 pt-2">
+                    {worldCupTeams.map(([t, logo]) => (
+                      <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                        </div>
+                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
               
-              <Link to="/shop/retro" onClick={() => setMenuOpen(false)} className="text-foreground font-bold text-[15px] tracking-wide">
-                Retro Jerseys
-              </Link>
-
-              <button onClick={() => { 
-                setMenuOpen(false); 
-                if (!userEmail) nav({ to: "/login" });
-                else setSpinOpen(true); 
-              }} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-2">
-                Lucky Wheel <Gift className="h-4 w-4 text-foreground" />
-              </button>
-
+              <div className="flex flex-col gap-6 pt-6 mt-6 border-t border-border/10">
+                <Link to={userEmail ? "/profile" : "/login"} onClick={() => setMenuOpen(false)} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-3">
+                  <User className="h-5 w-5" /> Account
+                </Link>
+                {!isAdmin && (
+                  <Link to="/wishlist" onClick={() => setMenuOpen(false)} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-3 relative">
+                    <Heart className="h-5 w-5" /> Wishlist
+                  </Link>
+                )}
+                {!isAdmin && (
+                  <button onClick={() => { 
+                    setMenuOpen(false); 
+                    if (!userEmail) nav({ to: "/login" });
+                    else setSpinOpen(true); 
+                  }} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-3 text-yellow-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-yellow-700 fill-yellow-500">
+                      <circle cx="12" cy="12" r="10"/>
+                      <circle cx="12" cy="12" r="2"/>
+                      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                    </svg> Lucky Wheel
+                  </button>
+                )}
+              </div>
 
             </div>
           </div>
         </div>
       )}
-      
       <FortuneSpin open={spinOpen} onClose={() => setSpinOpen(false)} />
+    </div>
+  );
+}
+
+export function PromoSlider() {
+  const [index, setIndex] = useState(0);
+  const messages = [
+    "FREE EXCHANGE AND RETURN",
+    "COD AVAILABLE WITH MINIMAL PAYMENT",
+    "LUXURY INDEED",
+    "SECURED CHECKOUT AND PAYMENTS"
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % messages.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="w-full bg-[#f4f4f4] text-black text-[10px] font-bold uppercase tracking-wider text-center py-1.5 overflow-hidden">
+      <div key={index} className="animate-in fade-in slide-in-from-right-4 duration-500">
+        {messages[index]}
+      </div>
     </div>
   );
 }

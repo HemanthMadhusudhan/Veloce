@@ -19,6 +19,7 @@ import {
   ShieldOff,
   Ban,
   CheckCircle2,
+  User,
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { useCatalog } from "@/lib/catalog-store";
@@ -43,7 +44,7 @@ import {
 } from "@/lib/admin-users.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { ImageCropper } from "@/components/ImageCropper";
-import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, allLogoEntries } from "@/lib/logos";
+import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, worldCupTeams, allLogoEntries } from "@/lib/logos";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Veloce Wear" }, { name: "robots", content: "noindex" }] }),
@@ -195,6 +196,18 @@ function ProductsTab() {
   const [cat, setCat] = useState<Category | "all">("all");
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const searchOptions = useMemo(() => {
+    let list = allLogoEntries;
+    if (cat === "f1") list = f1Teams;
+    else if (cat === "basketball") list = basketballTeams;
+    else if (cat === "cricket") list = cricketTeams;
+    else if (cat === "football" || cat === "worldcup") list = [...footballTeams, ...worldCupTeams];
+
+    if (!q) return [];
+    return list.filter(([t]) => t.toLowerCase().includes(q.toLowerCase()));
+  }, [cat, q]);
 
   const list = useMemo(() => {
     return products.filter((p) => {
@@ -213,37 +226,13 @@ function ProductsTab() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search name or team"
-            className="w-80 rounded-none border border-gray-300 bg-white py-3 pl-12 pr-4 text-[14px] text-black outline-none focus:border-black transition-colors"
-          />
-        </div>
-        <select
-          value={cat}
-          onChange={(e) => setCat(e.target.value as Category | "all")}
-          className="rounded-none border border-gray-300 bg-white px-4 py-3 text-[14px] text-black outline-none focus:border-black transition-colors"
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => setAdding(true)}
+          className="inline-flex items-center gap-2 rounded-none bg-black px-6 py-3 text-[13px] font-bold uppercase tracking-widest text-white hover:bg-gray-900 transition-colors"
         >
-          <option value="all">All categories</option>
-          <option value="football">Football</option>
-          <option value="f1">Formula 1</option>
-          <option value="worldcup">World Cup</option>
-          <option value="retro">Retro</option>
-          <option value="basketball">Basketball</option>
-          <option value="cricket">Cricket</option>
-        </select>
-        <div className="ml-auto flex gap-2">
-          <button
-            onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-2 rounded-none bg-black px-6 py-3 text-[13px] font-bold uppercase tracking-widest text-white hover:bg-gray-900 transition-colors"
-          >
-            <Plus className="h-4 w-4" /> New
-          </button>
-        </div>
+          <Plus className="h-4 w-4" /> New
+        </button>
       </div>
 
       {adding && (
@@ -256,16 +245,57 @@ function ProductsTab() {
         />
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-none border border-gray-300">
-        <table className="w-full min-w-[720px] text-sm">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="relative w-80">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+          <input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => { if (q) setSearchOpen(true); }}
+            onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
+            placeholder="Search name or team"
+            className="w-full rounded-none border border-gray-300 bg-white py-3 pl-12 pr-4 text-[14px] text-black outline-none focus:border-black transition-colors"
+          />
+          {searchOpen && searchOptions.length > 0 && (
+            <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-none border border-gray-300 bg-white shadow-lg">
+              {searchOptions.map(([t, logo]) => (
+                <div
+                  key={t}
+                  onMouseDown={(e) => { e.preventDefault(); setQ(t); setSearchOpen(false); }}
+                  className="flex cursor-pointer items-center gap-3 px-4 py-3 text-[14px] hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                >
+                  <img src={logo} alt="" className="h-6 w-6 object-contain" />
+                  <span>{t}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <select
+          value={cat}
+          onChange={(e) => setCat(e.target.value as Category | "all")}
+          className="rounded-none border border-gray-300 bg-white px-4 py-3 text-[14px] text-black outline-none focus:border-black transition-colors"
+        >
+          <option value="all">All categories</option>
+          <option value="football">Football</option>
+          <option value="f1">Formula 1</option>
+          <option value="worldcup">World Cup</option>
+          <option value="basketball">Basketball</option>
+          <option value="cricket">Cricket</option>
+        </select>
+      </div>
+
+      <div className="mt-6 rounded-none border border-gray-300">
+        <table className="w-full text-sm">
           <thead className="bg-gray-50 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
             <tr>
               <th className="px-4 py-3 text-left">Product</th>
               <th className="px-4 py-3 text-left">Category</th>
               <th className="px-4 py-3 text-right">Price</th>
-              <th className="px-4 py-3 text-right">Stock</th>
-              <th className="px-4 py-3 text-left">Badge</th>
-              <th className="px-4 py-3"></th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -293,37 +323,22 @@ function ProductsTab() {
                     className="w-24 rounded border border-gray-300 bg-transparent px-2 py-1 text-right font-mono text-xs"
                   />
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <input
-                    type="number"
-                    value={p.stock}
-                    onChange={(e) => updateProduct(p.id, { stock: Number(e.target.value) })}
-                    className={`w-20 rounded border bg-transparent px-2 py-1 text-right font-mono text-xs ${p.stock < 10 ? "border-brand text-brand" : "border-gray-300"}`}
-                  />
-                </td>
-                <td className="px-4 py-3">
-                  <input
-                    value={p.badge ?? ""}
-                    onChange={(e) => updateProduct(p.id, { badge: e.target.value || undefined })}
-                    placeholder="—"
-                    className="w-24 rounded border border-gray-300 bg-transparent px-2 py-1 text-xs"
-                  />
-                </td>
+
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setEditing(p.id)}
-                      className="text-muted-foreground hover:text-black"
+                      className="text-muted-foreground hover:text-black flex items-center gap-1 text-xs font-semibold"
                       aria-label="Edit"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" /> Edit
                     </button>
                     <button
                       onClick={() => confirm(`Remove ${p.name}?`) && removeProduct(p.id)}
-                      className="text-muted-foreground hover:text-brand"
+                      className="text-muted-foreground hover:text-brand flex items-center gap-1 text-xs font-semibold"
                       aria-label="Delete"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" /> Delete
                     </button>
                   </div>
                 </td>
@@ -331,7 +346,7 @@ function ProductsTab() {
             ))}
             {list.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-xs text-muted-foreground">
+                <td colSpan={4} className="p-8 text-center text-xs text-muted-foreground">
                   No products match.
                 </td>
               </tr>
@@ -373,6 +388,8 @@ function EditProductDrawer({
   const [f, setF] = useState({
     name: product.name,
     team: product.team,
+    driver: product.driver || "",
+    player: product.player || "",
     tag: product.tag,
     price: product.price,
     compareAt: product.compareAt ?? 0,
@@ -385,6 +402,7 @@ function EditProductDrawer({
     images: [...product.images],
     rating: product.rating ?? 4.8,
     reviews: product.reviews ?? 0,
+    stockBySize: product.stockBySize || {},
   });
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
 
@@ -427,11 +445,25 @@ function EditProductDrawer({
                 category={product.category}
               />
             </Field>
+            <Field label={product.category === "f1" ? "Driver Name" : "Player Name"}>
+              <input
+                value={product.category === "f1" ? f.driver : f.player}
+                onChange={(e) => {
+                  if (product.category === "f1") {
+                    setF({ ...f, driver: e.target.value });
+                  } else {
+                    setF({ ...f, player: e.target.value });
+                  }
+                }}
+                className={inputCls}
+                placeholder={`Optional ${product.category === "f1" ? "driver" : "player"} name`}
+              />
+            </Field>
             <Field label="Tag">
               <input
                 value={f.tag}
-                onChange={(e) => setF({ ...f, tag: e.target.value })}
-                className={inputCls}
+                onChange={(e) => setF({ ...f, tag: e.target.value.toUpperCase() })}
+                className={`${inputCls} font-bold uppercase`}
               />
             </Field>
           </div>
@@ -439,50 +471,77 @@ function EditProductDrawer({
             <Field label="Price ₹">
               <input
                 type="number"
-                value={f.price}
-                onChange={(e) => setF({ ...f, price: Number(e.target.value) })}
+                value={f.price ?? ""}
+                onChange={(e) => setF({ ...f, price: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
                 className={inputCls}
               />
             </Field>
-            <Field label="Compare ₹">
+            <Field label="Compare At ₹">
               <input
                 type="number"
-                value={f.compareAt}
-                onChange={(e) => setF({ ...f, compareAt: Number(e.target.value) })}
+                value={f.compareAt ?? ""}
+                onChange={(e) => setF({ ...f, compareAt: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
                 className={inputCls}
               />
             </Field>
             <Field label="Stock">
               <input
                 type="number"
-                value={f.stock}
-                onChange={(e) => setF({ ...f, stock: Number(e.target.value) })}
+                value={f.stock ?? ""}
+                onChange={(e) => setF({ ...f, stock: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
                 className={inputCls}
               />
             </Field>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Field label="Rating (0-5)">
+            <Field label="Sizes (comma separated)">
               <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={f.rating}
-                onChange={(e) => setF({ ...f, rating: Number(e.target.value) })}
+                value={f.sizes}
+                onChange={(e) => setF({ ...f, sizes: e.target.value })}
                 className={inputCls}
               />
             </Field>
-            <Field label="Reviews Count">
+            <Field label="Colors (comma separated)">
               <input
-                type="number"
-                min="0"
-                value={f.reviews}
-                onChange={(e) => setF({ ...f, reviews: Number(e.target.value) })}
+                value={f.colors}
+                onChange={(e) => setF({ ...f, colors: e.target.value })}
                 className={inputCls}
               />
             </Field>
           </div>
+          
+          {f.sizes && (
+            <div className="rounded-lg border border-border/50 p-4 bg-muted/20">
+              <div className="mb-3 text-[10px] uppercase tracking-[0.2em] font-bold text-foreground">Stock by Size</div>
+              <div className="grid grid-cols-2 gap-2">
+                {f.sizes.split(",").map((s) => s.trim()).filter(Boolean).map((s) => (
+                  <label key={s} className="flex items-center gap-2 text-xs font-mono">
+                    <span className="w-8 text-right font-bold text-muted-foreground">{s}</span>
+                    <input
+                      type="number"
+                      value={f.stockBySize[s] ?? 0}
+                      onChange={(e) => setF(prev => ({
+                        ...prev,
+                        stockBySize: {
+                          ...prev.stockBySize,
+                          [s]: Number(e.target.value)
+                        }
+                      }))}
+                      className={inputCls}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Field label="Material">
+            <input
+              value={f.material}
+              onChange={(e) => setF({ ...f, material: e.target.value })}
+              className={inputCls}
+            />
+          </Field>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Badge">
               <input
@@ -491,28 +550,18 @@ function EditProductDrawer({
                 className={inputCls}
               />
             </Field>
-            <Field label="Material">
+            <Field label="Rating (0-5)">
               <input
-                value={f.material}
-                onChange={(e) => setF({ ...f, material: e.target.value })}
+                type="number"
+                step="0.1"
+                min="0"
+                max="5"
+                value={f.rating ?? ""}
+                onChange={(e) => setF({ ...f, rating: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
                 className={inputCls}
               />
             </Field>
           </div>
-          <Field label="Colors (comma-sep)">
-            <input
-              value={f.colors}
-              onChange={(e) => setF({ ...f, colors: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Sizes (comma-sep)">
-            <input
-              value={f.sizes}
-              onChange={(e) => setF({ ...f, sizes: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
           <Field label="Description">
             <textarea
               rows={4}
@@ -610,9 +659,10 @@ function EditProductDrawer({
                   name: f.name,
                   team: f.team,
                   tag: f.tag,
-                  price: f.price,
-                  compareAt: f.compareAt || undefined,
-                  stock: f.stock,
+                  player: f.player || undefined,
+                  price: Number(f.price) || 0,
+                  compareAt: f.compareAt ? Number(f.compareAt) : undefined,
+                  stock: Number(f.stock) || 0,
                   badge: f.badge || undefined,
                   material: f.material,
                   description: f.description,
@@ -629,7 +679,9 @@ function EditProductDrawer({
                     .filter(Boolean),
                   rating: f.rating,
                   reviews: f.reviews,
+                  stockBySize: f.stockBySize,
                 });
+                onClose();
               } catch (e) {
                 setErr(e instanceof Error ? e.message : "Failed to save changes");
               } finally {
@@ -1065,7 +1117,7 @@ function TeamCombobox({ value, onChange, category }: { value: string, onChange: 
     if (category === "f1") list = f1Teams;
     else if (category === "basketball") list = basketballTeams;
     else if (category === "cricket") list = cricketTeams;
-    else if (category === "football" || category === "worldcup" || category === "retro") list = footballTeams;
+    else if (category === "football" || category === "worldcup") list = [...footballTeams, ...worldCupTeams];
 
     if (!search) return list;
     return list.filter(([t]) => t.toLowerCase().includes(search.toLowerCase()));
@@ -1122,14 +1174,15 @@ function NewProductRow({
     name: "",
     team: "",
     driver: "",
+    player: "",
     category: "football" as Category,
     
     series: "" as "" | "legends",
-    price: 5000,
-    compareAt: [4999, 5999, 6999, 3599, 3499, 4499][Math.floor(Math.random() * 6)],
-    stock: 20,
-    tag: "New Piece",
-    badge: "",
+    price: "" as any,
+    compareAt: [4599, 5999, 3599, 3499, 5499, 4499, 3999, 4999][Math.floor(Math.random() * 8)],
+    stock: 10 + Math.floor(Math.random() * 41),
+    tag: "FOOTBALL",
+    badge: "VELOCE",
     material: "Premium cotton",
     description: "",
     colors: "Default",
@@ -1169,15 +1222,7 @@ function NewProductRow({
     <div className="mt-4 rounded-none border border-brand/40 bg-gray-50 p-5">
       <div className="mb-3 text-[10px] uppercase tracking-[0.24em] text-brand">New product</div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="ID (slug)">
-          <input
-            value={f.id}
-            onChange={(e) => setF({ ...f, id: e.target.value })}
-            onBlur={() => !f.id && f.name && setF((s) => ({ ...s, id: slug(s.name) }))}
-            placeholder="auto from name"
-            className={inputCls}
-          />
-        </Field>
+        {/* ID is auto-generated on save */}
         <Field label="Name">
           <input
             value={f.name}
@@ -1195,13 +1240,12 @@ function NewProductRow({
         <Field label="Category">
           <select
             value={f.category}
-            onChange={(e) => setF({ ...f, category: e.target.value as Category })}
+            onChange={(e) => setF({ ...f, category: e.target.value as Category, tag: e.target.value.toUpperCase() })}
             className={inputCls}
           >
             <option value="football">Football</option>
             <option value="f1">Formula 1</option>
             <option value="worldcup">World Cup</option>
-            <option value="retro">Retro</option>
             <option value="basketball">Basketball</option>
             <option value="cricket">Cricket</option>
           </select>
@@ -1217,18 +1261,25 @@ function NewProductRow({
             <option value="legends">Legends Series</option>
           </select>
         </Field>
-        <Field label="Driver (F1 only)">
+        <Field label={f.category === "f1" ? "Driver Name" : "Player Name"}>
           <input
-            value={f.driver}
-            onChange={(e) => setF({ ...f, driver: e.target.value })}
+            value={f.category === "f1" ? f.driver : f.player}
+            onChange={(e) => {
+              if (f.category === "f1") {
+                setF({ ...f, driver: e.target.value });
+              } else {
+                setF({ ...f, player: e.target.value });
+              }
+            }}
             className={inputCls}
+            placeholder={`Optional ${f.category === "f1" ? "driver" : "player"} name`}
           />
         </Field>
         <Field label="Tag">
           <input
             value={f.tag}
-            onChange={(e) => setF({ ...f, tag: e.target.value })}
-            className={inputCls}
+            onChange={(e) => setF({ ...f, tag: e.target.value.toUpperCase() })}
+            className={`${inputCls} font-bold uppercase`}
           />
         </Field>
         <Field label="Badge">
@@ -1242,24 +1293,24 @@ function NewProductRow({
         <Field label="Price ₹">
           <input
             type="number"
-            value={f.price}
-            onChange={(e) => setF({ ...f, price: Number(e.target.value) })}
+            value={f.price ?? ""}
+            onChange={(e) => setF({ ...f, price: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
             className={inputCls}
           />
         </Field>
         <Field label="Compare ₹">
           <input
             type="number"
-            value={f.compareAt}
-            onChange={(e) => setF({ ...f, compareAt: Number(e.target.value) })}
+            value={f.compareAt ?? ""}
+            onChange={(e) => setF({ ...f, compareAt: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
             className={inputCls}
           />
         </Field>
         <Field label="Stock">
           <input
             type="number"
-            value={f.stock}
-            onChange={(e) => setF({ ...f, stock: Number(e.target.value) })}
+            value={f.stock ?? ""}
+            onChange={(e) => setF({ ...f, stock: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
             className={inputCls}
           />
         </Field>
@@ -1269,8 +1320,8 @@ function NewProductRow({
             step="0.1"
             min="0"
             max="5"
-            value={f.rating}
-            onChange={(e) => setF({ ...f, rating: Number(e.target.value) })}
+            value={f.rating ?? ""}
+            onChange={(e) => setF({ ...f, rating: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
             className={inputCls}
           />
         </Field>
@@ -1278,8 +1329,8 @@ function NewProductRow({
           <input
             type="number"
             min="0"
-            value={f.reviews}
-            onChange={(e) => setF({ ...f, reviews: Number(e.target.value) })}
+            value={f.reviews ?? ""}
+            onChange={(e) => setF({ ...f, reviews: e.target.value === "" ? ("" as any) : Number(e.target.value) })}
             className={inputCls}
           />
         </Field>
@@ -1374,18 +1425,20 @@ function NewProductRow({
             setLoading(true);
             setErr(null);
             try {
+              const generatedId = f.id || slug(f.name);
               await onSave({
-                id,
+                id: generatedId,
                 name: f.name,
                 category: f.category,
                 
                 series: f.series || undefined,
                 team: f.team,
-                driver: f.driver || undefined,
+                driver: f.category === "f1" ? f.driver || undefined : undefined,
+                player: f.category !== "f1" ? f.player || undefined : undefined,
                 tag: f.tag,
-                price: f.price,
-                compareAt: f.compareAt || undefined,
-                stock: f.stock,
+                price: Number(f.price) || 0,
+                compareAt: f.compareAt ? Number(f.compareAt) : undefined,
+                stock: Number(f.stock) || 0,
                 badge: f.badge || undefined,
                 colors: f.colors
                   .split(",")
@@ -1582,7 +1635,7 @@ function InventoryTab() {
 /* ---------- CATEGORIES TAB ---------- */
 function CategoriesTab() {
   const { products } = useCatalog();
-  const cats: Category[] = ["football", "f1", "basketball", "cricket", "worldcup", "retro"];
+  const cats: Category[] = ["football", "f1", "basketball", "cricket", "worldcup"];
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {cats.map((c) => {
@@ -1778,7 +1831,7 @@ function UsersTab() {
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [editing, setEditing] = useState<AdminUser | null>(null);
-  const { userId: myId } = useShop();
+  const { userId: myId, isOwner } = useShop();
 
   const reload = async () => {
     setErr(null);
@@ -1843,8 +1896,8 @@ function UsersTab() {
       )}
 
       {users !== null && (
-        <div className="mt-6 overflow-x-auto rounded-none border border-gray-300">
-          <table className="w-full min-w-[900px] text-sm">
+        <div className="mt-6 rounded-none border border-gray-300">
+          <table className="w-full text-sm">
             <thead className="bg-gray-50 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left">User</th>
@@ -1859,6 +1912,7 @@ function UsersTab() {
               {filtered.map((u) => {
                 const isAdmin = u.roles.includes("admin");
                 const isMe = u.id === myId;
+                const isTargetOwner = u.email === import.meta.env.VITE_OWNER_EMAIL;
                 const b = busy === u.id;
                 return (
                   <tr
@@ -1878,14 +1932,20 @@ function UsersTab() {
                       {u.provider}
                     </td>
                     <td className="px-4 py-3">
-                      {isAdmin ? (
+                      {isTargetOwner ? (
+                        <span className="inline-flex items-center gap-1 rounded-none border border-[#ffd700]/50 bg-[#ffd700]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#ffd700]">
+                          <Shield className="h-3 w-3" />
+                          Owner
+                        </span>
+                      ) : isAdmin ? (
                         <span className="inline-flex items-center gap-1 rounded-none border border-brand/50 bg-brand/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-brand">
                           <Shield className="h-3 w-3" />
                           Admin
                         </span>
                       ) : (
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                          User
+                        <span className="inline-flex items-center gap-1 rounded-none border border-border bg-surface px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                          <User className="h-3 w-3" />
+                          Customer
                         </span>
                       )}
                       {u.disabled && (
@@ -1917,14 +1977,14 @@ function UsersTab() {
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button
-                          disabled={b || isMe}
+                          disabled={b || isMe || !isOwner || isTargetOwner}
                           onClick={() =>
                             doAction(u.id, () =>
                               setRole({ data: { userId: u.id, role: "admin", grant: !isAdmin } }),
                             )
                           }
-                          className="text-muted-foreground hover:text-brand disabled:opacity-40"
-                          title={isAdmin ? "Revoke admin" : "Make admin"}
+                          className={`text-muted-foreground hover:text-brand disabled:opacity-40 ${!isOwner && "opacity-40 cursor-not-allowed"}`}
+                          title={!isOwner ? "Only owner can manage roles" : isAdmin ? "Revoke admin" : "Make admin"}
                         >
                           {isAdmin ? (
                             <ShieldOff className="h-4 w-4" />
@@ -1933,25 +1993,25 @@ function UsersTab() {
                           )}
                         </button>
                         <button
-                          disabled={b || isMe}
+                          disabled={b || isMe || isTargetOwner}
                           onClick={() =>
                             doAction(u.id, () =>
                               setDisabled({ data: { userId: u.id, disabled: !u.disabled } }),
                             )
                           }
                           className="text-muted-foreground hover:text-amber-400 disabled:opacity-40"
-                          title={u.disabled ? "Enable account" : "Disable account"}
+                          title={isTargetOwner ? "Cannot disable owner" : u.disabled ? "Enable account" : "Disable account"}
                         >
                           <Ban className="h-4 w-4" />
                         </button>
                         <button
-                          disabled={b || isMe}
+                          disabled={b || isMe || isTargetOwner}
                           onClick={() => {
                             if (confirm(`Permanently delete ${u.email}?`))
                               doAction(u.id, () => del({ data: { userId: u.id } }));
                           }}
                           className="text-muted-foreground hover:text-brand disabled:opacity-40"
-                          title="Delete account"
+                          title={isTargetOwner ? "Cannot delete owner" : "Delete account"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

@@ -24,6 +24,23 @@ export const TEAM_LOGOS: Record<string, string> = {
   "FC Porto": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/FC_Porto.svg",
   "Boca Juniors": "https://a.espncdn.com/i/teamlogos/soccer/500/5.png",
 
+  // National Football Teams
+  "Argentina": "https://a.espncdn.com/i/teamlogos/countries/500/arg.png",
+  "Brazil": "https://a.espncdn.com/i/teamlogos/countries/500/bra.png",
+  "France": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
+  "Germany": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
+  "Italy": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
+  "Spain": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
+  "England (Football)": "https://a.espncdn.com/i/teamlogos/countries/500/eng.png",
+  "Portugal": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
+  "Netherlands": "https://a.espncdn.com/i/teamlogos/countries/500/ned.png",
+  "Belgium": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
+  "Croatia": "https://a.espncdn.com/i/teamlogos/countries/500/cro.png",
+  "USA": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+  "Mexico": "https://a.espncdn.com/i/teamlogos/countries/500/mex.png",
+  "Uruguay": "https://a.espncdn.com/i/teamlogos/countries/500/uru.png",
+  "Colombia": "https://a.espncdn.com/i/teamlogos/countries/500/col.png",
+
   // Formula 1
   "Ferrari": "https://upload.wikimedia.org/wikipedia/fr/thumb/c/c0/Scuderia_Ferrari_Logo.svg/960px-Scuderia_Ferrari_Logo.svg.png?_=20250316140006",
   "Mercedes": "https://static.vecteezy.com/system/resources/thumbnails/022/498/229/small_2x/mercedes-benz-logos-popular-brands-of-cars-isolated-on-transparent-background-3d-render-free-png.png",
@@ -82,6 +99,7 @@ export const f1TeamsList = ["Ferrari", "Mercedes", "Red Bull", "McLaren", "Alpin
 export const basketballTeamsList = ["Los Angeles Lakers", "Chicago Bulls", "Golden State Warriors", "Boston Celtics", "Miami Heat", "San Antonio Spurs", "Dallas Mavericks", "Phoenix Suns", "New York Knicks", "Brooklyn Nets", "Philadelphia 76ers", "Toronto Raptors", "Milwaukee Bucks", "Denver Nuggets", "Houston Rockets", "Los Angeles Clippers", "Minnesota Timberwolves", "Oklahoma City Thunder", "Utah Jazz", "Cleveland Cavaliers"];
 export const cricketTeamsList = ["India", "Australia", "Chennai Super Kings", "Royal Challengers Bangalore", "Mumbai Indians", "England", "South Africa", "New Zealand", "West Indies", "Sri Lanka", "Kolkata Knight Riders", "Sunrisers Hyderabad", "Delhi Capitals", "Rajasthan Royals", "Punjab Kings", "Lucknow Super Giants", "Gujarat Titans"];
 export const cricketInternationalList = ["India", "Australia", "England", "South Africa", "New Zealand", "West Indies", "Sri Lanka"];
+export const worldCupTeamsList = ["Argentina", "Brazil", "France", "Germany", "Italy", "Spain", "England (Football)", "Portugal", "Netherlands", "Belgium", "Croatia", "USA", "Mexico", "Uruguay", "Colombia"];
 
 export const allLogoEntries = Object.entries(TEAM_LOGOS);
 export const f1Teams = allLogoEntries.filter(([t]) => f1TeamsList.includes(t));
@@ -89,4 +107,5 @@ export const basketballTeams = allLogoEntries.filter(([t]) => basketballTeamsLis
 export const cricketTeams = allLogoEntries.filter(([t]) => cricketTeamsList.includes(t));
 export const cricketInternationalTeams = allLogoEntries.filter(([t]) => cricketInternationalList.includes(t));
 export const cricketIPLTeams = allLogoEntries.filter(([t]) => cricketTeamsList.includes(t) && !cricketInternationalList.includes(t));
-export const footballTeams = allLogoEntries.filter(([t]) => !f1TeamsList.includes(t) && !basketballTeamsList.includes(t) && !cricketTeamsList.includes(t));
+export const worldCupTeams = allLogoEntries.filter(([t]) => worldCupTeamsList.includes(t));
+export const footballTeams = allLogoEntries.filter(([t]) => !f1TeamsList.includes(t) && !basketballTeamsList.includes(t) && !cricketTeamsList.includes(t) && !worldCupTeamsList.includes(t));

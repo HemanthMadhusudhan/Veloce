@@ -12,7 +12,7 @@ const GRID_SIZES =
 const LIST_SIZES = "(min-width: 640px) 160px, 128px";
 
 export function ProductCard({ p, view = "grid", priority = false }: { p: Product; view?: "grid" | "list"; priority?: boolean }) {
-  const { wishlist, toggleWishlist, addToCart } = useShop();
+  const { wishlist, toggleWishlist, addToCart, isAdmin } = useShop();
   const wished = wishlist.includes(p.id);
   const [showSizes, setShowSizes] = useState(false);
   const quickAdd = () => {
@@ -80,17 +80,21 @@ export function ProductCard({ p, view = "grid", priority = false }: { p: Product
           <div className="flex items-center justify-between">
             <div className="font-mono text-base">{formatINR(p.price)}</div>
             <div className="flex gap-2">
-              <IconBtn active={wished} onClick={() => toggleWishlist(p.id)} label="Wishlist">
-                <Heart className="h-4 w-4" />
-              </IconBtn>
-              <div className="relative z-20">
-                <button
-                  onClick={(e) => { e.preventDefault(); quickAdd(); }}
-                  className="inline-flex h-9 items-center gap-1 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:bg-brand hover:text-foreground"
-                >
-                  <Plus className="h-3.5 w-3.5" /> Add
-                </button>
-              </div>
+              {!isAdmin && (
+                <IconBtn active={wished} onClick={() => toggleWishlist(p.id)} label="Wishlist">
+                  <Heart className="h-4 w-4" />
+                </IconBtn>
+              )}
+              {!isAdmin && (
+                <div className="relative z-20">
+                  <button
+                    onClick={(e) => { e.preventDefault(); quickAdd(); }}
+                    className="inline-flex h-9 items-center gap-1 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:bg-brand hover:text-foreground"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Add
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -125,15 +129,17 @@ export function ProductCard({ p, view = "grid", priority = false }: { p: Product
         )}
 
         {/* Wishlist Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            toggleWishlist(p.id);
-          }}
-          className="absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white/80 backdrop-blur shadow-sm transition hover:bg-white sm:h-8 sm:w-8"
-        >
-          <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${wished ? "fill-brand text-brand" : "text-gray-500"}`} />
-        </button>
+        {!isAdmin && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleWishlist(p.id);
+            }}
+            className="absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-white/80 backdrop-blur shadow-sm transition hover:bg-white sm:h-8 sm:w-8"
+          >
+            <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${wished ? "fill-brand text-brand" : "text-gray-500"}`} />
+          </button>
+        )}
 
         {/* Save Badge */}
         {p.compareAt && p.compareAt > p.price && (
@@ -153,7 +159,7 @@ export function ProductCard({ p, view = "grid", priority = false }: { p: Product
               SOLD OUT
             </span>
           </div>
-        ) : (
+        ) : !isAdmin ? (
           <div className="absolute right-0 bottom-0 z-30">
             <button
               onClick={(e) => {
@@ -177,7 +183,7 @@ export function ProductCard({ p, view = "grid", priority = false }: { p: Product
               </svg>
             </button>
           </div>
-        )}
+        ) : null}
       </Link>
 
       <div className="mt-3 flex flex-col items-center px-2 text-center bg-white">

@@ -178,11 +178,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         if (patch.reviews !== undefined) dbPatch.reviews = patch.reviews;
 
         const { error } = await supabase.from("products").update(dbPatch).eq("id", id);
-        if (error) throw error;
+        if (error) throw new Error(error.message || "Failed to update product");
         await refresh();
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed to update product in Supabase:", e);
-        throw e;
+        throw e instanceof Error ? e : new Error(e.message || "Failed to update product");
       }
     },
     [refresh],
@@ -191,13 +191,21 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const addProduct = useCallback(
     async (p: Product) => {
       try {
+        if (p.stock > 0 && (!p.stockBySize || Object.keys(p.stockBySize).length === 0) && p.sizes && p.sizes.length > 0) {
+          const res: Record<string, number> = {};
+          p.sizes.forEach((s) => (res[s] = 0));
+          for (let i = 0; i < p.stock; i++) {
+            res[p.sizes[Math.floor(Math.random() * p.sizes.length)]]++;
+          }
+          p.stockBySize = res;
+        }
         const dbRow = mapProductToDbRow(p);
         const { error } = await supabase.from("products").insert(dbRow);
-        if (error) throw error;
+        if (error) throw new Error(error.message || "Failed to add product");
         await refresh();
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed to add product to Supabase:", e);
-        throw e;
+        throw e instanceof Error ? e : new Error(e.message || "Failed to add product");
       }
     },
     [refresh],
@@ -207,11 +215,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       try {
         const { error } = await supabase.from("products").delete().eq("id", id);
-        if (error) throw error;
+        if (error) throw new Error(error.message || "Failed to remove product");
         await refresh();
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed to remove product from Supabase:", e);
-        throw e;
+        throw e instanceof Error ? e : new Error(e.message || "Failed to remove product");
       }
     },
     [refresh],

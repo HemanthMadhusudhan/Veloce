@@ -48,7 +48,7 @@ export const Route = createFileRoute("/checkout")({
 function CheckoutPage() {
   const { cart, clearCart, placeOrder, userEmail, userId, updateProfile, profile, orders, updateQty, removeFromCart } =
     useShop();
-  const { getById, refresh, products } = useCatalog();
+  const { getById, refresh, products, updateProduct } = useCatalog();
   const nav = useNavigate();
   const [mode, setMode] = useState<"guest" | "account">("guest");
   const [done, setDone] = useState(false);
@@ -451,6 +451,19 @@ function CheckoutPage() {
               },
               status: "processing", // Verified via Razorpay
             });
+            
+            // Deduct stockBySize on the client side since trigger only handles total stock
+            for (const item of cart) {
+              const p = getById(item.id);
+              if (p && p.stockBySize) {
+                const newStockBySize = { ...p.stockBySize };
+                if (newStockBySize[item.size] !== undefined) {
+                  newStockBySize[item.size] = Math.max(0, newStockBySize[item.size] - item.qty);
+                  await updateProduct(p.id, { stockBySize: newStockBySize });
+                }
+              }
+            }
+
             await refresh();
             setFinalCodDue(codDue);
             setCompletedOrder({ lines, subtotal, discount, shipping, tax, total, payMode, codDue });
@@ -914,9 +927,7 @@ function CheckoutPage() {
                 key={
                   item.id +
                   item.size +
-                  item.color +
-                  (item.customName || "") +
-                  (item.customNumber || "")
+                  item.color
                 }
                 className="flex gap-3 min-w-0 w-full"
               >
@@ -928,12 +939,7 @@ function CheckoutPage() {
                 <div className="flex-1 min-w-0 max-w-[calc(100%-68px)]">
                   <div className="truncate text-sm">{product.name}</div>
                   <div className="text-[11px] text-muted-foreground truncate">
-                    {item.size} · {item.color} · Qty {item.qty}
-                    {(item.customName || item.customNumber) && (
-                      <div className="mt-0.5 font-mono text-[10px] text-brand uppercase tracking-wider font-semibold">
-                        Print: {item.customName || "NO NAME"} #{item.customNumber || "00"}
-                      </div>
-                    )}
+                    {item.size} - {item.color} - Qty {item.qty}
                   </div>
                   {fu > 0 && (
                     <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-brand">
@@ -1105,7 +1111,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                           className="px-3 text-lg font-bold text-gray-600 hover:text-black h-full flex items-center justify-center bg-transparent"
                           onClick={() => {
                             if (item.qty > 1) {
-                              updateQty(item.id, item.size, item.color, item.qty - 1, item.customName, item.customNumber);
+                              updateQty(item.id, item.size, item.color, item.qty - 1);
                             } else {
                               setItemToRemove(item);
                             }
@@ -1116,7 +1122,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                         <span className="px-3 text-sm font-semibold min-w-[30px] text-center border-l border-r border-gray-200">{item.qty}</span>
                         <button 
                           className="px-3 text-lg font-bold text-gray-600 hover:text-black h-full flex items-center justify-center bg-transparent"
-                          onClick={() => updateQty(item.id, item.size, item.color, item.qty + 1, item.customName, item.customNumber)}
+                          onClick={() => updateQty(item.id, item.size, item.color, item.qty + 1)}
                         >
                           +
                         </button>
@@ -1265,7 +1271,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                     
                     <div className="flex gap-3">
                       <button onClick={() => {
-                        removeFromCart(itemToRemove.id, itemToRemove.size, itemToRemove.color, itemToRemove.customName, itemToRemove.customNumber);
+                        removeFromCart(itemToRemove.id, itemToRemove.size, itemToRemove.color);
                         setItemToRemove(null);
                       }} className="flex-1 bg-[#181818] text-white py-3.5 text-[14px] font-bold uppercase hover:bg-black">
                         REMOVE
