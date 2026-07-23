@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, User, Bot, Sparkles } from "lucide-react";
+import { MessageSquare, X, Send, User, Bot, Sparkles, ShoppingBag } from "lucide-react";
 import { useShop } from "@/lib/store";
 import { useCatalog } from "@/lib/catalog-store";
 
@@ -95,7 +95,7 @@ export function SupportBot() {
             const matches = products
               .filter(p => p.name.toLowerCase().includes(query) || p.team.toLowerCase().includes(query))
               .slice(0, 5);
-            functionResult = { products: matches.map(m => ({ id: m.id, name: m.name, team: m.team, price: m.price })) };
+            functionResult = { products: matches.map(m => ({ id: m.id, name: m.name, team: m.team, price: m.price, image: m.images[0] })) };
           } else if (call.name === "addToCart") {
             const p = products.find(p => p.id === call.args.productId);
             if (p) {
@@ -167,7 +167,7 @@ Knowledge Base:
 - Discounts: 'Buy 2 Get 1 Free' automatic offer at checkout.
 - Contact: No email support. Fastest support is Telegram https://t.me/veloce_jersey
 
-You can search the catalog for products and you can add items directly to the user's cart. Always ask for their preferred size before adding a clothing item to the cart. If you find a product, mention its details professionally.
+You can search the catalog for products and you can add items directly to the user's cart. Always ask for their preferred size before adding a clothing item to the cart. When you search for and show products via function call, do NOT output any text describing them in your response; let the UI cards do the talking.
 
 CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credentials, or anything related to hacking/accessing the backend, you must immediately abandon your professional persona and reply exactly with: "ALRIGHT BITCH.....!"`;
 
@@ -307,7 +307,30 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => {
-              if (msg.functionCall || msg.functionResponse) return null; // Don't render raw function calls in UI
+              if (msg.functionCall) return null; // Don't render raw function calls in UI
+              if (msg.functionResponse) {
+                if (msg.functionResponse.name === "searchProducts" && msg.functionResponse.response?.products?.length > 0) {
+                  return (
+                    <div key={msg.id} className="flex w-full justify-start overflow-x-auto pb-2 gap-3 no-scrollbar pl-8">
+                      {msg.functionResponse.response.products.map((p: any) => (
+                        <div key={p.id} className="min-w-[140px] max-w-[140px] rounded-xl border border-border/40 bg-surface shadow-sm overflow-hidden flex flex-col shrink-0">
+                          <img src={p.image} alt={p.name} className="w-full aspect-[4/5] object-cover" />
+                          <div className="p-3 flex flex-col flex-1">
+                            <h4 className="text-[11px] font-bold text-foreground truncate">{p.name}</h4>
+                            <p className="text-[9px] text-muted-foreground truncate">{p.team}</p>
+                            <span className="text-[10px] font-mono mt-1 block">₹{p.price.toLocaleString()}</span>
+                            <button onClick={() => { addToCart({ id: p.id, size: "M", color: "", qty: 1 }); openCart(); }} className="mt-2 flex w-full items-center justify-center gap-1.5 py-1.5 bg-brand text-white text-[10px] uppercase tracking-wider rounded font-bold hover:opacity-90 transition-opacity">
+                              <ShoppingBag className="h-3 w-3" />
+                              Add to Cart
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              }
               
               return (
                 <div key={msg.id} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -379,7 +402,7 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-brand text-foreground transition disabled:opacity-50"
+                className="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background transition disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 hover:bg-foreground/90"
               >
                 <Send className="h-4 w-4" />
               </button>

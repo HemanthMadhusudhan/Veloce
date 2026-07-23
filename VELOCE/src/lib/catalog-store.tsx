@@ -21,6 +21,9 @@ type Override = Partial<
     | "material"
     | "rating"
     | "reviews"
+    | "category"
+    | "driver"
+    | "player"
   >
 >;
 
@@ -146,6 +149,14 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const updateProduct = useCallback(
     async (id: string, patch: Override) => {
+      // Optimistic update
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? ({ ...p, ...patch } as Product) : p))
+      );
+      LIVE = LIVE.map((p) =>
+        p.id === id ? ({ ...p, ...patch } as Product) : p
+      );
+
       try {
         const dbPatch: any = {};
         if (patch.name !== undefined) dbPatch.name = patch.name;
@@ -176,12 +187,15 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         if (patch.material !== undefined) dbPatch.material = patch.material;
         if (patch.rating !== undefined) dbPatch.rating = patch.rating;
         if (patch.reviews !== undefined) dbPatch.reviews = patch.reviews;
+        if (patch.category !== undefined) dbPatch.category = patch.category;
+        if (patch.driver !== undefined) dbPatch.driver = patch.driver;
 
         const { error } = await supabase.from("products").update(dbPatch).eq("id", id);
         if (error) throw new Error(error.message || "Failed to update product");
-        await refresh();
+        refresh(); // Refresh asynchronously to keep UI fast
       } catch (e: any) {
         console.error("Failed to update product in Supabase:", e);
+        refresh(); // Revert on failure
         throw e instanceof Error ? e : new Error(e.message || "Failed to update product");
       }
     },
@@ -190,6 +204,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const addProduct = useCallback(
     async (p: Product) => {
+      // Optimistic update
+      setProducts((prev) => [p, ...prev]);
+      LIVE = [p, ...LIVE];
+
       try {
         if (p.stock > 0 && (!p.stockBySize || Object.keys(p.stockBySize).length === 0) && p.sizes && p.sizes.length > 0) {
           const res: Record<string, number> = {};
@@ -202,9 +220,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         const dbRow = mapProductToDbRow(p);
         const { error } = await supabase.from("products").insert(dbRow);
         if (error) throw new Error(error.message || "Failed to add product");
-        await refresh();
+        refresh(); // Refresh asynchronously
       } catch (e: any) {
         console.error("Failed to add product to Supabase:", e);
+        refresh(); // Revert on failure
         throw e instanceof Error ? e : new Error(e.message || "Failed to add product");
       }
     },
@@ -213,12 +232,17 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const removeProduct = useCallback(
     async (id: string) => {
+      // Optimistic update
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      LIVE = LIVE.filter((p) => p.id !== id);
+
       try {
         const { error } = await supabase.from("products").delete().eq("id", id);
         if (error) throw new Error(error.message || "Failed to remove product");
-        await refresh();
+        refresh(); // Refresh asynchronously
       } catch (e: any) {
         console.error("Failed to remove product from Supabase:", e);
+        refresh(); // Revert on failure
         throw e instanceof Error ? e : new Error(e.message || "Failed to remove product");
       }
     },

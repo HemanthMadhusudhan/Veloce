@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
@@ -23,6 +24,7 @@ import { Route as ShopFootballRouteImport } from './routes/shop.football'
 import { Route as ShopF1RouteImport } from './routes/shop.f1'
 import { Route as ShopCricketRouteImport } from './routes/shop.cricket'
 import { Route as ShopBasketballRouteImport } from './routes/shop.basketball'
+import { Route as ShopAccessoriesRouteImport } from './routes/shop.accessories'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as InfoPageRouteImport } from './routes/info.$page'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -35,6 +37,11 @@ const WishlistRoute = WishlistRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -97,6 +104,11 @@ const ShopBasketballRoute = ShopBasketballRouteImport.update({
   path: '/basketball',
   getParentRoute: () => ShopRoute,
 } as any)
+const ShopAccessoriesRoute = ShopAccessoriesRouteImport.update({
+  id: '/accessories',
+  path: '/accessories',
+  getParentRoute: () => ShopRoute,
+} as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
   path: '/product/$id',
@@ -120,11 +132,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
   '/shop': typeof ShopRouteWithChildren
   '/wishlist': typeof WishlistRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
+  '/shop/accessories': typeof ShopAccessoriesRoute
   '/shop/basketball': typeof ShopBasketballRoute
   '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
@@ -139,10 +153,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
   '/wishlist': typeof WishlistRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
+  '/shop/accessories': typeof ShopAccessoriesRoute
   '/shop/basketball': typeof ShopBasketballRoute
   '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
@@ -158,11 +174,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
   '/shop': typeof ShopRouteWithChildren
   '/wishlist': typeof WishlistRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
+  '/shop/accessories': typeof ShopAccessoriesRoute
   '/shop/basketball': typeof ShopBasketballRoute
   '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
@@ -179,11 +197,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reset-password'
+    | '/search'
     | '/shop'
     | '/wishlist'
     | '/auth/callback'
     | '/info/$page'
     | '/product/$id'
+    | '/shop/accessories'
     | '/shop/basketball'
     | '/shop/cricket'
     | '/shop/f1'
@@ -198,10 +218,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reset-password'
+    | '/search'
     | '/wishlist'
     | '/auth/callback'
     | '/info/$page'
     | '/product/$id'
+    | '/shop/accessories'
     | '/shop/basketball'
     | '/shop/cricket'
     | '/shop/f1'
@@ -216,11 +238,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/reset-password'
+    | '/search'
     | '/shop'
     | '/wishlist'
     | '/auth/callback'
     | '/info/$page'
     | '/product/$id'
+    | '/shop/accessories'
     | '/shop/basketball'
     | '/shop/cricket'
     | '/shop/f1'
@@ -236,6 +260,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRouteWithChildren
   WishlistRoute: typeof WishlistRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -257,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -343,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopBasketballRouteImport
       parentRoute: typeof ShopRoute
     }
+    '/shop/accessories': {
+      id: '/shop/accessories'
+      path: '/accessories'
+      fullPath: '/shop/accessories'
+      preLoaderRoute: typeof ShopAccessoriesRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/product/$id': {
       id: '/product/$id'
       path: '/product/$id'
@@ -368,6 +407,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface ShopRouteChildren {
+  ShopAccessoriesRoute: typeof ShopAccessoriesRoute
   ShopBasketballRoute: typeof ShopBasketballRoute
   ShopCricketRoute: typeof ShopCricketRoute
   ShopF1Route: typeof ShopF1Route
@@ -377,6 +417,7 @@ interface ShopRouteChildren {
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
+  ShopAccessoriesRoute: ShopAccessoriesRoute,
   ShopBasketballRoute: ShopBasketballRoute,
   ShopCricketRoute: ShopCricketRoute,
   ShopF1Route: ShopF1Route,
@@ -394,6 +435,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SearchRoute: SearchRoute,
   ShopRoute: ShopRouteWithChildren,
   WishlistRoute: WishlistRoute,
   AuthCallbackRoute: AuthCallbackRoute,

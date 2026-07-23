@@ -422,13 +422,8 @@ function Home() {
   const c = useCountdown(activeDrop.endsAt);
   const featured = useMemo(() => {
     if (!products.length) return [];
-    const currentHour = Math.floor(Date.now() / (1000 * 60 * 60));
-    let seed = currentHour;
-    const random = () => {
-      seed = (seed * 1664525 + 1013904223) % 4294967296;
-      return seed / 4294967296;
-    };
-    return [...products].sort(() => random() - 0.5).slice(0, 16);
+    // Shuffle randomly every time the page loads
+    return [...products].sort(() => Math.random() - 0.5).slice(0, 16);
   }, [products]);
   const drop =
     products.find((p) => p.id === activeDrop.productId) ??

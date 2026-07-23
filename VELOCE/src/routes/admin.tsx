@@ -285,6 +285,7 @@ function ProductsTab() {
           <option value="worldcup">World Cup</option>
           <option value="basketball">Basketball</option>
           <option value="cricket">Cricket</option>
+          <option value="accessories">Accessories</option>
         </select>
       </div>
 
@@ -403,6 +404,7 @@ function EditProductDrawer({
     rating: product.rating ?? 4.8,
     reviews: product.reviews ?? 0,
     stockBySize: product.stockBySize || {},
+    category: product.category,
   });
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
 
@@ -437,28 +439,46 @@ function EditProductDrawer({
               className={inputCls}
             />
           </Field>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Field label="Team">
-              <TeamCombobox
-                value={f.team}
-                onChange={(v) => setF({ ...f, team: v })}
-                category={product.category}
-              />
-            </Field>
-            <Field label={product.category === "f1" ? "Driver Name" : "Player Name"}>
-              <input
-                value={product.category === "f1" ? f.driver : f.player}
-                onChange={(e) => {
-                  if (product.category === "f1") {
-                    setF({ ...f, driver: e.target.value });
-                  } else {
-                    setF({ ...f, player: e.target.value });
-                  }
-                }}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Field label="Category">
+              <select
+                value={f.category}
+                onChange={(e) => setF({ ...f, category: e.target.value as any })}
                 className={inputCls}
-                placeholder={`Optional ${product.category === "f1" ? "driver" : "player"} name`}
-              />
+              >
+                <option value="football">Football</option>
+                <option value="f1">Formula 1</option>
+                <option value="worldcup">World Cup</option>
+                <option value="basketball">Basketball</option>
+                <option value="cricket">Cricket</option>
+                <option value="accessories">Accessories</option>
+              </select>
             </Field>
+            {f.category !== "accessories" && (
+              <>
+                <Field label="Team">
+                  <TeamCombobox
+                    value={f.team}
+                    onChange={(v) => setF({ ...f, team: v })}
+                    category={f.category}
+                  />
+                </Field>
+                <Field label={f.category === "f1" ? "Driver Name" : "Player Name"}>
+                  <input
+                    value={f.category === "f1" ? f.driver : f.player}
+                    onChange={(e) => {
+                      if (f.category === "f1") {
+                        setF({ ...f, driver: e.target.value });
+                      } else {
+                        setF({ ...f, player: e.target.value });
+                      }
+                    }}
+                    className={inputCls}
+                    placeholder={`Optional ${f.category === "f1" ? "driver" : "player"} name`}
+                  />
+                </Field>
+              </>
+            )}
             <Field label="Tag">
               <input
                 value={f.tag}
@@ -494,13 +514,17 @@ function EditProductDrawer({
             </Field>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Field label="Sizes (comma separated)">
-              <input
-                value={f.sizes}
-                onChange={(e) => setF({ ...f, sizes: e.target.value })}
-                className={inputCls}
-              />
-            </Field>
+            {f.category !== "accessories" ? (
+              <Field label="Sizes (comma separated)">
+                <input
+                  value={f.sizes}
+                  onChange={(e) => setF({ ...f, sizes: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
+            ) : (
+              <div />
+            )}
             <Field label="Colors (comma separated)">
               <input
                 value={f.colors}
@@ -670,7 +694,7 @@ function EditProductDrawer({
                     .split(",")
                     .map((s) => s.trim())
                     .filter(Boolean),
-                  sizes: f.sizes
+                  sizes: f.category === "accessories" ? ["One Size"] : f.sizes
                     .split(",")
                     .map((s) => s.trim())
                     .filter(Boolean),
@@ -680,6 +704,8 @@ function EditProductDrawer({
                   rating: f.rating,
                   reviews: f.reviews,
                   stockBySize: f.stockBySize,
+                  category: f.category,
+                  driver: f.driver || undefined,
                 });
                 onClose();
               } catch (e) {
@@ -1230,13 +1256,15 @@ function NewProductRow({
             className={inputCls}
           />
         </Field>
-        <Field label="Team">
-          <TeamCombobox
-            value={f.team}
-            onChange={(v) => setF({ ...f, team: v })}
-            category={f.category}
-          />
-        </Field>
+        {f.category !== "accessories" && (
+          <Field label="Team">
+            <TeamCombobox
+              value={f.team}
+              onChange={(v) => setF({ ...f, team: v })}
+              category={f.category}
+            />
+          </Field>
+        )}
         <Field label="Category">
           <select
             value={f.category}
@@ -1248,6 +1276,7 @@ function NewProductRow({
             <option value="worldcup">World Cup</option>
             <option value="basketball">Basketball</option>
             <option value="cricket">Cricket</option>
+            <option value="accessories">Accessories</option>
           </select>
         </Field>
         
@@ -1261,20 +1290,22 @@ function NewProductRow({
             <option value="legends">Legends Series</option>
           </select>
         </Field>
-        <Field label={f.category === "f1" ? "Driver Name" : "Player Name"}>
-          <input
-            value={f.category === "f1" ? f.driver : f.player}
-            onChange={(e) => {
-              if (f.category === "f1") {
-                setF({ ...f, driver: e.target.value });
-              } else {
-                setF({ ...f, player: e.target.value });
-              }
-            }}
-            className={inputCls}
-            placeholder={`Optional ${f.category === "f1" ? "driver" : "player"} name`}
-          />
-        </Field>
+        {f.category !== "accessories" && (
+          <Field label={f.category === "f1" ? "Driver Name" : "Player Name"}>
+            <input
+              value={f.category === "f1" ? f.driver : f.player}
+              onChange={(e) => {
+                if (f.category === "f1") {
+                  setF({ ...f, driver: e.target.value });
+                } else {
+                  setF({ ...f, player: e.target.value });
+                }
+              }}
+              className={inputCls}
+              placeholder={`Optional ${f.category === "f1" ? "driver" : "player"} name`}
+            />
+          </Field>
+        )}
         <Field label="Tag">
           <input
             value={f.tag}
@@ -1420,7 +1451,7 @@ function NewProductRow({
           disabled={loading}
           onClick={async () => {
             const id = f.id || slug(f.name);
-            if (!id || !f.name || !f.team) return alert("Name and team are required");
+            if (!id || !f.name || (f.category !== "accessories" && !f.team)) return alert(f.category === "accessories" ? "Name is required" : "Name and team are required");
             if (f.images.length === 0) return alert("Add at least one image");
             setLoading(true);
             setErr(null);
@@ -1904,7 +1935,6 @@ function UsersTab() {
                 <th className="px-4 py-3 text-left">Provider</th>
                 <th className="px-4 py-3 text-left">Roles</th>
                 <th className="px-4 py-3 text-left">Verified</th>
-                <th className="px-4 py-3 text-left">Last sign-in</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -1962,9 +1992,6 @@ function UsersTab() {
                           Pending
                         </span>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-[11px] text-muted-foreground">
-                      {u.lastSignInAt ? new Date(u.lastSignInAt).toLocaleString() : "—"}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">

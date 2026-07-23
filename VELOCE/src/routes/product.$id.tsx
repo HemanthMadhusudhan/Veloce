@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { ProductCard } from "@/components/ProductCard";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselDots } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { CATEGORY_LABEL } from "@/lib/catalog";
 import { useCatalog, getLiveProduct } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
@@ -162,27 +164,48 @@ function Pdp() {
       <div className="grid gap-10 lg:grid-cols-[1fr_minmax(320px,420px)]">
         <div>
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* MOBILE ONLY GALLERY */}
-            <div className="flex -mx-4 w-[calc(100%+2rem)] sm:w-full sm:-mx-0 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-              {product.images.map((img, i) => (
-                <div
-                  key={i}
-                  className="relative aspect-[4/5] w-full shrink-0 snap-center overflow-hidden bg-surface"
-                >
-                  <img src={img} alt="" className="h-full w-full object-cover" />
-                </div>
-              ))}
-              {product.has360 && (
-                <div className="relative aspect-[4/5] w-full shrink-0 snap-center flex items-center justify-center overflow-hidden bg-surface border-l border-border/50">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                    <RotateCw className="h-8 w-8" />
-                    <span className="text-[10px] uppercase tracking-[0.15em]">
-                      360° Desktop View
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* CAROUSEL GALLERY */}
+            <Carousel
+              opts={{
+                loop: true,
+                duration: 40,
+              }}
+              plugins={[
+                Autoplay({
+                  delay: 3000,
+                  stopOnInteraction: false,
+                  stopOnMouseEnter: true,
+                }),
+              ]}
+              className="w-full relative group"
+            >
+              <CarouselContent className="ml-0">
+                {product.images.map((img, i) => (
+                  <CarouselItem key={i} className="pl-0">
+                    <div className="relative aspect-[4/5] w-full overflow-hidden bg-surface rounded-xl sm:rounded-2xl">
+                      <img src={img} alt="" className="h-full w-full object-cover" />
+                    </div>
+                  </CarouselItem>
+                ))}
+                {product.has360 && (
+                  <CarouselItem className="pl-0">
+                    <div className="relative aspect-[4/5] w-full flex items-center justify-center overflow-hidden bg-surface rounded-xl sm:rounded-2xl border border-border/50">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <RotateCw className="h-8 w-8" />
+                        <span className="text-[10px] uppercase tracking-[0.15em]">
+                          360° Desktop View
+                        </span>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                )}
+              </CarouselContent>
+              <CarouselDots className="mt-4 pb-2" />
+              <div className="hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <CarouselPrevious className="left-4 bg-background/80 hover:bg-background/100 backdrop-blur" />
+                <CarouselNext className="right-4 bg-background/80 hover:bg-background/100 backdrop-blur" />
+              </div>
+            </Carousel>
 
             {/* DESKTOP ONLY SIDEBAR & MAIN IMAGE */}
             <div className="hidden">
@@ -338,7 +361,9 @@ function Pdp() {
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                 <span>Size</span>
-                <button onClick={() => setSizeGuideOpen(true)} className="text-brand hover:underline transition">Size guide</button>
+                {product.category !== "accessories" && (
+                  <button onClick={() => setSizeGuideOpen(true)} className="text-brand hover:underline transition">Size guide</button>
+                )}
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {product.sizes.map((s) => {

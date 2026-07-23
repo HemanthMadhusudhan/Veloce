@@ -208,29 +208,34 @@ function FootballMenu() {
         Football <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
-          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
-            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
-               <span>Football Jerseys</span>
-            </div>
-            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
-              {footballTeams.map(([t, logo]) => (
-                <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
-                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
-                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
-                </Link>
-              ))}
-            </div>
-            <div className="border-t border-border/40 pt-4 mt-2">
-              <div className="mb-3 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Collections</div>
-              <div className="flex flex-wrap gap-2">
-                {FOOTBALL_QUICK_LINKS.map((q) => (
-                  <Link key={q.label} to={q.to as never} className="rounded-full border border-border/60 px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground hover:border-black hover:text-black hover:bg-black/5 transition-all">
-                    {q.label}
-                  </Link>
-                ))}
+        <div className="absolute left-0 top-full w-[950px] max-w-[92vw] pt-3 z-50">
+          <div className="glass flex flex-col rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="grid grid-cols-12 gap-8">
+              <div className="col-span-8 flex flex-col">
+                <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Football Clubs</div>
+                <div className="grid grid-cols-5 gap-x-4 gap-y-6">
+                  {footballTeams.map(([t, logo]) => (
+                    <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                      <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                        <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div className="col-span-4 flex flex-col pl-8 border-l border-border/40">
+                <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">National Teams</div>
+                <div className="grid grid-cols-3 gap-x-4 gap-y-6">
+                  {worldCupTeams.map(([t, logo]) => (
+                    <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                      <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                        <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -248,7 +253,7 @@ function WorldCupMenu() {
         World Cup <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
+        <div className="absolute left-1/2 -translate-x-1/2 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>FIFA World Cup Teams</span>
@@ -278,7 +283,7 @@ function F1Menu() {
         Formula 1 <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
+        <div className="absolute left-1/2 -translate-x-1/2 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>Formula 1 Merch</span>
@@ -308,7 +313,7 @@ function BasketballMenu() {
         Basketball <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
+        <div className="absolute left-1/2 -translate-x-1/2 top-full w-[800px] max-w-[92vw] pt-3 z-50">
           <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
             <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
                <span>Basketball Jerseys</span>
@@ -338,20 +343,35 @@ function CricketMenu() {
         Cricket <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
-        <div className="absolute left-0 top-full w-[800px] max-w-[92vw] pt-3 z-50">
-          <div className="glass flex flex-col gap-6 rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
-            <div className="text-[15px] font-bold tracking-tight text-black flex items-center justify-between">
-               <span>Cricket Jerseys</span>
-            </div>
-            <div className="grid grid-cols-6 gap-x-4 gap-y-6">
-              {cricketTeams.map(([t, logo]) => (
-                <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
-                  <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
-                    <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
-                </Link>
-              ))}
+        <div className="absolute left-1/2 -translate-x-1/2 top-full w-[900px] max-w-[92vw] pt-3 z-50">
+          <div className="glass flex flex-col rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+            <div className="grid grid-cols-12 gap-8">
+              <div className="col-span-7 flex flex-col">
+                <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Cricket Jerseys</div>
+                <div className="grid grid-cols-4 gap-x-4 gap-y-6">
+                  {cricketIPLTeams.map(([t, logo]) => (
+                    <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                      <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                        <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div className="col-span-5 flex flex-col pl-8 border-l border-border/40">
+                <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">National Teams</div>
+                <div className="grid grid-cols-3 gap-x-4 gap-y-6">
+                  {cricketInternationalTeams.map(([t, logo]) => (
+                    <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                      <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
+                        <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -626,7 +646,13 @@ export function SearchDialog() {
       <div className="absolute inset-x-4 top-24 mx-auto max-w-2xl overflow-hidden rounded-3xl border border-border/60 bg-background shadow-2xl animate-in fade-in slide-in-from-top-4">
         <div className="flex items-center gap-3 border-b border-border/60 px-5 py-4">
           <Search className="h-4 w-4 text-muted-foreground" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search jerseys, teams, drivers…" className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => {
+            if (e.key === "Enter" && q.trim()) {
+              pushRecent(q);
+              closeSearch();
+              nav({ to: "/search", search: { q: q.trim() } as any });
+            }
+          }} placeholder="Search jerseys, teams, drivers…" className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
           <kbd className="rounded border border-border/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">ESC</kbd>
         </div>
         <div className="max-h-[60vh] overflow-y-auto p-4">
@@ -663,6 +689,17 @@ export function SearchDialog() {
                   </button>
                 </li>
               ))}
+              <li>
+                <button onClick={() => {
+                  pushRecent(q);
+                  closeSearch();
+                  nav({ to: "/search", search: { q: q.trim() } as any });
+                }} className="flex w-full items-center gap-4 px-1 py-4 text-left hover:bg-white/10 text-brand">
+                  <Search className="h-4 w-4 ml-3" />
+                  <span className="text-sm font-medium">View all results for "{q}"</span>
+                  <ChevronRight className="h-4 w-4 ml-auto mr-2" />
+                </button>
+              </li>
             </ul>
           )}
         </div>
@@ -877,15 +914,29 @@ export function MobileTopNav() {
                   <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${footballOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {footballOpen && (
-                  <div className="grid grid-cols-4 gap-3 pt-2">
-                    {footballTeams.map(([t, logo]) => (
-                      <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                        </div>
-                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                      </Link>
-                    ))}
+                  <div className="flex flex-col gap-3 pt-2">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1">Clubs</div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {footballTeams.map(([t, logo]) => (
+                        <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                          </div>
+                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1 mt-2">National Teams</div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {worldCupTeams.map(([t, logo]) => (
+                        <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
+                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
+                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
+                          </div>
+                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -978,6 +1029,12 @@ export function MobileTopNav() {
                     ))}
                   </div>
                 )}
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <Link to="/shop/accessories" onClick={() => setMenuOpen(false)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
+                  <span>Accessories</span>
+                </Link>
               </div>
               
               <div className="flex flex-col gap-6 pt-6 mt-6 border-t border-border/10">
