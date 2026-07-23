@@ -418,17 +418,17 @@ function Home() {
   const navBasketball = useSiteImage("nav-grid-basketball");
   const navCricket = useSiteImage("nav-grid-cricket");
 
-  const activeDrop = drops[0] ?? DEFAULT_DROPS[0];
-  const c = useCountdown(activeDrop.endsAt);
+  const activeDrop = drops[0];
+  const c = useCountdown(activeDrop?.endsAt ?? new Date());
   const featured = useMemo(() => {
     if (!products.length) return [];
     // Shuffle randomly every time the page loads
     return [...products].sort(() => Math.random() - 0.5).slice(0, 16);
   }, [products]);
-  const drop =
-    products.find((p) => p.id === activeDrop.productId) ??
-    products.find((p) => p.badge === "Limited") ??
-    products[0];
+  
+  const drop = activeDrop 
+    ? products.find((p) => p.id === activeDrop.productId) 
+    : undefined;
 
   return (
     <>
