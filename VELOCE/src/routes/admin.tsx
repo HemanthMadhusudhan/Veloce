@@ -44,6 +44,7 @@ import {
 } from "@/lib/admin-users.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { ImageCropper } from "@/components/ImageCropper";
+import { useTeams, type TeamData } from "@/lib/teams";
 import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, worldCupTeams, allLogoEntries } from "@/lib/logos";
 
 export const Route = createFileRoute("/admin")({
@@ -78,7 +79,7 @@ function AdminGate() {
 }
 
 type Tab =
-  "products" | "inventory" | "orders" | "users" | "images" | "categories" | "drops" | "hotSelling";
+  "products" | "inventory" | "orders" | "users" | "images" | "categories" | "drops" | "hotSelling" | "teams";
 
 function Admin() {
   const [tab, setTab] = useState<Tab>("products");
@@ -151,6 +152,13 @@ function Admin() {
         >
           Hot Selling
         </TabBtn>
+        <TabBtn
+          active={tab === "teams"}
+          onClick={() => setTab("teams")}
+          icon={<Users className="h-3.5 w-3.5" />}
+        >
+          Teams
+        </TabBtn>
       </div>
 
       <div className="mt-8">
@@ -161,7 +169,8 @@ function Admin() {
         {tab === "images" && <SiteImagesTab />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "drops" && <DropsTab />}
-        {tab === "hotSelling" && <HotSellingTab />}
+                {tab === "hotSelling" && <HotSellingTab />}
+        {tab === "teams" && <TeamsTab />}
       </div>
     </div>
   );
@@ -2273,3 +2282,103 @@ function HotSellingTab() {
     </div>
   );
 }
+
+/* ---------- TEAMS TAB ---------- */
+function TeamsTab() {
+  const { addTeam, removeTeam, hideStaticTeam, restoreStaticTeam, hiddenStaticTeams, combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt } = useTeams();
+  const [name, setName] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [category, setCategory] = useState<TeamData["category"]>("Football");
+  const [search, setSearch] = useState("");
+
+  const handleAdd = () => {
+    if (!name || !logoUrl) return;
+    addTeam({ name, logoUrl, category });
+    setName("");
+    setLogoUrl("");
+  };
+
+  const allActiveTeams = [
+    ...combinedFootball.map(([n, url]) => ({ name: n, logoUrl: url, category: "Football" })),
+    ...combinedWC.map(([n, url]) => ({ name: n, logoUrl: url, category: "World Cup" })),
+    ...combinedF1.map(([n, url]) => ({ name: n, logoUrl: url, category: "F1" })),
+    ...combinedB.map(([n, url]) => ({ name: n, logoUrl: url, category: "Basketball" })),
+    ...combinedCricketIPL.map(([n, url]) => ({ name: n, logoUrl: url, category: "Cricket" })),
+    ...combinedCricketInt.map(([n, url]) => ({ name: n, logoUrl: url, category: "Cricket" }))
+  ];
+
+  const handleDelete = (teamName: string) => {
+    removeTeam(teamName);
+    hideStaticTeam(teamName);
+  };
+
+  const filteredTeams = allActiveTeams.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-bold font-display">Manage Teams</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Add new teams or hide existing ones from the navigation menus.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+        <div className="space-y-4">
+          <div className="space-y-4 border p-4 rounded-xl">
+            <h3 className="font-bold">Add Team</h3>
+            <input className="w-full border p-2 text-sm" placeholder="Team Name" value={name} onChange={e => setName(e.target.value)} />
+            <input className="w-full border p-2 text-sm" placeholder="Logo URL (e.g. from espncdn)" value={logoUrl} onChange={e => setLogoUrl(e.target.value)} />
+            <select className="w-full border p-2 text-sm" value={category} onChange={e => setCategory(e.target.value as any)}>
+              <option value="Football">Football</option>
+              <option value="World Cup">World Cup</option>
+              <option value="F1">F1</option>
+              <option value="Basketball">Basketball</option>
+              <option value="Cricket">Cricket</option>
+            </select>
+            <button onClick={handleAdd} className="w-full bg-black text-white p-2 font-bold uppercase tracking-wider text-xs">Add Team</button>
+          </div>
+          
+          {hiddenStaticTeams.length > 0 && (
+             <div className="space-y-4 border p-4 rounded-xl bg-gray-50">
+                <h3 className="font-bold text-sm">Hidden Default Teams ({hiddenStaticTeams.length})</h3>
+                <div className="space-y-2">
+                  {hiddenStaticTeams.map(t => (
+                    <div key={t} className="flex items-center justify-between border p-2 rounded bg-white">
+                      <span className="text-xs font-semibold">{t}</span>
+                      <button onClick={() => restoreStaticTeam(t)} className="text-emerald-600 text-xs font-bold uppercase hover:underline">Restore</button>
+                    </div>
+                  ))}
+                </div>
+             </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold">Active Teams ({allActiveTeams.length})</h3>
+            <input className="border p-2 text-sm rounded-lg w-64" placeholder="Search teams..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[600px] overflow-y-auto pr-2">
+            {filteredTeams.map(t => (
+              <div key={t.name + t.category} className="flex items-center justify-between border p-3 rounded-lg bg-white shadow-sm hover:shadow transition">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <img src={t.logoUrl} className="w-8 h-8 object-contain shrink-0" alt={t.name} />
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm truncate">{t.name}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t.category}</div>
+                  </div>
+                </div>
+                <button onClick={() => handleDelete(t.name)} className="text-red-500 p-1.5 hover:bg-red-50 rounded shrink-0">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            {filteredTeams.length === 0 && <div className="text-sm text-muted-foreground col-span-full">No active teams found matching your search.</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

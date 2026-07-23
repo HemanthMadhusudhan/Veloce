@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { ShopProvider } from "@/lib/store";
 import { CatalogProvider } from "@/lib/catalog-store";
 import { SiteImagesProvider } from "@/lib/site-images";
+import { TeamsProvider } from "@/lib/teams";
 
 import { SupportBot } from "@/components/SupportBot";
 import { Toaster } from "@/components/ui/sonner";
@@ -147,11 +148,12 @@ function RootComponent() {
       <CatalogProvider>
         <ShopProvider>
           <SiteImagesProvider>
-
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-            <SupportBot />
-            <Toaster />
+            <TeamsProvider>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+              <SupportBot />
+              <Toaster />
+            </TeamsProvider>
           </SiteImagesProvider>
         </ShopProvider>
       </CatalogProvider>

@@ -515,7 +515,7 @@ function CheckoutPage() {
           <p className="text-gray-600 mt-2 font-medium">Please do not close or refresh this page.</p>
         </div>
       )}
-    <div className="hidden">
+    <div className="hidden lg:block">
     <div
       style={{ width: "100%", overflowX: "hidden", boxSizing: "border-box" }}
       className="mx-auto max-w-6xl px-4 sm:px-6 pt-4 pb-36 sm:pt-8 sm:pb-12"
@@ -921,6 +921,7 @@ function CheckoutPage() {
               FREE
             </div>
           )}
+          
           <ul className="mt-4 space-y-3 border-b border-border/50 pb-4 min-w-0 w-full">
             {lines.map(({ item, product, freeUnits: fu, lineSubtotal, lineDiscount }) => (
               <li
@@ -947,17 +948,48 @@ function CheckoutPage() {
                     </div>
                   )}
                 </div>
-                <div className="text-right">
-                  <div className="font-mono text-xs">{formatINR(lineSubtotal)}</div>
-                  {lineDiscount > 0 && (
-                    <div className="font-mono text-[10px] text-brand">
-                      −{formatINR(lineDiscount)}
-                    </div>
-                  )}
+                <div className="text-right flex flex-col justify-between items-end">
+                  <div>
+                    <div className="font-mono text-xs">{formatINR(lineSubtotal)}</div>
+                    {lineDiscount > 0 && (
+                      <div className="font-mono text-[10px] text-brand">
+                        −{formatINR(lineDiscount)}
+                      </div>
+                    )}
+                  </div>
+                  <button type="button" onClick={() => removeFromCart(item.id, item.size, item.color)} className="text-[10px] uppercase tracking-wider text-muted-foreground hover:text-red-500 mt-2">Remove</button>
                 </div>
               </li>
             ))}
           </ul>
+          
+          {/* Desktop Suggested Accessories */}
+          {products.filter((p: any) => p.category === "accessories" || p.tags?.includes("accessories")).slice(0, 4).length > 0 && (
+            <div className="mt-4 pb-4 border-b border-border/50">
+              <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground mb-3">Suggested Accessories</div>
+              <div className="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
+                {products.filter((p: any) => p.category === "accessories" || p.tags?.includes("accessories")).slice(0, 4).map((p: any) => (
+                  <div key={p.id} className="min-w-[100px] w-[100px] shrink-0 snap-start bg-background border border-border/50 rounded-lg p-2 flex flex-col justify-between relative group">
+                    <img src={p.images[0]} alt={p.name} className="w-full h-20 object-cover rounded mb-2 bg-muted/30" />
+                    <h4 className="text-[10px] font-semibold leading-tight line-clamp-2 mb-1">{p.name}</h4>
+                    <div className="text-[11px] font-mono text-brand mb-1">{formatINR(p.price)}</div>
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const size = p.stockBySize ? Object.keys(p.stockBySize)[0] : "Standard";
+                        updateQty(p.id, size, p.color || "Standard", 1);
+                      }}
+                      className="mt-1 w-full bg-foreground text-background py-1.5 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-brand transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 space-y-1.5 text-xs">
             <Row k="Subtotal" v={formatINR(subtotal)} />
             {discount > 0 && (
@@ -974,7 +1006,7 @@ function CheckoutPage() {
     </div>
   )
     </div>
-    <div className="block bg-white min-h-screen w-full max-w-xl sm:max-w-4xl mx-auto sm:border-x sm:border-border/20 sm:shadow-2xl sm:my-8 sm:min-h-0 sm:rounded-xl overflow-hidden">
+    <div className="block lg:hidden bg-white min-h-screen w-full max-w-xl sm:max-w-4xl mx-auto sm:border-x sm:border-border/20 sm:shadow-2xl sm:my-8 sm:min-h-0 sm:rounded-xl overflow-hidden">
       <PumaMobileCheckout 
         cart={cart}
         getById={getById}
@@ -1039,6 +1071,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
   const nav = useNavigate();
 
   const { products } = useCatalog();
+  const accessories = useMemo(() => products.filter((p: any) => p.category === "accessories" || p.tags?.includes("accessories")).slice(0, 4), [products]);
 
   return (
     <div className="flex flex-col bg-white text-black font-sans pb-32">
@@ -1090,7 +1123,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
               return (
                 <div key={item.id + item.size} className="flex gap-4 border border-gray-200 p-4">
                   <div className="flex flex-col items-center gap-2">
-                    <Link to={`/product/${item.id}`}>
+                    <Link to="/product/$id" params={{ id: item.id }}>
                       <img src={product.images[0]} className="w-[100px] h-[100px] object-cover" />
                     </Link>
                     <span className="text-[9px] font-bold uppercase tracking-wider text-green-700 border border-green-700 rounded-full px-2 py-0.5 flex items-center gap-1">
@@ -1098,7 +1131,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                     </span>
                   </div>
                   <div className="flex-1 flex flex-col">
-                    <Link to={`/product/${item.id}`}>
+                    <Link to="/product/$id" params={{ id: item.id }}>
                       <h3 className="text-[13px] font-bold text-black leading-tight mb-2 hover:underline">{product.name}</h3>
                     </Link>
                     <div className="text-[11px] text-gray-600 mb-0.5">Color: <br/>{item.color || "Standard"}</div>
@@ -1143,6 +1176,32 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                 </div>
               );
             })}
+
+            {accessories.length > 0 && (
+              <div className="mt-2 mb-2 w-full">
+                <h3 className="text-[12px] font-bold uppercase tracking-wider text-black mb-2">Suggested Accessories</h3>
+                <div className="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
+                  {accessories.map((p: any) => (
+                    <div key={p.id} className="min-w-[120px] w-[120px] shrink-0 snap-start border border-gray-200 p-2 flex flex-col justify-between">
+                      <Link to="/product/$id" params={{ id: p.id }}>
+                         <img src={p.images[0]} alt={p.name} className="w-full h-24 object-cover mb-2 bg-gray-100" />
+                         <h4 className="text-[10px] font-bold text-black leading-tight line-clamp-2 mb-1 hover:underline">{p.name}</h4>
+                         <div className="text-[11px] font-bold text-[#b73232]">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p.price)}</div>
+                      </Link>
+                      <button 
+                        onClick={() => {
+                          const size = p.stockBySize ? Object.keys(p.stockBySize)[0] : "Standard";
+                          updateQty(p.id, size, p.color || "Standard", 1);
+                        }}
+                        className="mt-2 w-full bg-[#181818] text-white py-1.5 text-[10px] font-bold uppercase tracking-widest hover:bg-black"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border border-gray-200 p-3 flex justify-center items-center gap-2 text-[11px] font-bold text-green-700 uppercase tracking-wide mt-2">
               <Truck className="h-4 w-4" /> YOU'VE EARNED FREE SHIPPING

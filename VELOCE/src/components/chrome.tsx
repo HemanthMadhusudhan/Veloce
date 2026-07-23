@@ -10,6 +10,7 @@ import { useCatalog } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
 import { computeCart } from "@/lib/pricing";
 import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams, worldCupTeams } from "@/lib/logos";
+import { useTeams } from "@/lib/teams";
 
 const NAV = [
   { label: "Formula 1", to: "/shop/f1" as const },
@@ -147,7 +148,7 @@ export function SiteNav() {
               <div className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.28em] text-brand">Zones</div>
               <div className="mt-1.5 flex flex-col gap-0.5">
                 {ZONES.map((z) => (
-                  <Link key={z.slug} to="/zone/$slug" params={{ slug: z.slug }} onClick={() => setOpen(false)} className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
+                  <Link key={z.slug} to="/"  onClick={() => setOpen(false)} className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
                     {z.name}
                     <ChevronRight className="h-3.5 w-3.5 opacity-30 transition-opacity group-active:opacity-100" />
                   </Link>
@@ -202,6 +203,7 @@ function Dot({ children }: { children: ReactNode }) {
 
 function FootballMenu() {
   const [open, setOpen] = useState(false);
+  const { combinedFootball, combinedWC } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to="/shop/football" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
@@ -209,12 +211,12 @@ function FootballMenu() {
       </Link>
       {open && (
         <div className="absolute left-0 top-full w-[950px] max-w-[92vw] pt-3 z-50">
-          <div className="glass flex flex-col rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+          <div className="glass flex flex-col rounded-2xl p-6 shadow-2xl bg-white border border-border/40 max-h-[80vh] overflow-y-auto hide-scrollbar">
             <div className="grid grid-cols-12 gap-8">
-              <div className="col-span-8 flex flex-col">
+              <div className="col-span-8">
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Football Clubs</div>
                 <div className="grid grid-cols-5 gap-x-4 gap-y-6">
-                  {footballTeams.map(([t, logo]) => (
+                  {combinedFootball.map(([t, logo]) => (
                     <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -224,10 +226,10 @@ function FootballMenu() {
                   ))}
                 </div>
               </div>
-              <div className="col-span-4 flex flex-col pl-8 border-l border-border/40">
+              <div className="col-span-4 pl-8 border-l border-border/40">
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">National Teams</div>
                 <div className="grid grid-cols-3 gap-x-4 gap-y-6">
-                  {worldCupTeams.map(([t, logo]) => (
+                  {combinedWC.map(([t, logo]) => (
                     <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -247,6 +249,7 @@ function FootballMenu() {
 
 function WorldCupMenu() {
   const [open, setOpen] = useState(false);
+  const { combinedWC } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to="/shop/worldcup" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
@@ -259,7 +262,7 @@ function WorldCupMenu() {
                <span>FIFA World Cup Teams</span>
             </div>
             <div className="grid grid-cols-6 gap-x-4 gap-y-6">
-              {worldCupTeams.map(([t, logo]) => (
+              {combinedWC.map(([t, logo]) => (
                 <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                   <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                     <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -277,6 +280,7 @@ function WorldCupMenu() {
 
 function F1Menu() {
   const [open, setOpen] = useState(false);
+  const { combinedF1 } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to="/shop/f1" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
@@ -289,7 +293,7 @@ function F1Menu() {
                <span>Formula 1 Merch</span>
             </div>
             <div className="grid grid-cols-6 gap-x-4 gap-y-6">
-              {f1Teams.map(([t, logo]) => (
+              {combinedF1.map(([t, logo]) => (
                 <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                   <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                     <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -307,6 +311,7 @@ function F1Menu() {
 
 function BasketballMenu() {
   const [open, setOpen] = useState(false);
+  const { combinedB } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to="/shop/basketball" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
@@ -319,7 +324,7 @@ function BasketballMenu() {
                <span>Basketball Jerseys</span>
             </div>
             <div className="grid grid-cols-6 gap-x-4 gap-y-6">
-              {basketballTeams.map(([t, logo]) => (
+              {combinedB.map(([t, logo]) => (
                 <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                   <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                     <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -337,6 +342,7 @@ function BasketballMenu() {
 
 function CricketMenu() {
   const [open, setOpen] = useState(false);
+  const { combinedCricketIPL, combinedCricketInt } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to="/shop/cricket" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
@@ -344,12 +350,12 @@ function CricketMenu() {
       </Link>
       {open && (
         <div className="absolute left-1/2 -translate-x-1/2 top-full w-[900px] max-w-[92vw] pt-3 z-50">
-          <div className="glass flex flex-col rounded-2xl p-6 shadow-2xl bg-white border border-border/40">
+          <div className="glass flex flex-col rounded-2xl p-6 shadow-2xl bg-white border border-border/40 max-h-[80vh] overflow-y-auto hide-scrollbar">
             <div className="grid grid-cols-12 gap-8">
               <div className="col-span-7 flex flex-col">
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Cricket Jerseys</div>
                 <div className="grid grid-cols-4 gap-x-4 gap-y-6">
-                  {cricketIPLTeams.map(([t, logo]) => (
+                  {combinedCricketIPL.map(([t, logo]) => (
                     <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -362,7 +368,7 @@ function CricketMenu() {
               <div className="col-span-5 flex flex-col pl-8 border-l border-border/40">
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">National Teams</div>
                 <div className="grid grid-cols-3 gap-x-4 gap-y-6">
-                  {cricketInternationalTeams.map(([t, logo]) => (
+                  {combinedCricketInt.map(([t, logo]) => (
                     <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
@@ -790,6 +796,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 export function MobileTopNav() {
   const nav = useNavigate();
   const { cart, openCart, openSearch, userEmail, wishlist, isAdmin } = useShop();
+  const { combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt } = useTeams();
   const [menuOpen, setMenuOpen] = useState(false);
   const { getById } = useCatalog();
   const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
@@ -917,7 +924,7 @@ export function MobileTopNav() {
                   <div className="flex flex-col gap-3 pt-2">
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1">Clubs</div>
                     <div className="grid grid-cols-4 gap-3">
-                      {footballTeams.map(([t, logo]) => (
+                      {combinedFootball.map(([t, logo]) => (
                         <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                           <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                             <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
@@ -928,7 +935,7 @@ export function MobileTopNav() {
                     </div>
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1 mt-2">National Teams</div>
                     <div className="grid grid-cols-4 gap-3">
-                      {worldCupTeams.map(([t, logo]) => (
+                      {combinedWC.map(([t, logo]) => (
                         <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                           <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                             <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
@@ -948,7 +955,7 @@ export function MobileTopNav() {
                 </button>
                 {basketballOpen && (
                   <div className="grid grid-cols-4 gap-3 pt-2">
-                    {basketballTeams.map(([t, logo]) => (
+                    {combinedB.map(([t, logo]) => (
                       <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                         <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                           <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
@@ -969,7 +976,7 @@ export function MobileTopNav() {
                   <div className="flex flex-col gap-3 pt-2">
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1">Internationals</div>
                     <div className="grid grid-cols-4 gap-3">
-                      {cricketInternationalTeams.map(([t, logo]) => (
+                      {combinedCricketInt.map(([t, logo]) => (
                         <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                           <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                             <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
@@ -980,7 +987,7 @@ export function MobileTopNav() {
                     </div>
                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1 mt-2">IPL</div>
                     <div className="grid grid-cols-4 gap-3">
-                      {cricketIPLTeams.map(([t, logo]) => (
+                      {combinedCricketIPL.map(([t, logo]) => (
                         <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                           <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                             <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
@@ -1000,7 +1007,7 @@ export function MobileTopNav() {
                 </button>
                 {f1Open && (
                   <div className="grid grid-cols-4 gap-3 pt-2">
-                    {f1Teams.map(([t, logo]) => (
+                    {combinedF1.map(([t, logo]) => (
                       <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                         <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                           <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
@@ -1019,7 +1026,7 @@ export function MobileTopNav() {
                 </button>
                 {worldCupOpen && (
                   <div className="grid grid-cols-4 gap-3 pt-2">
-                    {worldCupTeams.map(([t, logo]) => (
+                    {combinedWC.map(([t, logo]) => (
                       <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
                         <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
                           <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />

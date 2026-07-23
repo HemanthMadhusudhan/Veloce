@@ -148,7 +148,7 @@ function Pdp() {
             product.category === "worldcup"
               ? "/shop/worldcup"
               : product.category === "retro"
-                ? "/shop/retro"
+                ? "/shop"
                 : product.category === "f1"
                   ? "/shop/f1"
                   : "/shop/football"

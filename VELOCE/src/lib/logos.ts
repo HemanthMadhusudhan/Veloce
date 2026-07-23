@@ -40,6 +40,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "Mexico": "https://a.espncdn.com/i/teamlogos/countries/500/mex.png",
   "Uruguay": "https://a.espncdn.com/i/teamlogos/countries/500/uru.png",
   "Colombia": "https://a.espncdn.com/i/teamlogos/countries/500/col.png",
+  "Japan": "https://a.espncdn.com/i/teamlogos/countries/500/jpn.png",
 
   // Formula 1
   "Ferrari": "https://upload.wikimedia.org/wikipedia/fr/thumb/c/c0/Scuderia_Ferrari_Logo.svg/960px-Scuderia_Ferrari_Logo.svg.png?_=20250316140006",
@@ -99,7 +100,7 @@ export const f1TeamsList = ["Ferrari", "Mercedes", "Red Bull", "McLaren", "Alpin
 export const basketballTeamsList = ["Los Angeles Lakers", "Chicago Bulls", "Golden State Warriors", "Boston Celtics", "Miami Heat", "San Antonio Spurs", "Dallas Mavericks", "Phoenix Suns", "New York Knicks", "Brooklyn Nets", "Philadelphia 76ers", "Toronto Raptors", "Milwaukee Bucks", "Denver Nuggets", "Houston Rockets", "Los Angeles Clippers", "Minnesota Timberwolves", "Oklahoma City Thunder", "Utah Jazz", "Cleveland Cavaliers"];
 export const cricketTeamsList = ["India", "Australia", "Chennai Super Kings", "Royal Challengers Bangalore", "Mumbai Indians", "England", "South Africa", "New Zealand", "West Indies", "Sri Lanka", "Kolkata Knight Riders", "Sunrisers Hyderabad", "Delhi Capitals", "Rajasthan Royals", "Punjab Kings", "Lucknow Super Giants", "Gujarat Titans"];
 export const cricketInternationalList = ["India", "Australia", "England", "South Africa", "New Zealand", "West Indies", "Sri Lanka"];
-export const worldCupTeamsList = ["Argentina", "Brazil", "France", "Germany", "Italy", "Spain", "England (Football)", "Portugal", "Netherlands", "Belgium", "Croatia", "USA", "Mexico", "Uruguay", "Colombia"];
+export const worldCupTeamsList = ["Argentina", "Brazil", "France", "Germany", "Italy", "Spain", "England (Football)", "Portugal", "Netherlands", "Belgium", "Croatia", "USA", "Mexico", "Uruguay", "Colombia", "Japan"];
 
 export const allLogoEntries = Object.entries(TEAM_LOGOS);
 export const f1Teams = allLogoEntries.filter(([t]) => f1TeamsList.includes(t));

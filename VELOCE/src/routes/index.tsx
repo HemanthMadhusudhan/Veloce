@@ -672,14 +672,18 @@ function Home() {
           <div className="relative overflow-hidden border-y border-border/40 bg-surface/30 py-6 sm:py-8 px-5 sm:px-10">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 max-w-5xl mx-auto">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
-                <div className="relative h-24 w-20 sm:h-28 sm:w-24 overflow-hidden rounded shadow-sm shrink-0">
+                <Link 
+                  to="/product/$id" 
+                  params={{ id: drop.id }}
+                  className="relative h-32 w-28 sm:h-40 sm:w-32 overflow-hidden rounded shadow-sm shrink-0 block hover:opacity-90 transition-opacity"
+                >
                   <Picture
                     src={drop.images[0]}
                     alt={drop.name}
                     className="absolute inset-0 h-full w-full"
                     imgClassName="h-full w-full object-cover"
                   />
-                </div>
+                </Link>
                 <div className="mt-1 sm:mt-2">
                   <div className="text-[10px] uppercase tracking-[0.2em] text-brand font-semibold">
                     {activeDrop.eyebrow}
@@ -919,7 +923,7 @@ function ZoneCard({
   const isVid = isVideoUrl(img);
   return (
     <Link
-      to="/zone/$slug"
+      to="/"
       params={{ slug }}
       className="group relative block aspect-[4/5] overflow-hidden rounded-2xl border border-border/40"
     >
@@ -959,17 +963,9 @@ const MobileKitsCarousel = React.memo(function MobileKitsCarousel() {
   const { hotSellingIds, loaded } = useHotSelling();
   
   const slides = useMemo(() => {
-    const defaultKits = products
-      .filter((p) => p.category === "football" && p.name.toLowerCase().includes("home"))
-      .slice(0, 4);
-    
-    let base = hotSellingIds.length > 0
-      ? (hotSellingIds
-          .map((id) => products.find((p) => p.id === id))
-          .filter(Boolean) as import("@/lib/catalog").Product[])
-      : defaultKits.length > 0
-        ? defaultKits
-        : products.slice(0, 4);
+    let base = hotSellingIds
+      .map((id) => products.find((p) => p.id === id))
+      .filter(Boolean) as import("@/lib/catalog").Product[];
     
     // Shuffle based on current hour
     const hour = new Date().getHours();
