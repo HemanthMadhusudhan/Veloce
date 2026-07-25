@@ -1070,6 +1070,29 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
   const [showValidation, setShowValidation] = useState(false);
   const nav = useNavigate();
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeTab]);
+
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      window.history.pushState({ tab: newTab, isCheckout: true }, "", window.location.href);
+      setActiveTab(newTab);
+    }
+  };
+
+  useEffect(() => {
+    window.history.replaceState({ tab: activeTab, isCheckout: true }, "", window.location.href);
+
+    const onPopState = (e: PopStateEvent) => {
+      if (e.state && e.state.isCheckout && e.state.tab) {
+        setActiveTab(e.state.tab);
+      }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   const { products } = useCatalog();
   const accessories = useMemo(() => products.filter((p: any) => p.category === "accessories" || p.tags?.includes("accessories")).slice(0, 4), [products]);
 
@@ -1086,7 +1109,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
             {["CART", "SHIPPING", "PAYMENT"].map(t => (
               <button 
                 key={t}
-                onClick={() => setActiveTab(t)}
+                onClick={() => handleTabChange(t)}
                 className={`pb-2 text-[10px] font-bold uppercase tracking-widest ${activeTab === t ? 'text-black border-b-[3px] border-black' : 'text-gray-400 border-b-[3px] border-transparent'}`}
               >
                 {t}
@@ -1276,7 +1299,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                 if (!userEmail) {
                   nav({ to: "/login" });
                 } else {
-                  setActiveTab("SHIPPING"); window.scrollTo(0, 0); 
+                  handleTabChange("SHIPPING"); 
                 }
               }} className="w-full bg-[#181818] text-white p-4 text-[15px] font-bold tracking-widest uppercase hover:bg-black">
                 CHECKOUT
@@ -1424,8 +1447,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
                     setShowValidation(true);
                     return;
                   }
-                  setActiveTab("PAYMENT"); 
-                  window.scrollTo(0, 0); 
+                  handleTabChange("PAYMENT"); 
                 }} 
                 className="w-full bg-[#181818] text-white p-4 text-[13px] font-bold tracking-widest uppercase hover:bg-black"
               >
@@ -1440,7 +1462,7 @@ function PumaMobileCheckout({ cart, getById, contact, setContact, address, setAd
           <div className="flex flex-col gap-6">
             <div className="bg-[#f4f4f4] p-4 flex justify-between items-center">
               <span className="text-[13px] font-normal uppercase tracking-wide">1. ADDRESSES</span>
-              <button onClick={() => setActiveTab("SHIPPING")} className="text-[11px] text-gray-500 uppercase tracking-widest">EDIT</button>
+              <button onClick={() => handleTabChange("SHIPPING")} className="text-[11px] text-gray-500 uppercase tracking-widest">EDIT</button>
             </div>
             
             <div className="bg-[#f4f4f4] p-4 flex justify-between items-center mb-4">

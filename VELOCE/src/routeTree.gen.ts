@@ -20,6 +20,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopWorldcupRouteImport } from './routes/shop.worldcup'
+import { Route as ShopRetroRouteImport } from './routes/shop.retro'
 import { Route as ShopFootballRouteImport } from './routes/shop.football'
 import { Route as ShopF1RouteImport } from './routes/shop.f1'
 import { Route as ShopCricketRouteImport } from './routes/shop.cricket'
@@ -84,6 +85,11 @@ const ShopWorldcupRoute = ShopWorldcupRouteImport.update({
   path: '/worldcup',
   getParentRoute: () => ShopRoute,
 } as any)
+const ShopRetroRoute = ShopRetroRouteImport.update({
+  id: '/retro',
+  path: '/retro',
+  getParentRoute: () => ShopRoute,
+} as any)
 const ShopFootballRoute = ShopFootballRouteImport.update({
   id: '/football',
   path: '/football',
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
   '/shop/football': typeof ShopFootballRoute
+  '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
   '/shop/football': typeof ShopFootballRoute
+  '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
   '/shop': typeof ShopIndexRoute
 }
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/shop/cricket': typeof ShopCricketRoute
   '/shop/f1': typeof ShopF1Route
   '/shop/football': typeof ShopFootballRoute
+  '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/shop/cricket'
     | '/shop/f1'
     | '/shop/football'
+    | '/shop/retro'
     | '/shop/worldcup'
     | '/shop/'
   fileRoutesByTo: FileRoutesByTo
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/shop/cricket'
     | '/shop/f1'
     | '/shop/football'
+    | '/shop/retro'
     | '/shop/worldcup'
     | '/shop'
   id:
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/shop/cricket'
     | '/shop/f1'
     | '/shop/football'
+    | '/shop/retro'
     | '/shop/worldcup'
     | '/shop/'
   fileRoutesById: FileRoutesById
@@ -347,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopWorldcupRouteImport
       parentRoute: typeof ShopRoute
     }
+    '/shop/retro': {
+      id: '/shop/retro'
+      path: '/retro'
+      fullPath: '/shop/retro'
+      preLoaderRoute: typeof ShopRetroRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/shop/football': {
       id: '/shop/football'
       path: '/football'
@@ -412,6 +431,7 @@ interface ShopRouteChildren {
   ShopCricketRoute: typeof ShopCricketRoute
   ShopF1Route: typeof ShopF1Route
   ShopFootballRoute: typeof ShopFootballRoute
+  ShopRetroRoute: typeof ShopRetroRoute
   ShopWorldcupRoute: typeof ShopWorldcupRoute
   ShopIndexRoute: typeof ShopIndexRoute
 }
@@ -422,6 +442,7 @@ const ShopRouteChildren: ShopRouteChildren = {
   ShopCricketRoute: ShopCricketRoute,
   ShopF1Route: ShopF1Route,
   ShopFootballRoute: ShopFootballRoute,
+  ShopRetroRoute: ShopRetroRoute,
   ShopWorldcupRoute: ShopWorldcupRoute,
   ShopIndexRoute: ShopIndexRoute,
 }

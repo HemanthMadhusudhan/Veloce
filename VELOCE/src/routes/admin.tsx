@@ -25,7 +25,7 @@ import { SiteChrome } from "@/components/chrome";
 import { useCatalog } from "@/lib/catalog-store";
 import { CATEGORY_LABEL, type Category, type Product } from "@/lib/catalog";
 import { DEFAULT_DROPS, useDrops, type Drop } from "@/lib/drops";
-import { uploadImage } from "@/lib/upload";
+
 import { formatOrderId } from "@/lib/format";
 import { formatINR } from "@/lib/format";
 import { useShop, type OrderStatus } from "@/lib/store";

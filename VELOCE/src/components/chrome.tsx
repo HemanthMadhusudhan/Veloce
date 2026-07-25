@@ -659,7 +659,9 @@ export function SearchDialog() {
               nav({ to: "/search", search: { q: q.trim() } as any });
             }
           }} placeholder="Search jerseys, teams, drivers…" className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
-          <kbd className="rounded border border-border/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">ESC</kbd>
+          <button onClick={() => q ? setQ("") : closeSearch()} className="p-1 text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
         </div>
         <div className="max-h-[60vh] overflow-y-auto p-4">
           {q === "" ? (
@@ -749,7 +751,7 @@ export function PopupModals() {
             <div className="flex flex-col text-[13px] leading-tight">
               <span className="font-bold mb-1">{product.name}</span>
               <span className="text-gray-600 mb-0.5">Color: PUMA Black</span>
-              <span className="text-gray-600 mb-1.5">Size: {item.size || "S"}</span>
+              <span className="text-gray-600 mb-1.5">Size: {'size' in item ? (item as import("@/lib/store").CartItem).size : "S"}</span>
               <span className="font-sans">₹{product.price.toLocaleString("en-IN")}</span>
             </div>
           </div>

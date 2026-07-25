@@ -3,7 +3,7 @@ import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
 
-export type Category = "football" | "f1" | "worldcup" | "basketball" | "cricket" | "accessories";
+export type Category = "football" | "f1" | "worldcup" | "basketball" | "cricket" | "accessories" | "retro";
 export type Series = "legends";
 export type Zone = "messi" | "ronaldo" | "verstappen" | "hamilton";
 
@@ -69,4 +69,5 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   basketball: "Basketball",
   cricket: "Cricket",
   accessories: "Accessories",
+  retro: "Retro",
 };

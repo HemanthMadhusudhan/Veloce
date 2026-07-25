@@ -29,6 +29,8 @@ export type CartItem = {
   qty: number;
   size: string;
   color: string;
+  customName?: string;
+  customNumber?: string;
 };
 
 export type OrderStatus =

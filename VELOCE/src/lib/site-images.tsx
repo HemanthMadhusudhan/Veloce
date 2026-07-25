@@ -19,6 +19,10 @@ export type SiteImageSlot =
   | "worldcup-banner"
   | "category-football"
   | "category-f1"
+  | "category-basketball"
+  | "category-cricket"
+  | "category-accessories"
+  | "category-retro"
   | "nav-grid-football"
   | "nav-grid-f1"
   | "nav-grid-basketball"
@@ -84,6 +88,10 @@ const DEFAULTS: Record<SiteImageSlot, string> = {
   "worldcup-banner": "",
   "category-football": "",
   "category-f1": "",
+  "category-basketball": "",
+  "category-cricket": "",
+  "category-accessories": "",
+  "category-retro": "",
   "nav-grid-football": "",
   "nav-grid-f1": "",
   "nav-grid-basketball": "",
