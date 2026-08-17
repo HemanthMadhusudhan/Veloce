@@ -29,6 +29,7 @@ This project runs independently of Lovable. The web app uses open-source React, 
 
 To bundle the frontend for production deployment:
 ```powershell
+
 cd frontend
 npm run build
 npm run preview
