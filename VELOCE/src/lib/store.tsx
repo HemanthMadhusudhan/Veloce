@@ -29,6 +29,10 @@ export type CartItem = {
   qty: number;
   size: string;
   color: string;
+  name?: string;
+  image?: string;
+  price?: number;
+  compareAt?: number;
   customName?: string;
   customNumber?: string;
 };
@@ -55,10 +59,10 @@ export type Order = {
     phone?: string;
   };
   payment?: {
-    method: "upi" | "razorpay";
+    method: "upi" | "razorpay" | "wallet" | "cod";
     vpa: string;
     txnId: string;
-    mode: "full" | "cod";
+    mode: "full" | "cod" | "wallet";
     paidNow: number;
     codDue: number;
   };
@@ -109,9 +113,14 @@ type ShopCtx = {
   clearCart: () => void;
   toggleWishlist: (id: string) => void;
   pushRecent: (q: string) => void;
+  addWalletBalance: (amount: number, description: string) => Promise<void>;
+  signupBonusPopupOpen: boolean;
+  setSignupBonusPopupOpen: (open: boolean) => void;
 };
 
 const Ctx = createContext<ShopCtx | null>(null);
+
+let globalSignupPopup = false;
 
 export function ShopProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = usePersistedState<CartItem[]>("veloce wear.cart", []);
@@ -128,6 +137,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [isOwner, setIsOwner] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState<AppUser | null>(null);
+  const [signupBonusPopupOpen, _setSignupBonusPopupOpen] = useState(globalSignupPopup);
+  
+  const setSignupBonusPopupOpen = useCallback((open: boolean) => {
+    globalSignupPopup = open;
+    _setSignupBonusPopupOpen(open);
+  }, []);
 
   const updateProfile = useCallback(
     async (p: Partial<AppUser>) => {
@@ -188,6 +203,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
               country: data.country || "",
               cart: data.cart || [],
               wishlist: data.wishlist || [],
+              walletBalance: data.wallet_balance || 0,
             };
           } else {
             userProfile = {
@@ -197,13 +213,44 @@ export function ShopProvider({ children }: { children: ReactNode }) {
               disabled: false,
               cart: [],
               wishlist: [],
+              walletBalance: 0,
             };
           }
+          const ownerEmail = (import.meta.env.VITE_OWNER_EMAIL || "hemanthmadhusudhan@gmail.com").toLowerCase().trim();
+          const userEmailNormalized = (uEmail || userProfile.email || "").toLowerCase().trim();
+          const isThisOwner = userEmailNormalized === "hemanthmadhusudhan@gmail.com" || userEmailNormalized === ownerEmail;
+          const isUserAdmin = isThisOwner || userProfile.role === "admin";
+
+          if (isThisOwner && userProfile.role !== "admin") {
+            userProfile.role = "admin";
+            // Persist admin role to DB
+            supabase.from("users").update({ role: "admin" }).eq("id", uId).then(() => {
+              console.log("Auto-promoted owner to admin in DB");
+            });
+          }
+
           setProfile(userProfile);
-          const ownerEmail = import.meta.env.VITE_OWNER_EMAIL;
-          const isThisOwner = !!ownerEmail && userProfile.email === ownerEmail;
-          setIsAdmin(userProfile.role === "admin" || isThisOwner);
+          setIsAdmin(isUserAdmin);
           setIsOwner(isThisOwner);
+
+          if (user.created_at) {
+            const createdAt = new Date(user.created_at).getTime();
+            const isNewUser = Date.now() - createdAt < 7 * 24 * 60 * 60 * 1000; // 7-day new user window
+            const claimedKey = `signupBonus200_${uId}`;
+            const hasClaimed = localStorage.getItem(claimedKey);
+            
+            if (isNewUser && hasClaimed !== 'true') {
+               localStorage.setItem(claimedKey, 'true');
+               // Credit ₹200 welcome bonus for new signups
+               if ((userProfile.walletBalance || 0) === 0) {
+                 userProfile.walletBalance = 200;
+                 supabase.from("users").update({ wallet_balance: 200 }).eq("id", uId).then(() => {
+                   toast.success("₹200 Welcome Bonus added to your Veloce Wallet!");
+                 });
+               }
+               setSignupBonusPopupOpen(true);
+            }
+          }
         } catch (err) {
           console.error("Failed to fetch user profile:", err);
         }
@@ -398,7 +445,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       setWishlist((prev) => {
         if (prev.includes(id)) {
-          toast.success("Removed from wishlist");
           return prev.filter((x) => x !== id);
         } else {
           setWishlistPopupItem({ id });
@@ -415,6 +461,26 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       setRecent((prev) => [q, ...prev.filter((x) => x !== q)].slice(0, 6));
     },
     [setRecent],
+  );
+
+  const addWalletBalance = useCallback(
+    async (amount: number, description: string) => {
+      if (!userId) return;
+      try {
+        const { error } = await supabase.rpc('update_wallet_balance', { p_user_id: userId, p_amount: amount });
+        if (error) throw error;
+        await supabase.from('wallet_transactions').insert({
+          user_id: userId,
+          amount: Math.abs(amount),
+          type: amount >= 0 ? 'credit' : 'debit',
+          description
+        });
+        setProfile((prev) => (prev ? { ...prev, walletBalance: (prev.walletBalance || 0) + amount } : null));
+      } catch (err) {
+        console.error('Failed to add wallet balance:', err);
+      }
+    },
+    [userId]
   );
 
   const signOut = useCallback(async () => {
@@ -461,6 +527,16 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           payment: record.payment,
         };
         setOrders((prev) => [newOrder, ...prev]);
+        
+        // Dispatch order confirmation email via Supabase Edge Function
+        try {
+          supabase.functions.invoke("send-order-email", {
+            body: { type: "INSERT", record: record }
+          }).catch((err) => console.log("Order email edge function note:", err));
+        } catch (e) {
+          // ignore
+        }
+
         return newOrder;
       } catch (e) {
         console.error("Failed to save order to Supabase:", e);
@@ -539,6 +615,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         clearCart,
         toggleWishlist,
         pushRecent,
+        addWalletBalance,
+        signupBonusPopupOpen,
+        setSignupBonusPopupOpen,
       }}
     >
       {children}

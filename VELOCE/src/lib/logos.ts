@@ -31,7 +31,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "Germany": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
   "Italy": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
   "Spain": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
-  "England (Football)": "https://a.espncdn.com/i/teamlogos/countries/500/eng.png",
+  "England": "https://a.espncdn.com/i/teamlogos/countries/500/eng.png",
   "Portugal": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
   "Netherlands": "https://a.espncdn.com/i/teamlogos/countries/500/ned.png",
   "Belgium": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
@@ -82,7 +82,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "Chennai Super Kings": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/Chennai_Super_Kings_Logo.svg",
   "Royal Challengers Bangalore": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/Royal_Challengers_Bengaluru_Logo.svg",
   "Mumbai Indians": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/Mumbai_Indians_Logo.svg",
-  "England": "https://a.espncdn.com/i/teamlogos/cricket/500/1.png",
+  "England (Cricket)": "https://a.espncdn.com/i/teamlogos/cricket/500/1.png",
   "South Africa": "https://a.espncdn.com/i/teamlogos/cricket/500/3.png",
   "New Zealand": "https://a.espncdn.com/i/teamlogos/cricket/500/5.png",
   "West Indies": "https://a.espncdn.com/i/teamlogos/cricket/500/4.png",
@@ -98,9 +98,9 @@ export const TEAM_LOGOS: Record<string, string> = {
 
 export const f1TeamsList = ["Ferrari", "Mercedes", "Red Bull", "McLaren", "Alpine", "Aston Martin", "Williams", "Haas", "Audi", "Cadillac"];
 export const basketballTeamsList = ["Los Angeles Lakers", "Chicago Bulls", "Golden State Warriors", "Boston Celtics", "Miami Heat", "San Antonio Spurs", "Dallas Mavericks", "Phoenix Suns", "New York Knicks", "Brooklyn Nets", "Philadelphia 76ers", "Toronto Raptors", "Milwaukee Bucks", "Denver Nuggets", "Houston Rockets", "Los Angeles Clippers", "Minnesota Timberwolves", "Oklahoma City Thunder", "Utah Jazz", "Cleveland Cavaliers"];
-export const cricketTeamsList = ["India", "Australia", "Chennai Super Kings", "Royal Challengers Bangalore", "Mumbai Indians", "England", "South Africa", "New Zealand", "West Indies", "Sri Lanka", "Kolkata Knight Riders", "Sunrisers Hyderabad", "Delhi Capitals", "Rajasthan Royals", "Punjab Kings", "Lucknow Super Giants", "Gujarat Titans"];
-export const cricketInternationalList = ["India", "Australia", "England", "South Africa", "New Zealand", "West Indies", "Sri Lanka"];
-export const worldCupTeamsList = ["Argentina", "Brazil", "France", "Germany", "Italy", "Spain", "England (Football)", "Portugal", "Netherlands", "Belgium", "Croatia", "USA", "Mexico", "Uruguay", "Colombia", "Japan"];
+export const cricketTeamsList = ["India", "Australia", "Chennai Super Kings", "Royal Challengers Bangalore", "Mumbai Indians", "England (Cricket)", "South Africa", "New Zealand", "West Indies", "Sri Lanka", "Kolkata Knight Riders", "Sunrisers Hyderabad", "Delhi Capitals", "Rajasthan Royals", "Punjab Kings", "Lucknow Super Giants", "Gujarat Titans"];
+export const cricketInternationalList = ["India", "Australia", "England (Cricket)", "South Africa", "New Zealand", "West Indies", "Sri Lanka"];
+export const worldCupTeamsList = ["Argentina", "Brazil", "France", "Germany", "Italy", "Spain", "England", "Portugal", "Netherlands", "Belgium", "Croatia", "USA", "Mexico", "Uruguay", "Colombia", "Japan"];
 
 export const allLogoEntries = Object.entries(TEAM_LOGOS);
 export const f1Teams = allLogoEntries.filter(([t]) => f1TeamsList.includes(t));

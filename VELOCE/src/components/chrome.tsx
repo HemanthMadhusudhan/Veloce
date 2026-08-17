@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Search, Heart, ShoppingBag, User, Menu, X, Trash2, Clock, TrendingUp, Minus, Plus, ChevronDown, ChevronRight, Gift, Truck, ShieldCheck, RefreshCw, Banknote, Settings, Home, Store, MoreHorizontal, MessageSquare, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState, useRef, type ReactNode } from "react";
+import { Search, Heart, ShoppingBag, User, Menu, X, Trash2, Clock, TrendingUp, Minus, Plus, ChevronDown, ChevronRight, Gift, Truck, ShieldCheck, RefreshCw, Banknote, Settings, Home, Store, MoreHorizontal, MessageSquare, Sparkles, Wallet, LogIn, LogOut, ArrowLeft } from "lucide-react";
 import { Logo } from "./Logo";
 import { FortuneSpin } from "./FortuneSpin";
 import { useShop } from "@/lib/store";
@@ -23,12 +23,38 @@ const FOOTBALL_SUB = [
   { label: "FIFA World Cup", to: "/shop/worldcup" as const },
 ];
 
+export function TopAnnouncementTicker() {
+  const textItems = [
+    "Free Shipping PAN India",
+    "COD Available",
+    "Worn by 1,000+ Fans",
+    "100% Authentic Matchwear",
+    "4-Day Easy Exchange",
+    "Premium Streetwear Drop",
+  ];
+
+  return (
+    <div className="w-full bg-[#d32f2f] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider py-1.5 overflow-hidden whitespace-nowrap select-none flex items-center border-b border-black/10">
+      <div className="flex w-max animate-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-default">
+        {[0, 1].map((copyIdx) => (
+          <div key={copyIdx} className="flex shrink-0 items-center gap-10 sm:gap-16 pr-10 sm:pr-16" aria-hidden={copyIdx > 0}>
+            {textItems.map((item, idx) => (
+              <span key={idx} className="inline-flex items-center gap-3 font-semibold tracking-widest">
+                <span className="text-white/80 text-sm">•</span>
+                <span>{item}</span>
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [zonesOpen, setZonesOpen] = useState(false);
-  const [spinOpen, setSpinOpen] = useState(false);
-  const { cart, wishlist, openCart, openSearch, isAdmin, userEmail, signOut } = useShop();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { cart, wishlist, isAdmin, userEmail, signOut, openSearch } = useShop();
   const nav = useNavigate();
   const { getById } = useCatalog();
   const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
@@ -41,144 +67,91 @@ export function SiteNav() {
   }, []);
 
   return (
-    <nav className="fixed inset-x-0 top-12 z-50 flex justify-center px-4 sm:top-0 sm:px-0">
-      <div className={`glass flex w-full max-w-6xl items-center justify-between px-4 py-2.5 transition-all duration-500 sm:max-w-full sm:rounded-none sm:px-8 sm:py-1.5 ${scrolled ? "shadow-2xl shadow-black/40" : "rounded-full"}`}>
-        <Logo />
-        <div className="hidden items-center gap-6 md:flex">
-          <FootballMenu />
-          <F1Menu />
-          <BasketballMenu />
-          <CricketMenu />
-          <WorldCupMenu />
-          <Link to="/shop" className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
-            Shop All
-          </Link>
+    <>
+      <nav className={`fixed inset-x-0 top-0 z-50 flex flex-col bg-white/95 backdrop-blur-md border-b border-black/10 transition-all duration-300 ${scrolled ? "shadow-md shadow-black/5" : ""}`}>
+        {/* Red Running Announcement Bar */}
+        <TopAnnouncementTicker />
 
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[oklch(0.82_0.14_88)]/70 bg-[oklch(0.82_0.14_88)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[oklch(0.9_0.13_92)] shadow-[0_0_18px_-6px_oklch(0.82_0.14_88_/_0.55)] hover:bg-[oklch(0.82_0.14_88)]/20"
-            >
-              <Settings className="h-3 w-3" /> Admin
-            </Link>
-          )}
-        </div>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <IconChip onClick={openSearch} label="Search"><Search className="h-4 w-4" /></IconChip>
-
-          {!isAdmin && (
+        {/* Main Desktop Header */}
+        <div className="flex w-full max-w-7xl mx-auto items-center justify-between px-6 sm:px-10 py-3">
+          {/* Left: Hamburger & Search */}
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                if (window.innerWidth >= 640 && !userEmail) {
-                  nav({ to: "/login" });
-                } else {
-                  setSpinOpen(true);
-                }
-              }}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-black shadow-[0_0_15px_-3px_rgba(250,204,21,0.6)] transition-all hover:scale-105 animate-pulse"
+              onClick={() => setDrawerOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-black hover:bg-black/5 transition"
+              aria-label="Open navigation menu"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-yellow-900 fill-yellow-400 group-hover:rotate-180 transition-transform duration-700">
-                <circle cx="12" cy="12" r="10"/>
-                <circle cx="12" cy="12" r="2"/>
-                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-              </svg> Spin & Win
+              <Menu className="h-5 w-5 stroke-[2]" />
             </button>
-          )}
+            <button
+              onClick={openSearch}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-black hover:bg-black/5 transition"
+              aria-label="Search store"
+            >
+              <Search className="h-5 w-5 stroke-[2]" />
+            </button>
+          </div>
 
-          {isAdmin ? (
-            <>
-              <Link to="/admin" className="hidden sm:block"><IconChip label="Admin"><Settings className="h-4 w-4" /></IconChip></Link>
-              <button onClick={signOut} className="hidden items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground sm:inline-flex">Sign out</button>
-            </>
-          ) : (
-            <>
-              <Link to={userEmail ? "/profile" : "/login"} className="hidden sm:block"><IconChip label={userEmail ? "Profile" : "Account"}><User className="h-4 w-4" /></IconChip></Link>
-              <Link to="/wishlist" className="relative" onClick={(e) => {
-                if (window.innerWidth >= 640 && !userEmail) {
-                  e.preventDefault();
-                  nav({ to: "/login" });
-                }
-              }}>
-                <IconChip label="Wishlist"><Heart className="h-4 w-4" /></IconChip>
-                {wishlist.length > 0 && <Dot>{wishlist.length}</Dot>}
-              </Link>
-              <button onClick={() => {
-                if (window.innerWidth >= 640 && !userEmail) {
-                  nav({ to: "/login" });
-                } else {
-                  nav({ to: "/checkout" });
-                }
-              }} className="relative">
-                <IconChip label="Bag"><ShoppingBag className="h-4 w-4" /></IconChip>
-                {cartCount > 0 && <Dot>{cartCount}</Dot>}
-              </button>
-            </>
-          )}
-          <IconChip onClick={() => setOpen((v) => !v)} label="Menu" className="md:hidden">
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </IconChip>
-        </div>
-      </div>
-      {open && (
-        <div className="fixed inset-0 z-[100] bg-background flex flex-col px-5 pt-20 pb-8 overflow-y-auto animate-in fade-in zoom-in-95 md:hidden">
-          <button onClick={() => setOpen(false)} aria-label="Close menu" className="absolute top-5 right-5 p-1.5"><X className="h-5 w-5" /></button>
-          <div className="flex flex-col gap-4">
-            <div>
-              <div className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.28em] text-brand">Football</div>
-              <div className="mt-1.5 flex flex-col gap-0.5">
-                {FOOTBALL_SUB.map((l) => (
-                  <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
-                    {l.label}
-                    <ChevronRight className="h-3.5 w-3.5 opacity-30 transition-opacity group-active:opacity-100" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="border-t border-border/40" />
-            <div className="flex flex-col gap-0.5">
-              {NAV.map((l) => (
-                <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
-                  {l.label}
-                  <ChevronRight className="h-3.5 w-3.5 opacity-30 transition-opacity group-active:opacity-100" />
+          {/* Center: Brand Logo */}
+          <Logo />
+
+          {/* Right: Wishlist, Cart & Profile */}
+          <div className="flex items-center gap-3">
+            {isAdmin ? (
+              <>
+                <Link to="/admin"><IconChip label="Admin"><Settings className="h-4 w-4 text-black" /></IconChip></Link>
+                <button onClick={signOut} className="items-center gap-1.5 rounded-full border border-black/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black hover:bg-black/5 inline-flex">Sign out</button>
+              </>
+            ) : (
+              <>
+                <Link to="/wishlist" className="relative" onClick={(e) => {
+                  if (window.innerWidth >= 640 && !userEmail) {
+                    e.preventDefault();
+                    nav({ to: "/login" });
+                  }
+                }}>
+                  <IconChip label="Wishlist"><Heart className="h-5 w-5 stroke-[1.8] text-black" /></IconChip>
+                  {wishlist.length > 0 && <Dot>{wishlist.length}</Dot>}
                 </Link>
-              ))}
-            </div>
-            <div className="border-t border-border/40" />
-            <div>
-              <div className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.28em] text-brand">Zones</div>
-              <div className="mt-1.5 flex flex-col gap-0.5">
-                {ZONES.map((z) => (
-                  <Link key={z.slug} to="/"  onClick={() => setOpen(false)} className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
-                    {z.name}
-                    <ChevronRight className="h-3.5 w-3.5 opacity-30 transition-opacity group-active:opacity-100" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="border-t border-border/40" />
-            <div className="flex flex-col gap-0.5">
-              {isAdmin ? (
-                <>
-                  <Link to="/admin" onClick={() => setOpen(false)} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-brand active:bg-white/10">
-                    Admin Panel
-                    <ChevronRight className="h-3.5 w-3.5 opacity-50" />
-                  </Link>
-                  <button onClick={() => { signOut(); setOpen(false); }} className="flex items-center justify-between rounded-lg px-3 py-2 text-left text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <Link to={userEmail ? "/profile" : "/login"} onClick={() => setOpen(false)} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm uppercase tracking-[0.1em] text-muted-foreground active:bg-white/10 active:text-foreground">
-                  {userEmail ? "Profile" : "Account"}
-                  <ChevronRight className="h-3.5 w-3.5 opacity-30" />
+                <button onClick={() => {
+                  if (window.innerWidth >= 640 && !userEmail) {
+                    nav({ to: "/login" });
+                  } else {
+                    nav({ to: "/checkout" });
+                  }
+                }} className="relative" aria-label="Bag">
+                  <IconChip label="Bag"><ShoppingBag className="h-5 w-5 stroke-[1.8] text-black" /></IconChip>
+                  {cartCount > 0 && (
+                    <span className="pointer-events-none absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d32f2f] px-1 font-mono text-[9px] font-bold text-white shadow-xs">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+                <Link to={userEmail ? "/profile" : "/login"} aria-label={userEmail ? "Profile" : "Account"}>
+                  <IconChip label={userEmail ? "Profile" : "Account"}>
+                    <User className="h-5 w-5 stroke-[1.8] text-black" />
+                  </IconChip>
                 </Link>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
-      )}
-      <FortuneSpin open={spinOpen} onClose={() => setSpinOpen(false)} />
-    </nav>
+
+        {/* Subnavigation Bar */}
+        <div className="hidden md:flex items-center justify-center gap-8 py-2 border-t border-black/5 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-800">
+          <Link to="/" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold underline underline-offset-4" }}>Home</Link>
+          <Link to="/shop" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Shop All</Link>
+          <Link to="/shop/f1" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>F1 Merch</Link>
+          <Link to="/shop/football" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Football Kits</Link>
+          <Link to="/shop/cricket" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Cricket Jerseys</Link>
+          <Link to="/shop/basketball" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Basketball</Link>
+          <Link to="/shop/worldcup" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>World Cup</Link>
+        </div>
+      </nav>
+
+      {/* Slide-out Hamburger Drawer */}
+      <SideDrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
   );
 }
 
@@ -528,6 +501,13 @@ export function CartDrawer() {
   const { getById } = useCatalog();
   const totals = useMemo(() => computeCart(cart, getById), [cart, getById]);
   const { lines, subtotal, discount, freeUnits, shipping, tax, total, couponApplied } = totals;
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cartOpen && scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [cartOpen]);
 
   if (!cartOpen) return null;
   return (
@@ -546,7 +526,7 @@ export function CartDrawer() {
             <div className="flex items-center gap-2 text-muted-foreground"><Gift className="h-3.5 w-3.5" /> Add {Math.max(0, 3 - totals.itemCount)} more · Buy 2 Get 1 Free</div>
           )}
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4">
           {lines.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
               <ShoppingBag className="h-10 w-10 text-muted-foreground" />
@@ -565,6 +545,11 @@ export function CartDrawer() {
                         <div className="text-[11px] text-muted-foreground">
                           {item.size} · {item.color}
                         </div>
+                        {item.customName && (
+                          <div className="text-[10px] uppercase tracking-wider text-brand mt-0.5">
+                            Print: {item.customName} #{item.customNumber || "00"}
+                          </div>
+                        )}
                         {fu > 0 && <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand/20 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-brand"><Gift className="h-2.5 w-2.5" />{fu}× Free · B2G1</div>}
                       </div>
                       <div className="text-right shrink-0">
@@ -618,99 +603,248 @@ export function SearchDialog() {
   const { searchOpen, closeSearch, recent, pushRecent } = useShop();
   const { products } = useCatalog();
   const [q, setQ] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const nav = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!searchOpen) setQ("");
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeSearch(); };
+    if (!searchOpen) {
+      setQ("");
+      setActiveCategory("all");
+    } else {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [searchOpen, closeSearch]);
 
+  const TRENDING_TOPICS = [
+    { label: "Real Madrid", category: "football" },
+    { label: "Scuderia Ferrari", category: "f1" },
+    { label: "RCB Virat Kohli", category: "cricket" },
+    { label: "FC Barcelona", category: "football" },
+    { label: "Red Bull Racing", category: "f1" },
+    { label: "CSK Dhoni", category: "cricket" },
+    { label: "Argentina Messi", category: "football" },
+    { label: "Mercedes AMG", category: "f1" },
+  ];
+
+  const CATEGORIES = [
+    { id: "all", label: "All" },
+    { id: "football", label: "Football" },
+    { id: "f1", label: "Formula 1" },
+    { id: "cricket", label: "Cricket" },
+    { id: "basketball", label: "Basketball" },
+    { id: "worldcup", label: "World Cup" },
+  ];
+
   const results = useMemo(() => {
-    if (!q.trim()) return [];
-    const s = q.toLowerCase();
-    return products.filter((p) =>
+    let list = products;
+    if (activeCategory !== "all") {
+      list = list.filter((p) =>
+        activeCategory === "football"
+          ? p.category === "football" || p.category === "worldcup"
+          : p.category === activeCategory
+      );
+    }
+    if (!q.trim()) return list.slice(0, 8);
+    const s = q.toLowerCase().trim();
+    return list.filter((p) =>
       p.name.toLowerCase().includes(s) ||
       p.team.toLowerCase().includes(s) ||
       (p.driver ?? "").toLowerCase().includes(s) ||
-      p.tag.toLowerCase().includes(s)
-    ).slice(0, 6);
-  }, [q, products]);
+      p.tag.toLowerCase().includes(s) ||
+      (p.category && p.category.toLowerCase().includes(s))
+    ).slice(0, 16);
+  }, [q, activeCategory, products]);
 
   if (!searchOpen) return null;
 
   const go = (id: string) => {
-    pushRecent(q || id);
+    if (q.trim()) pushRecent(q.trim());
     closeSearch();
     nav({ to: "/product/$id", params: { id } });
   };
 
+  const handleSearchSubmit = (searchWord?: string) => {
+    const term = (searchWord || q).trim();
+    if (!term) return;
+    pushRecent(term);
+    closeSearch();
+    nav({ to: "/search", search: { q: term } as any });
+  };
+
   return (
-    <div className="fixed inset-0 z-[100]" role="dialog">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in" onClick={closeSearch} />
-      <div className="absolute inset-x-4 top-24 mx-auto max-w-2xl overflow-hidden rounded-3xl border border-border/60 bg-background shadow-2xl animate-in fade-in slide-in-from-top-4">
-        <div className="flex items-center gap-3 border-b border-border/60 px-5 py-4">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => {
-            if (e.key === "Enter" && q.trim()) {
-              pushRecent(q);
-              closeSearch();
-              nav({ to: "/search", search: { q: q.trim() } as any });
-            }
-          }} placeholder="Search jerseys, teams, drivers…" className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
-          <button onClick={() => q ? setQ("") : closeSearch()} className="p-1 text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
+    <div className="fixed inset-0 z-[200] flex flex-col bg-black/60 backdrop-blur-md animate-in fade-in duration-200 font-sans" role="dialog">
+      {/* Background click to close */}
+      <div className="absolute inset-0 -z-10" onClick={closeSearch} />
+
+      {/* Main Search Panel - Minimalist Mobile-First Design */}
+      <div className="relative w-full max-w-2xl mx-auto flex flex-col h-full sm:h-auto sm:max-h-[85vh] sm:my-auto bg-white sm:rounded-3xl border-0 sm:border border-neutral-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        
+        {/* Minimalist Top Header: Back Arrow + Full-Width Search Input */}
+        <div className="flex items-center gap-3 px-3.5 sm:px-5 py-3.5 bg-white border-b border-neutral-100">
+          <button 
+            onClick={closeSearch}
+            className="p-2 text-neutral-800 hover:text-black hover:bg-neutral-100 rounded-full transition-colors cursor-pointer shrink-0"
+            aria-label="Close search"
+          >
+            <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
           </button>
+          
+          <div className="flex-1 flex items-center gap-2.5 bg-neutral-100/90 px-3.5 py-2.5 rounded-full border border-neutral-200/80 focus-within:border-black focus-within:bg-white transition-all shadow-2xs">
+            <Search className="h-4 w-4 text-neutral-500 shrink-0 stroke-[2.5]" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearchSubmit();
+              }}
+              placeholder="Search jerseys, teams, kits..."
+              className="flex-1 bg-transparent text-sm sm:text-base text-neutral-900 outline-none placeholder:text-neutral-500 font-bold"
+            />
+            {q && (
+              <button
+                onClick={() => setQ("")}
+                className="p-1 rounded-full text-neutral-400 hover:text-black hover:bg-neutral-200 transition cursor-pointer shrink-0"
+                aria-label="Clear query"
+              >
+                <X className="h-4 w-4 stroke-[2.5]" />
+              </button>
+            )}
+          </div>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto p-4">
-          {q === "" ? (
-            <div className="space-y-5">
-              {recent.length > 0 && (
-                <div>
-                  <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-muted-foreground"><Clock className="h-3 w-3" /> Recent</div>
-                  <div className="flex flex-wrap gap-2">
-                    {recent.map((r) => <button key={r} onClick={() => setQ(r)} className="rounded-full border border-border/60 px-3 py-1 text-xs hover:border-foreground">{r}</button>)}
-                  </div>
-                </div>
-              )}
+
+        {/* Minimalist Category Filter Pills */}
+        <div className="flex items-center gap-2 px-3.5 sm:px-5 py-2 bg-neutral-50/80 border-b border-neutral-100 overflow-x-auto no-scrollbar select-none">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                activeCategory === cat.id
+                  ? "bg-black text-white shadow-xs"
+                  : "bg-white text-neutral-700 border border-neutral-200/80 hover:border-black"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Content Body */}
+        <div className="flex-1 overflow-y-auto px-3.5 sm:px-5 py-3.5 space-y-4">
+          {q === "" && (
+            <div className="space-y-3.5">
+              {/* Trending Searches */}
               <div>
-                <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-muted-foreground"><TrendingUp className="h-3 w-3" /> Trending</div>
+                <div className="mb-2 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-neutral-500">
+                  <TrendingUp className="h-3.5 w-3.5 text-[#d32f2f] stroke-[2.5]" />
+                  <span>Trending Searches</span>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {TRENDING.map((t) => <button key={t} onClick={() => setQ(t)} className="rounded-full border border-border/60 px-3 py-1 text-xs hover:border-foreground">{t}</button>)}
+                  {TRENDING_TOPICS.map((t) => (
+                    <button
+                      key={t.label}
+                      onClick={() => {
+                        setQ(t.label);
+                        handleSearchSubmit(t.label);
+                      }}
+                      className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-xs font-extrabold text-neutral-800 hover:border-black hover:bg-black hover:text-white transition-all cursor-pointer active:scale-95"
+                    >
+                      {t.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
-          ) : results.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">No matches for "{q}"</div>
-          ) : (
-            <ul className="divide-y divide-border/50">
-              {results.map((p) => (
-                <li key={p.id}>
-                  <button onClick={() => go(p.id)} className="flex w-full items-center gap-4 px-1 py-3 text-left hover:bg-white/10">
-                    <img src={p.images[0]} alt="" loading="lazy" className="h-12 w-10 rounded object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{p.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{p.team}{p.driver ? ` · ${p.driver}` : ""}</div>
-                    </div>
-                    <div className="font-mono text-xs">{formatINR(p.price)}</div>
-                  </button>
-                </li>
-              ))}
-              <li>
-                <button onClick={() => {
-                  pushRecent(q);
-                  closeSearch();
-                  nav({ to: "/search", search: { q: q.trim() } as any });
-                }} className="flex w-full items-center gap-4 px-1 py-4 text-left hover:bg-white/10 text-brand">
-                  <Search className="h-4 w-4 ml-3" />
-                  <span className="text-sm font-medium">View all results for "{q}"</span>
-                  <ChevronRight className="h-4 w-4 ml-auto mr-2" />
-                </button>
-              </li>
-            </ul>
           )}
+
+          {/* Results Grid */}
+          <div>
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="text-xs font-black uppercase tracking-wider text-neutral-500">
+                {q ? `Top Matches (${results.length})` : "Recommended Jerseys"}
+              </span>
+              {q && results.length > 0 && (
+                <button
+                  onClick={() => handleSearchSubmit()}
+                  className="text-xs text-[#d32f2f] hover:underline font-black uppercase"
+                >
+                  View All &rarr;
+                </button>
+              )}
+            </div>
+
+            {results.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="w-12 h-12 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center mx-auto mb-2 text-neutral-400">
+                  <Search className="h-5 w-5 stroke-[2]" />
+                </div>
+                <div className="text-sm font-black text-neutral-900">No jerseys found for "{q}"</div>
+                <div className="text-xs text-neutral-500 mt-1 font-semibold">Try searching for "Real Madrid", "Ferrari", or "RCB"</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+                {results.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => go(p.id)}
+                    className="group flex flex-col bg-white hover:bg-neutral-50 border border-neutral-200 hover:border-black rounded-xl p-2 sm:p-2.5 text-left transition-all duration-200 cursor-pointer shadow-2xs active:scale-98"
+                  >
+                    <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-[#f8f8f8] mb-1.5 p-1 flex items-center justify-center">
+                      <img
+                        src={p.images[0]}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {p.tag && (
+                        <span className="absolute top-1 left-1 px-1.5 py-0.2 rounded bg-black/80 backdrop-blur-sm text-[8px] font-black uppercase tracking-wider text-white">
+                          {p.tag}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-[#d32f2f] truncate mb-0.5">
+                      {p.team || p.category}
+                    </div>
+                    <div className="text-xs font-bold text-neutral-900 line-clamp-1 leading-snug">
+                      {p.name}
+                    </div>
+                    <div className="mt-1 flex items-center gap-1 text-xs font-black text-neutral-900">
+                      <span>{formatINR(p.price)}</span>
+                      {p.price > 500 && (
+                        <span className="text-[10px] text-neutral-400 line-through font-medium">
+                          {formatINR(Math.round(p.price * 1.5))}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Minimalist Bottom Bar */}
+        {q && results.length > 0 && (
+          <div className="p-3 bg-white border-t border-neutral-100 flex items-center justify-between px-4 sm:px-5">
+            <span className="text-xs text-neutral-700 font-bold truncate pr-2">
+              Results for <strong className="text-black font-black">"{q}"</strong>
+            </span>
+            <button
+              onClick={() => handleSearchSubmit()}
+              className="px-4 py-2 rounded-full bg-black text-white font-black text-xs uppercase tracking-wider hover:bg-neutral-800 transition cursor-pointer shrink-0"
+            >
+              See All Results &rarr;
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -782,322 +916,585 @@ export function PopupModals() {
 export function SiteChrome({ children }: { children: ReactNode }) {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const [spinOpen, setSpinOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenSpin = () => setSpinOpen(true);
+    window.addEventListener("open-fortune-spin", handleOpenSpin);
+    return () => window.removeEventListener("open-fortune-spin", handleOpenSpin);
+  }, []);
+
   return (
     <>
       <div className="hidden sm:block"><SiteNav /></div>
       <MobileTopNav />
-      <main className={`pt-0 pb-16 w-full overflow-x-hidden ${isHome ? "sm:pt-0 sm:pb-0" : "sm:pt-20 sm:pb-8"}`}>{children}</main>
+      <main className={`pt-0 pb-16 w-full overflow-x-hidden ${isHome ? "sm:pt-0 sm:pb-0" : "sm:pt-24 md:pt-[122px] sm:pb-8"}`}>{children}</main>
       <SiteFooter />
       {/* <CartDrawer /> */}
       <SearchDialog />
       <PopupModals />
+      <SignupBonusPopup />
+      <FortuneSpin open={spinOpen} onClose={() => setSpinOpen(false)} />
     </>
+  );
+}
+
+export function SignupBonusPopup() {
+  const { signupBonusPopupOpen, setSignupBonusPopupOpen } = useShop();
+  const nav = useNavigate();
+
+  if (!signupBonusPopupOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in" onClick={() => setSignupBonusPopupOpen(false)} />
+      <div className="relative w-full max-w-md bg-[#111] border border-[#f65c29]/30 shadow-[0_0_40px_-10px_rgba(246,92,41,0.3)] animate-in zoom-in-95 fade-in overflow-hidden flex flex-col text-white">
+        <button onClick={() => setSignupBonusPopupOpen(false)} className="absolute top-4 right-4 text-white/50 hover:text-white z-10"><X className="h-5 w-5" /></button>
+        <div className="p-8 text-center flex flex-col items-center">
+           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-6 shadow-[0_0_15px_-3px_rgba(255,255,255,0.4)] overflow-hidden p-2">
+              <img src="/mobile_logo.png" alt="Logo" className="w-full h-full object-contain filter drop-shadow-sm invert" />
+           </div>
+           <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#f65c29] mb-2">Welcome to Veloce</div>
+           <h2 className="font-display text-4xl font-black uppercase italic tracking-tighter mb-4">₹500 <span className="text-white/80">Bonus</span></h2>
+           <p className="text-sm text-gray-400 mb-8 leading-relaxed max-w-xs">
+             Your wallet has been credited with ₹500 as a welcome gift. Use it towards your first purchase!
+           </p>
+           <button onClick={() => { setSignupBonusPopupOpen(false); nav({to: "/shop"}); }} className="w-full bg-white text-black font-bold uppercase tracking-widest text-[13px] py-4 hover:bg-gray-200 transition">
+             Shop Now
+           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const nav = useNavigate();
+  const { userEmail, wishlist, cart, signOut, profile, openSearch, isAdmin, isOwner } = useShop();
+  const { combinedFootball, combinedF1, combinedB, combinedCricketIPL, combinedWC } = useTeams();
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [supportExpanded, setSupportExpanded] = useState(false);
+  const { getById } = useCatalog();
+  const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
+
+  const toggleCategory = (cat: string) => {
+    setOpenCategory((prev) => (prev === cat ? null : cat));
+  };
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      const timer = setTimeout(() => {
+        setOpenCategory(null);
+        setSupportExpanded(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const handleNav = (to: string, search?: Record<string, any>) => {
+    onClose();
+    nav({ to: to as any, search: search as any });
+  };
+
+  return (
+    <div 
+      className={`fixed inset-0 z-[250] flex transition-visibility duration-300 ${
+        open ? "visible pointer-events-auto" : "invisible pointer-events-none"
+      }`} 
+      role="dialog" 
+      aria-modal="true"
+    >
+      {/* Dark overlay */}
+      <div 
+        className={`fixed inset-0 bg-black/50 transition-opacity duration-300 ease-out will-change-opacity ${
+          open ? "opacity-100" : "opacity-0"
+        }`} 
+        onClick={onClose} 
+      />
+
+      {/* Drawer Panel */}
+      <div 
+        className={`relative w-full max-w-xs sm:max-w-sm h-full bg-white text-black shadow-2xl flex flex-col z-10 border-r border-black/10 overflow-y-auto transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Top Header: Close, Search, VELOCE Wear Logo, Bag, Profile */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/10 bg-white">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="text-black hover:opacity-70 transition cursor-pointer p-0.5"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5 stroke-[2]" />
+            </button>
+            <button
+              onClick={() => {
+                onClose();
+                openSearch();
+              }}
+              className="text-black hover:opacity-70 transition cursor-pointer p-0.5"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5 stroke-[2]" />
+            </button>
+          </div>
+
+          {/* Veloce Wear Red Brand Logo */}
+          <div className="flex flex-col items-center leading-none select-none">
+            <span className="font-black text-[22px] tracking-tight uppercase text-[#d32f2f] font-display leading-none">
+              VELOCE
+            </span>
+            <span className="font-serif italic text-[11px] tracking-[0.2em] text-[#d32f2f] -mt-0.5 font-black leading-none">
+              Wear
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleNav("/checkout")}
+              className="relative text-black hover:opacity-70 transition cursor-pointer p-0.5"
+              aria-label="Shopping Bag"
+            >
+              <ShoppingBag className="h-5 w-5 stroke-[1.8]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-black text-[9px] font-bold text-white px-1 font-mono">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => handleNav(userEmail ? "/profile" : "/login")}
+              className="text-black hover:opacity-70 transition cursor-pointer p-0.5"
+              aria-label="Account"
+            >
+              <User className="h-5 w-5 stroke-[1.8]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Menu Navigation List */}
+        <div className="flex-1 px-5 py-3 space-y-1.5">
+          {/* NEW 2026/27 KITS */}
+          <button
+            onClick={() => handleNav("/new-kits")}
+            className="w-full text-left font-extrabold text-[15px] tracking-wide text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+          >
+            NEW 2026/27 KITS
+          </button>
+
+          {/* PLAYER VERSION KITS */}
+          <button
+            onClick={() => handleNav("/shop", { tag: "player-version" })}
+            className="w-full text-left font-extrabold text-[15px] tracking-wide text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+          >
+            PLAYER VERSION KITS
+          </button>
+
+          {/* Football Jerseys (Accordion) */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => toggleCategory("football")}
+              className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              <span>Football Jerseys</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "football" ? "rotate-180" : ""}`} />
+            </button>
+
+            {openCategory === "football" && (
+              <div className="pt-2 pb-4 space-y-3 animate-in fade-in duration-200">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-2 px-1">CLUBS</div>
+                  <div className="grid grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                    {combinedFootball.map(([t, logo]) => (
+                      <button
+                        key={t}
+                        onClick={() => handleNav("/shop/football", { team: t })}
+                        className="flex flex-col items-center gap-1 group cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
+                          <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
+                        </div>
+                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Basketball Jerseys (Accordion) */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => toggleCategory("basketball")}
+              className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              <span>Basketball Jerseys</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "basketball" ? "rotate-180" : ""}`} />
+            </button>
+
+            {openCategory === "basketball" && (
+              <div className="pt-2 pb-4 animate-in fade-in duration-200">
+                <div className="grid grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {combinedB.map(([t, logo]) => (
+                    <button
+                      key={t}
+                      onClick={() => handleNav("/shop/basketball", { team: t })}
+                      className="flex flex-col items-center gap-1 group cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
+                        <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
+                      </div>
+                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cricket Jerseys (Accordion) */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => toggleCategory("cricket")}
+              className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              <span>Cricket Jerseys</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "cricket" ? "rotate-180" : ""}`} />
+            </button>
+
+            {openCategory === "cricket" && (
+              <div className="pt-2 pb-4 space-y-3.5 animate-in fade-in duration-200">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-2 px-1">IPL</div>
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {combinedCricketIPL.map(([t, logo]) => (
+                      <button
+                        key={t}
+                        onClick={() => handleNav("/shop/cricket", { team: t })}
+                        className="flex flex-col items-center gap-1 group cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
+                          <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
+                        </div>
+                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-2 px-1">INTERNATIONAL</div>
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {[
+                      ["India", "https://flagcdn.com/w80/in.png"],
+                      ["Australia", "https://flagcdn.com/w80/au.png"],
+                      ["England (Cricket)", "https://flagcdn.com/w80/gb-eng.png"],
+                      ["South Africa", "https://flagcdn.com/w80/za.png"],
+                      ["New Zealand", "https://flagcdn.com/w80/nz.png"],
+                      ["West Indies", "https://flagcdn.com/w80/jm.png"],
+                      ["Sri Lanka", "https://flagcdn.com/w80/lk.png"],
+                    ].map(([t, flag]) => (
+                      <button
+                        key={t}
+                        onClick={() => handleNav("/shop/cricket", { team: t })}
+                        className="flex flex-col items-center gap-1 group cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition overflow-hidden">
+                          <img src={flag} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
+                        </div>
+                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Formula 1 Store (Accordion) */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => toggleCategory("f1")}
+              className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              <span>Formula 1 Store</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "f1" ? "rotate-180" : ""}`} />
+            </button>
+
+            {openCategory === "f1" && (
+              <div className="pt-2 pb-4 animate-in fade-in duration-200">
+                <div className="grid grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {combinedF1.map(([t, logo]) => (
+                    <button
+                      key={t}
+                      onClick={() => handleNav("/shop/f1", { team: t })}
+                      className="flex flex-col items-center gap-1 group cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
+                        <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
+                      </div>
+                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* FIFA World Cup (Accordion) */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => toggleCategory("worldcup")}
+              className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              <span>FIFA World Cup</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "worldcup" ? "rotate-180" : ""}`} />
+            </button>
+
+            {openCategory === "worldcup" && (
+              <div className="pt-2 pb-4 animate-in fade-in duration-200">
+                <div className="grid grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {combinedWC.map(([t, logo]) => (
+                    <button
+                      key={t}
+                      onClick={() => handleNav("/shop/worldcup", { team: t })}
+                      className="flex flex-col items-center gap-1 group cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
+                        <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
+                      </div>
+                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Accessories */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => handleNav("/shop", { category: "accessories" })}
+              className="w-full text-left font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              Accessories
+            </button>
+          </div>
+
+          {/* Bottom Account & Actions Section */}
+          <div className="border-t border-neutral-200/80 pt-4 mt-3 space-y-3">
+            {/* Admin Dashboard for Admin/Owner */}
+            {isAdmin && (
+              <button
+                onClick={() => handleNav("/admin")}
+                className="w-full flex items-center gap-3.5 font-bold text-[14px] text-[#d32f2f] hover:text-black transition cursor-pointer py-1 bg-red-50 p-2 rounded-xl border border-red-200"
+              >
+                <ShieldCheck className="h-5 w-5 stroke-[2] text-[#d32f2f]" />
+                <span>Admin Dashboard</span>
+              </button>
+            )}
+
+            {/* Account */}
+            <button
+              onClick={() => handleNav(userEmail ? "/profile" : "/login")}
+              className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-neutral-900 hover:text-[#d32f2f] transition cursor-pointer py-1"
+            >
+              <User className="h-5 w-5 stroke-[1.8]" />
+              <span>Account</span>
+            </button>
+
+            {/* Wallet */}
+            <button
+              onClick={() => handleNav("/profile", { tab: "wallet" })}
+              className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-neutral-900 hover:text-[#d32f2f] transition cursor-pointer py-1"
+            >
+              <Wallet className="h-5 w-5 stroke-[1.8]" />
+              <span>Wallet (₹{profile?.walletBalance ?? 0})</span>
+            </button>
+
+            {/* Spin n Win */}
+            <button
+              onClick={() => {
+                onClose();
+                window.dispatchEvent(new CustomEvent("open-fortune-spin"));
+              }}
+              className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-neutral-900 hover:text-[#d32f2f] transition cursor-pointer py-1"
+            >
+              <Gift className="h-5 w-5 stroke-[1.8]" />
+              <span>Spin n Win</span>
+            </button>
+
+            {/* Logout / Login */}
+            {userEmail ? (
+              <button
+                onClick={() => {
+                  signOut();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-[#d32f2f] hover:underline transition cursor-pointer py-1"
+              >
+                <LogOut className="h-5 w-5 stroke-[1.8]" />
+                <span>Logout</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => handleNav("/login")}
+                className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-black hover:text-[#d32f2f] transition cursor-pointer py-1"
+              >
+                <LogIn className="h-5 w-5 stroke-[1.8]" />
+                <span>Sign In</span>
+              </button>
+            )}
+
+            {/* Support Accordion */}
+            <div className="pt-2 pb-6 border-t border-black/5">
+              <button
+                onClick={() => setSupportExpanded(!supportExpanded)}
+                className="w-full flex items-center justify-between font-bold text-[13px] uppercase tracking-widest text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+              >
+                <span>SUPPORT</span>
+                <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${supportExpanded ? "rotate-180" : ""}`} />
+              </button>
+
+              {supportExpanded && (
+                <div className="pt-1 pb-2 pl-3 space-y-2 text-xs font-medium text-neutral-700 animate-in fade-in duration-200">
+                  <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" className="block hover:text-black">
+                    WhatsApp Chat
+                  </a>
+                  <a href="mailto:support@veloce.in" className="block hover:text-black">
+                    Email Support
+                  </a>
+                  <Link to="/info/$page" params={{ page: "shipping-policy" }} onClick={onClose} className="block hover:text-black">
+                    Shipping Policy
+                  </Link>
+                  <Link to="/info/$page" params={{ page: "exchange-policy" }} onClick={onClose} className="block hover:text-black">
+                    Exchange & Returns
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
 export function MobileTopNav() {
   const nav = useNavigate();
-  const { cart, openCart, openSearch, userEmail, wishlist, isAdmin } = useShop();
-  const { combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt } = useTeams();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { cart, userEmail, isAdmin, openSearch } = useShop();
   const { getById } = useCatalog();
   const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
-  const [spinOpen, setSpinOpen] = useState(false);
-  const [f1Open, setF1Open] = useState(false);
-  const [footballOpen, setFootballOpen] = useState(false);
-  const [basketballOpen, setBasketballOpen] = useState(false);
-  const [cricketOpen, setCricketOpen] = useState(false);
-  const [worldCupOpen, setWorldCupOpen] = useState(false);
-  const [zonesOpen, setZonesOpen] = useState(false);
-  const cricketOpenState = useState(false);
   const [adminMobilePopup, setAdminMobilePopup] = useState(true);
 
   return (
-    <div className="sm:hidden sticky top-0 inset-x-0 z-[100]">
-      {isAdmin && adminMobilePopup && (
-         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-           <div className="bg-[#181818] border border-border/20 rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center">
-              <h2 className="text-lg font-bold text-white mb-2">Desktop Recommended</h2>
-              <p className="text-sm text-gray-400 mb-6">For the best experience while managing the store, please use a laptop or PC.</p>
-              <button onClick={() => setAdminMobilePopup(false)} className="w-full bg-white text-black font-bold text-[13px] py-3 rounded-none uppercase tracking-widest active:scale-95 transition-transform">Continue anyway</button>
+    <>
+      <div className="sm:hidden sticky top-0 inset-x-0 z-[100] bg-white shadow-xs">
+        {isAdmin && adminMobilePopup && (
+           <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+             <div className="bg-[#181818] border border-border/20 rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center">
+                <h2 className="text-lg font-bold text-white mb-2">Desktop Recommended</h2>
+                <p className="text-sm text-gray-400 mb-6">For the best experience while managing the store, please use a laptop or PC.</p>
+                <button onClick={() => setAdminMobilePopup(false)} className="w-full bg-white text-black font-bold text-[13px] py-3 rounded-none uppercase tracking-widest active:scale-95 transition-transform">Continue anyway</button>
+             </div>
            </div>
-         </div>
-      )}
-      {/* Promo Bar */}
-      <PromoSlider />
-      {/* Main Bar */}
-      <div className="relative flex items-center justify-between bg-[#181818] px-4 py-4 shadow-md">
-        <div className="flex items-center gap-4 z-10">
-          <button onClick={() => setMenuOpen(true)} className="text-white active:scale-95 transition-transform">
+        )}
+
+        {/* Running Red Announcement Bar */}
+        <TopAnnouncementTicker />
+        
+        {/* Main Mobile Navbar */}
+        <div className="relative flex items-center justify-between bg-white px-4 py-2.5 border-b border-black/10">
+          {/* Left: Side Hamburger Menu Button */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="text-black active:scale-95 transition-transform p-1.5"
+            aria-label="Open menu drawer"
+          >
             <Menu className="h-6 w-6 stroke-[2]" />
           </button>
-          <button onClick={openSearch} className="text-white active:scale-95 transition-transform">
-            <Search className="h-5 w-5 stroke-[2]" />
-          </button>
-        </div>
-        
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <Link to="/" className="pointer-events-auto flex items-center justify-center">
-            <img
-              src="/logo.png?v=3"
-              alt="Veloce Wear"
-              loading="eager"
-              fetchPriority="high"
-              className="h-12 w-auto object-contain scale-150 brightness-0 invert"
-            />
-          </Link>
-        </div>
-        
-        <div className="flex items-center gap-4 z-10">
-          <Link to={userEmail ? "/profile" : "/login"} className="text-white active:scale-95 transition-transform">
-            <User className="h-6 w-6 stroke-[2]" />
-          </Link>
-          {!isAdmin && (
-            <Link to="/wishlist" className="relative text-white active:scale-95 transition-transform">
-              <Heart className="h-6 w-6 stroke-[2]" />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
-                  {wishlist.length}
-                </span>
-              )}
-            </Link>
-          )}
-          {!isAdmin && (
-            <button onClick={() => nav({ to: "/checkout" })} className="relative text-white active:scale-95 transition-transform">
-              <ShoppingBag className="h-6 w-6 stroke-[2]" />
+
+          {/* Center: Brand Logo */}
+          <Logo />
+          
+          {/* Right: Search & Shopping Bag */}
+          <div className="flex items-center gap-2 z-10">
+            <button
+              onClick={openSearch}
+              className="text-black active:scale-95 transition-transform p-1.5"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5 stroke-[2]" />
+            </button>
+
+            <button
+              onClick={() => {
+                if (window.innerWidth >= 640 && !userEmail) {
+                  nav({ to: "/login" });
+                } else {
+                  nav({ to: "/checkout" });
+                }
+              }}
+              className="relative text-black active:scale-95 transition-transform p-1.5"
+              aria-label="Shopping Bag"
+            >
+              <ShoppingBag className="h-5 w-5 stroke-[2]" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[10px] font-bold text-white shadow-sm">
+                <span className="absolute 0 top-0.5 right-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[8.5px] font-bold text-white shadow-xs">
                   {cartCount}
                 </span>
               )}
             </button>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Sidebar Drawer */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setMenuOpen(false)} />
-          <div className="relative w-[85%] max-w-[320px] bg-background border-r border-border/40 h-full flex flex-col overflow-y-auto animate-in slide-in-from-left duration-300">
-            <div className="flex items-center p-4 border-b border-border/40">
-              <button onClick={() => setMenuOpen(false)} className="text-[#f65c29] mr-4 active:scale-90 transition-transform">
-                <X className="h-7 w-7 stroke-[3]" />
-              </button>
-              <button onClick={() => { setMenuOpen(false); openSearch(); }} className="text-foreground active:scale-90 transition-transform">
-                <Search className="h-[22px] w-[22px] stroke-[2.5]" />
-              </button>
-              
-              <div className="flex-1 flex justify-center mr-2">
-                <img
-                  src="/logo.png?v=3"
-                  alt="Veloce Wear"
-                  loading="lazy"
-                  className="h-12 w-auto object-contain scale-150 invert drop-shadow-sm"
-                />
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <button onClick={() => { setMenuOpen(false); nav({ to: "/checkout" }); }} className="relative text-foreground active:scale-90 transition-transform">
-                  <ShoppingBag className="h-6 w-6 stroke-[2]" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f65c29] px-1 text-[9px] font-bold text-white">
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
-                <Link to={userEmail ? "/profile" : "/login"} className="text-foreground active:scale-90 transition-transform" onClick={() => setMenuOpen(false)}>
-                  <User className="h-[26px] w-[26px] stroke-[2]" />
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex flex-col py-6 px-6 gap-6">
-              <Link to="/" onClick={() => setMenuOpen(false)} className="text-[#f65c29] font-bold text-[15px] tracking-wide">
-                Home
-              </Link>
-              
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setFootballOpen(!footballOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>Football Jerseys</span>
-                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${footballOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {footballOpen && (
-                  <div className="flex flex-col gap-3 pt-2">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1">Clubs</div>
-                    <div className="grid grid-cols-4 gap-3">
-                      {combinedFootball.map(([t, logo]) => (
-                        <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                          </div>
-                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                        </Link>
-                      ))}
-                    </div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1 mt-2">National Teams</div>
-                    <div className="grid grid-cols-4 gap-3">
-                      {combinedWC.map(([t, logo]) => (
-                        <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                          </div>
-                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setBasketballOpen(!basketballOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>Basketball Jerseys</span>
-                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${basketballOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {basketballOpen && (
-                  <div className="grid grid-cols-4 gap-3 pt-2">
-                    {combinedB.map(([t, logo]) => (
-                      <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                        </div>
-                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setCricketOpen(!cricketOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>Cricket Jerseys</span>
-                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${cricketOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {cricketOpen && (
-                  <div className="flex flex-col gap-3 pt-2">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1">Internationals</div>
-                    <div className="grid grid-cols-4 gap-3">
-                      {combinedCricketInt.map(([t, logo]) => (
-                        <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                          </div>
-                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                        </Link>
-                      ))}
-                    </div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand px-1 mt-2">IPL</div>
-                    <div className="grid grid-cols-4 gap-3">
-                      {combinedCricketIPL.map(([t, logo]) => (
-                        <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                          <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                            <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                          </div>
-                          <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setF1Open(!f1Open)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>Formula 1 Store</span>
-                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${f1Open ? 'rotate-180' : ''}`} />
-                </button>
-                {f1Open && (
-                  <div className="grid grid-cols-4 gap-3 pt-2">
-                    {combinedF1.map(([t, logo]) => (
-                      <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                        </div>
-                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <button onClick={() => setWorldCupOpen(!worldCupOpen)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>FIFA World Cup</span>
-                  <ChevronDown className={`h-4 w-4 stroke-[3] transition-transform ${worldCupOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {worldCupOpen && (
-                  <div className="grid grid-cols-4 gap-3 pt-2">
-                    {combinedWC.map(([t, logo]) => (
-                      <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setMenuOpen(false)} className="flex flex-col items-center gap-1.5 group">
-                        <div className="w-12 h-12 rounded-full bg-white border border-border/40 flex items-center justify-center p-2.5 shadow-sm active:scale-95 transition-transform">
-                          <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md" />
-                        </div>
-                        <span className="text-[8px] text-center font-medium text-muted-foreground leading-[1.1]">{t}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <Link to="/shop/accessories" onClick={() => setMenuOpen(false)} className="flex items-center justify-between text-foreground font-bold text-[15px] tracking-wide">
-                  <span>Accessories</span>
-                </Link>
-              </div>
-              
-              <div className="flex flex-col gap-6 pt-6 mt-6 border-t border-border/10">
-                <Link to={userEmail ? "/profile" : "/login"} onClick={() => setMenuOpen(false)} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-3">
-                  <User className="h-5 w-5" /> Account
-                </Link>
-                {!isAdmin && (
-                  <Link to="/wishlist" onClick={() => setMenuOpen(false)} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-3 relative">
-                    <Heart className="h-5 w-5" /> Wishlist
-                  </Link>
-                )}
-                {!isAdmin && (
-                  <button onClick={() => { 
-                    setMenuOpen(false); 
-                    if (!userEmail) nav({ to: "/login" });
-                    else setSpinOpen(true); 
-                  }} className="text-left text-foreground font-bold text-[15px] tracking-wide flex items-center gap-3 text-yellow-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-yellow-700 fill-yellow-500">
-                      <circle cx="12" cy="12" r="10"/>
-                      <circle cx="12" cy="12" r="2"/>
-                      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-                    </svg> Lucky Wheel
-                  </button>
-                )}
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
-      <FortuneSpin open={spinOpen} onClose={() => setSpinOpen(false)} />
-    </div>
+      {/* Slide-out Mobile Hamburger Drawer */}
+      <SideDrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
   );
 }
 
 export function PromoSlider() {
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  
   const messages = [
     "FREE EXCHANGE AND RETURN",
     "COD AVAILABLE WITH MINIMAL PAYMENT",
-    "LUXURY INDEED",
+    "500RS SIGNUP BONUS IN WALLET",
     "SECURED CHECKOUT AND PAYMENTS"
   ];
 
   useEffect(() => {
+    if (isPaused) return;
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % messages.length);
-    }, 3000);
+    }, 3500);
     return () => clearInterval(timer);
-  }, []);
+  }, [isPaused]);
 
   return (
-    <div className="w-full bg-[#f4f4f4] text-black text-[10px] font-bold uppercase tracking-wider text-center py-1.5 overflow-hidden">
-      <div key={index} className="animate-in fade-in slide-in-from-right-4 duration-500">
+    <div 
+      className="w-full bg-[#f4f4f4] text-black text-[10px] font-bold uppercase tracking-wider text-center py-1.5 overflow-hidden"
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div 
+        key={index} 
+        className="animate-in fade-in duration-700 md:animate-none md:fade-in-0"
+      >
         {messages[index]}
       </div>
     </div>

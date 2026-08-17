@@ -44,10 +44,10 @@ export async function setUserRole({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const ownerEmail = process.env.VITE_OWNER_EMAIL;
+  const ownerEmail = import.meta.env.VITE_OWNER_EMAIL?.toLowerCase().trim();
   
-  if (user?.email !== ownerEmail) {
-    throw new Error("Only the owner can manage admin roles");
+  if (user?.email?.toLowerCase().trim() !== ownerEmail) {
+    throw new Error(`Only the owner can manage admin roles (user: ${user?.email}, owner: ${ownerEmail})`);
   }
 
   if (!data.grant && data.role === "admin" && data.userId === user?.id) {
@@ -55,7 +55,7 @@ export async function setUserRole({
   }
 
   const { data: targetUser } = await supabase.from("users").select("email").eq("id", data.userId).single();
-  if (targetUser?.email === ownerEmail && !data.grant) {
+  if (targetUser?.email?.toLowerCase().trim() === ownerEmail && !data.grant) {
     throw new Error("You cannot demote the owner");
   }
   const { error } = await supabase
@@ -73,13 +73,13 @@ export async function deleteUser({ data }: { data: { userId: string } }) {
   } = await supabase.auth.getUser();
   if (data.userId === user?.id) throw new Error("You cannot delete your own account");
 
-  const ownerEmail = process.env.VITE_OWNER_EMAIL;
+  const ownerEmail = import.meta.env.VITE_OWNER_EMAIL?.toLowerCase().trim();
   const { data: targetUser } = await supabase.from("users").select("email").eq("id", data.userId).single();
-  if (ownerEmail && targetUser?.email === ownerEmail) {
-    throw new Error("You cannot delete the owner account");
+  if (ownerEmail && targetUser?.email?.toLowerCase().trim() === ownerEmail) {
+    throw new Error(`You cannot delete the owner account`);
   }
 
-  const { error } = await supabase.from("users").delete().eq("id", data.userId);
+  const { error } = await supabase.rpc("delete_user_admin", { target_user_id: data.userId });
   if (error) throw error;
   return { ok: true };
 }
@@ -91,10 +91,10 @@ export async function setUserDisabled({ data }: { data: { userId: string; disabl
   } = await supabase.auth.getUser();
   if (data.userId === user?.id) throw new Error("You cannot disable your own account");
 
-  const ownerEmail = process.env.VITE_OWNER_EMAIL;
+  const ownerEmail = import.meta.env.VITE_OWNER_EMAIL?.toLowerCase().trim();
   const { data: targetUser } = await supabase.from("users").select("email").eq("id", data.userId).single();
-  if (ownerEmail && targetUser?.email === ownerEmail && data.disabled) {
-    throw new Error("You cannot disable the owner account");
+  if (ownerEmail && targetUser?.email?.toLowerCase().trim() === ownerEmail && data.disabled) {
+    throw new Error(`You cannot disable the owner account`);
   }
 
   const { error } = await supabase

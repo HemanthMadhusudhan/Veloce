@@ -1,24 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/chrome";
 import { ShopInner } from "./shop";
+import categorySeo from "@/lib/category-seo.json";
 
 export const Route = createFileRoute("/shop/f1")({
   head: () => ({
     meta: [
-      { title: "Formula 1 — Veloce Wear" },
-      {
-        name: "description",
-        content: "Official Formula 1 team merchandise. Paddock-grade kit, on your terms.",
-      },
+      { title: categorySeo.f1.title },
+      { name: "description", content: categorySeo.f1.description },
     ],
   }),
   component: () => (
     <SiteChrome>
       <ShopInner
         title="Formula 1"
-        subtitle="Paddock-grade kit from every constructor on the grid."
+        subtitle="Official merchandise from the paddock."
         category="f1"
       />
+      <div className="mx-auto max-w-7xl px-5 sm:px-6" dangerouslySetInnerHTML={{ __html: categorySeo.f1.content }} />
     </SiteChrome>
   ),
 });

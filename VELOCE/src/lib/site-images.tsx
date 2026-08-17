@@ -14,8 +14,6 @@ import dualF1 from "@/assets/dual-f1.jpg";
 import defaultSiteImagesRaw from "./default-site-images.json";
 
 export type SiteImageSlot =
-  | "hero"
-  | "film-video"
   | "worldcup-banner"
   | "category-football"
   | "category-f1"
@@ -30,16 +28,6 @@ export type SiteImageSlot =
   | "promo-popup";
 
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
-  {
-    slot: "hero",
-    label: "Homepage hero (Image or Video)",
-    description: "Full-screen background image or looping video at the top of the homepage.",
-  },
-  {
-    slot: "film-video",
-    label: "Watch the Film video (Optional)",
-    description: "Cinematic video played in a modal when clicking 'Watch the film'.",
-  },
   {
     slot: "worldcup-banner",
     label: "World Cup banner (Image or Video)",
@@ -83,8 +71,6 @@ export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description:
 ];
 
 const DEFAULTS: Record<SiteImageSlot, string> = {
-  hero: "",
-  "film-video": "",
   "worldcup-banner": "",
   "category-football": "",
   "category-f1": "",

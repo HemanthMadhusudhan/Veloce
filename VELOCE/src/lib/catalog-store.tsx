@@ -38,8 +38,20 @@ type Ctx = {
 
 const C = createContext<Ctx | null>(null);
 
+const NATURAL_IMG_MAP: Record<string, string[]> = {};
+(defaultProductsRaw as any[]).forEach((p) => {
+  if (p.id && p.images && p.images.length > 0) {
+    NATURAL_IMG_MAP[p.id] = p.images;
+  }
+});
+
 // Helper to map DB row to Product object
 function mapDbRowToProduct(r: any): Product {
+  const localImgs = NATURAL_IMG_MAP[r.id];
+  const images = (localImgs && localImgs.length > 0 && localImgs[0].startsWith("/products/natural"))
+    ? localImgs
+    : (r.images || []);
+
   return {
     id: r.id,
     name: r.name,
@@ -54,7 +66,7 @@ function mapDbRowToProduct(r: any): Product {
     badge: r.badge || undefined,
     colors: r.colors || [],
     sizes: r.sizes || [],
-    images: r.images || [],
+    images: images,
     description: r.description,
     material: r.material,
     rating: Number(r.rating || 5),
@@ -69,7 +81,7 @@ function mapDbRowToProduct(r: any): Product {
 let cachedRaw = null;
 if (typeof window !== "undefined") {
   try {
-    const c = localStorage.getItem("veloce_products_cache");
+    const c = localStorage.getItem("veloce_products_cache_v10");
     if (c) cachedRaw = JSON.parse(c);
   } catch (e) {}
 }
@@ -79,6 +91,9 @@ let listeners: (() => void)[] = [];
 
 export function getLiveProducts(): Product[] {
   return LIVE;
+}
+export function getLiveProductBySlug(slug: string): Product | undefined {
+  return LIVE.find((p) => p.slug === slug || p.id === slug);
 }
 export function getLiveProduct(id: string): Product | undefined {
   return LIVE.find((p) => p.id === id);
@@ -134,7 +149,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       LIVE = mapped;
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("veloce_products_cache", JSON.stringify(data));
+          localStorage.setItem("veloce_products_cache_v10", JSON.stringify(data));
         } catch (e) {}
       }
       listeners.forEach((l) => l());

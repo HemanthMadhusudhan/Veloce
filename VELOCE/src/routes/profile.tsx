@@ -1,24 +1,30 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useShop } from "@/lib/store";
-import { formatOrderId } from "@/lib/format";
+import { formatOrderId, formatINR } from "@/lib/format";
 import { useCatalog } from "@/lib/catalog-store";
 import { SiteChrome } from "@/components/chrome";
+import { createRazorpayOrder, verifyRazorpayPayment } from "@/lib/razorpay";
 import {
   MapPin,
   Package,
   LifeBuoy,
   LogOut,
-  User as UserIcon,
+  User as UserIcon, Shield,
   Mail,
   Phone,
   Save,
   ArrowLeft,
   Heart,
   ClipboardList,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Wallet,
+  Banknote,
+  Plus
 } from "lucide-react";
 import { type AppUser } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "My Account — Veloce Wear" }] }),
@@ -51,18 +57,22 @@ const DEFAULT_ADDR: Address = {
 
 function ProfilePage() {
   const nav = useNavigate();
-  const { userEmail, signOut, orders, profile, updateProfile } = useShop();
+  const { userEmail, signOut, orders, profile, updateProfile, addWalletBalance, authLoading } = useShop();
   const { getById } = useCatalog();
-  const [tab, setTab] = useState<"orders" | "address" | "support" | "menu" | "overview" | "settings">(
-    "menu"
-  );
+  const search = Route.useSearch() as any;
+  const tab = search.tab || "menu";
+  const setTab = (newTab: string) => {
+    if (newTab !== tab) {
+      nav({ to: `/profile?tab=${newTab}` });
+    }
+  };
   const [addr, setAddr] = useState<Address>(DEFAULT_ADDR);
   const [saved, setSaved] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<any>(null);
   const firstName = profile?.fullName?.split(" ")[0] || (addr.name ? addr.name.split(" ")[0] : null) || "User";
 
   useEffect(() => {
-    if (!userEmail) nav({ to: "/login", replace: true });
+    if (!authLoading && !userEmail) nav({ to: "/login", replace: true });
   }, [userEmail, nav]);
 
   useEffect(() => {
@@ -84,6 +94,7 @@ function ProfilePage() {
     } catch {}
   }, [profile]);
 
+  if (authLoading) return null;
   if (!userEmail) return null;
 
   const myOrders = orders.filter(
@@ -155,7 +166,7 @@ function ProfilePage() {
         {/* Glassmorphic Sidebar */}
         <nav className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:overflow-visible pb-2 lg:pb-0 scrollbar-none">
           <TabBtn
-            active={tab === "orders"}
+            active={tab === "orders" || tab === "menu"}
             onClick={() => setTab("orders")}
             icon={<Package className="h-4 w-4" />}
           >
@@ -175,13 +186,26 @@ function ProfilePage() {
           >
             Support
           </TabBtn>
+          <TabBtn
+            active={tab === "wallet"}
+            onClick={() => setTab("wallet")}
+            icon={<Wallet className="h-4 w-4" />}
+          >
+            <div className="flex flex-col items-start leading-none gap-1">
+              <span>Wallet</span>
+              <span className="text-[10px] text-green-500 font-bold">₹{profile?.walletBalance?.toLocaleString("en-IN") || 0}</span>
+            </div>
+          </TabBtn>
         </nav>
 
         {/* Content Area */}
         <div className="min-w-0 min-h-[300px] sm:min-h-[400px] rounded-3xl border border-white/10 bg-surface/20 p-5 sm:p-10 backdrop-blur-md shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
           <div className="relative z-10">
-          {tab === "orders" && (
+          {tab === "wallet" && (
+            <WalletTab profile={profile} addWalletBalance={addWalletBalance} />
+          )}
+          {(tab === "orders" || tab === "menu") && (
             <div>
               <h2 className="font-display text-base sm:text-xl font-semibold">Order history</h2>
               <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
@@ -380,6 +404,7 @@ function ProfilePage() {
         myOrders={orders} 
         firstName={firstName}
         getById={getById}
+        addWalletBalance={addWalletBalance}
       />
     </div>
     </>
@@ -439,7 +464,7 @@ function Input({
   );
 }
 
-function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr, setAddr, saveAddress, saved, myOrders, firstName, getById }: any) {
+function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr, setAddr, saveAddress, saved, myOrders, firstName, getById, addWalletBalance }: any) {
   const [viewingOrder, setViewingOrder] = useState<any>(null);
   if (tab === "menu") {
     return (
@@ -481,6 +506,14 @@ function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr
             <SlidersHorizontal className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
             <div className="text-[14px] font-bold text-black">
                Account Settings
+            </div>
+          </button>
+          
+          <button onClick={() => setTab("wallet")} className="flex items-center p-4 px-6 active:bg-gray-200 transition-colors">
+            <Wallet className="h-5 w-5 mr-4 text-black stroke-[1.5]" />
+            <div className="text-[14px] font-bold text-black flex flex-col items-start gap-1">
+               <span>Veloce Wallet</span>
+               <span className="text-[11px] text-green-600 font-black">Balance: ₹{profile?.walletBalance?.toLocaleString("en-IN") || 0}</span>
             </div>
           </button>
         </div>
@@ -571,10 +604,20 @@ function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr
   // Fallback for overview/orders/settings/support
   return (
     <div className="flex flex-col bg-white text-black font-sans pb-8">
-      {tab !== "orders" && (
+      {tab !== "orders" && tab !== "wallet" && (
         <button onClick={() => setTab("menu")} className="flex items-center gap-2 p-5 text-[11px] font-bold uppercase tracking-widest text-black border-b border-gray-200 active:bg-gray-50">
           <ArrowLeft className="h-4 w-4" /> BACK TO MY ACCOUNT
         </button>
+      )}
+      {tab === "wallet" && (
+        <>
+          <button onClick={() => setTab("menu")} className="flex items-center gap-2 p-5 text-[11px] font-bold uppercase tracking-widest text-black border-b border-gray-200 active:bg-gray-50 bg-white">
+            <ArrowLeft className="h-4 w-4" /> BACK TO MY ACCOUNT
+          </button>
+          <div className="p-5">
+            <WalletTab profile={profile} addWalletBalance={addWalletBalance} />
+          </div>
+        </>
       )}
       <div className={tab === "orders" ? "p-0" : "p-5"}>
         {tab === "overview" && (
@@ -663,7 +706,19 @@ function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr
                     <span className="text-[18px] sm:text-[20px] font-bold uppercase tracking-wide">Order Total</span>
                     <span className="text-[18px] sm:text-[20px] font-bold">₹{(viewingOrder.total || 0).toLocaleString("en-IN")}</span>
                   </div>
-                  <div className="text-[11px] font-bold text-gray-500 mt-1 uppercase tracking-widest">
+                  {viewingOrder.payment?.mode === 'cod' && (
+                    <>
+                      <div className="flex justify-between items-center mt-3 text-gray-600">
+                        <span className="text-[14px] font-medium">Advance Paid Online</span>
+                        <span className="text-[14px] font-medium">₹{viewingOrder.payment.paidNow?.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between items-center mt-2 text-[#b30000] font-bold">
+                        <span className="text-[15px]">Due on Delivery</span>
+                        <span className="text-[15px]">₹{viewingOrder.payment.codDue?.toLocaleString("en-IN")}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="text-[11px] font-bold text-gray-500 mt-3 uppercase tracking-widest">
                     Prices Include GST
                   </div>
                 </div>
@@ -750,6 +805,15 @@ function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr
           </div>
         )}
         
+        {tab === "wallet" && (
+          <div>
+            <button onClick={() => setTab("menu")} className="flex items-center gap-2 text-[13px] font-bold text-black mb-6">
+              <ArrowLeft className="h-4 w-4" /> My Account
+            </button>
+            <WalletTab profile={profile} addWalletBalance={addWalletBalance} />
+          </div>
+        )}
+
         {tab === "support" && (
           <div>
             <h2 className="text-[20px] font-normal uppercase tracking-wide text-black mb-6">Support</h2>
@@ -774,6 +838,184 @@ function PumaMobileProfile({ userEmail, profile, handleLogout, tab, setTab, addr
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
+function WalletTab({ profile, addWalletBalance }: { profile: AppUser | null, addWalletBalance: (amt: number, desc: string) => Promise<void> }) {
+  const [amount, setAmount] = useState("500");
+  const [loading, setLoading] = useState(false);
+  const [txns, setTxns] = useState<any[]>([]);
+  const [loadingTxns, setLoadingTxns] = useState(true);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    supabase
+      .from("wallet_transactions")
+      .select("*")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data, error }) => {
+        if (!error && data) setTxns(data);
+        setLoadingTxns(false);
+      });
+  }, [profile?.id]);
+
+  const handleAddMoney = async () => {
+    const amtNum = parseInt(amount);
+    if (!amtNum || amtNum < 1) return toast.error("Minimum amount is ₹1");
+    if (amtNum > 5000) return toast.error("Maximum add amount is ₹5,000");
+    if ((profile?.walletBalance || 0) + amtNum > 5000) return toast.error("Maximum wallet balance allowed is ₹5,000");
+    
+    setLoading(true);
+    try {
+      const res = await loadRazorpay();
+      if (!res) throw new Error("Razorpay SDK failed to load");
+
+      const orderData = await createRazorpayOrder({ data: { amount: amtNum * 100, currency: "INR", receipt: "wallet_" + Date.now() } });
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Veloce Wear Wallet",
+        description: "Add money to wallet",
+        order_id: orderData.order_id,
+        handler: async function (response: any) {
+          try {
+            await verifyRazorpayPayment({
+              data: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+            });
+            await addWalletBalance(amtNum, "Added money via Razorpay");
+            toast.success(`Successfully added ₹${amtNum} to your wallet!`);
+            
+            // Refetch txns
+            const { data } = await supabase.from("wallet_transactions").select("*").eq("user_id", profile?.id).order("created_at", { ascending: false }).limit(20);
+            if (data) setTxns(data);
+          } catch (err) {
+            toast.error("Payment verification failed");
+          }
+        },
+        prefill: {
+          name: profile?.fullName || "",
+          email: profile?.email || "",
+          contact: profile?.phone || "",
+        },
+        theme: { color: "#000000" },
+      };
+      
+      const rzp1 = new window.Razorpay(options);
+      rzp1.on("payment.failed", function (response: any) {
+        toast.error(response.error.description);
+      });
+      rzp1.open();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initiate payment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="font-display text-base sm:text-xl font-semibold mb-6 flex items-center gap-2">
+        <Wallet className="h-5 w-5" /> Veloce Wallet
+      </h2>
+      
+      <div className="grid lg:grid-cols-2 gap-8">
+        <div className="flex flex-col gap-6">
+          <div className="rounded-2xl bg-gradient-to-br from-foreground to-foreground/80 p-6 text-background shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Banknote className="w-32 h-32 transform rotate-12" />
+            </div>
+            <div className="relative z-10">
+              <div className="text-xs font-semibold uppercase tracking-widest text-background/80 mb-2">Available Balance</div>
+              <div className="text-4xl font-display font-bold mb-6">{formatINR(profile?.walletBalance || 0)}</div>
+              
+              <div className="flex flex-col mt-4">
+                <label className="text-[10px] uppercase tracking-wider text-background/80 mb-2 block">Add Money (₹)</label>
+                <div className="flex gap-2 mb-3 overflow-x-auto custom-scrollbar pb-1">
+                  {[500, 1000, 2000].map(amt => (
+                    <button 
+                      key={amt} 
+                      onClick={() => setAmount(amt.toString())}
+                      className="whitespace-nowrap px-3 py-1.5 rounded-full border border-background/20 text-xs font-mono font-medium text-background hover:bg-background/10 transition-colors"
+                    >
+                      +₹{amt}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <input 
+                      type="number" 
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="w-full bg-background/10 border border-background/20 rounded-lg px-3 py-2 text-sm text-background placeholder:text-background/50 focus:outline-none focus:border-background/40 font-mono"
+                      placeholder="Enter amount"
+                    />
+                  </div>
+                  <button
+                    onClick={handleAddMoney}
+                    disabled={loading}
+                    className="bg-white text-black px-5 py-2 rounded-lg font-bold text-xs uppercase tracking-wider h-[38px] flex items-center justify-center min-w-[120px] hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? "Processing..." : "Add Money"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-4 border-b border-border/50 pb-2">Recent Transactions</h3>
+          {loadingTxns ? (
+            <div className="text-xs text-muted-foreground">Loading transactions...</div>
+          ) : txns.length === 0 ? (
+            <div className="text-xs text-muted-foreground p-4 text-center border border-dashed border-border/50 rounded-xl">No transactions yet</div>
+          ) : (
+            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              {txns.map(tx => (
+                <div key={tx.id} className="flex justify-between items-center p-3 rounded-lg border border-border/30 bg-muted/20">
+                  <div>
+                    <div className="text-xs font-medium mb-1">{tx.description}</div>
+                    <div className="text-[10px] text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</div>
+                  </div>
+                  <div className={`font-mono text-xs font-bold ${tx.type === 'credit' ? 'text-green-500' : 'text-red-500'}`}>
+                    {tx.type === 'credit' ? '+' : '-'}{formatINR(tx.amount)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

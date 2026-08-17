@@ -14,11 +14,13 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NewKitsRouteImport } from './routes/new-kits'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
 import { Route as ShopWorldcupRouteImport } from './routes/shop.worldcup'
 import { Route as ShopRetroRouteImport } from './routes/shop.retro'
 import { Route as ShopFootballRouteImport } from './routes/shop.football'
@@ -28,7 +30,9 @@ import { Route as ShopBasketballRouteImport } from './routes/shop.basketball'
 import { Route as ShopAccessoriesRouteImport } from './routes/shop.accessories'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as InfoPageRouteImport } from './routes/info.$page'
+import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as CategorySlugRouteImport } from './routes/$category.$slug'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -55,6 +59,11 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NewKitsRoute = NewKitsRouteImport.update({
+  id: '/new-kits',
+  path: '/new-kits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -79,6 +88,11 @@ const ShopIndexRoute = ShopIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ShopRoute,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ShopWorldcupRoute = ShopWorldcupRouteImport.update({
   id: '/worldcup',
@@ -125,9 +139,19 @@ const InfoPageRoute = InfoPageRouteImport.update({
   path: '/info/$page',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategorySlugRoute = CategorySlugRouteImport.update({
+  id: '/$category/$slug',
+  path: '/$category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -136,12 +160,15 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/new-kits': typeof NewKitsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRouteWithChildren
   '/wishlist': typeof WishlistRoute
+  '/$category/$slug': typeof CategorySlugRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/accessories': typeof ShopAccessoriesRoute
@@ -151,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/shop/football': typeof ShopFootballRoute
   '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
+  '/blog/': typeof BlogIndexRoute
   '/shop/': typeof ShopIndexRoute
 }
 export interface FileRoutesByTo {
@@ -158,11 +186,14 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/new-kits': typeof NewKitsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/wishlist': typeof WishlistRoute
+  '/$category/$slug': typeof CategorySlugRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/accessories': typeof ShopAccessoriesRoute
@@ -172,6 +203,7 @@ export interface FileRoutesByTo {
   '/shop/football': typeof ShopFootballRoute
   '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
+  '/blog': typeof BlogIndexRoute
   '/shop': typeof ShopIndexRoute
 }
 export interface FileRoutesById {
@@ -180,12 +212,15 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/new-kits': typeof NewKitsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/shop': typeof ShopRouteWithChildren
   '/wishlist': typeof WishlistRoute
+  '/$category/$slug': typeof CategorySlugRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/info/$page': typeof InfoPageRoute
   '/product/$id': typeof ProductIdRoute
   '/shop/accessories': typeof ShopAccessoriesRoute
@@ -195,6 +230,7 @@ export interface FileRoutesById {
   '/shop/football': typeof ShopFootballRoute
   '/shop/retro': typeof ShopRetroRoute
   '/shop/worldcup': typeof ShopWorldcupRoute
+  '/blog/': typeof BlogIndexRoute
   '/shop/': typeof ShopIndexRoute
 }
 export interface FileRouteTypes {
@@ -204,12 +240,15 @@ export interface FileRouteTypes {
     | '/admin'
     | '/checkout'
     | '/login'
+    | '/new-kits'
     | '/profile'
     | '/reset-password'
     | '/search'
     | '/shop'
     | '/wishlist'
+    | '/$category/$slug'
     | '/auth/callback'
+    | '/blog/$slug'
     | '/info/$page'
     | '/product/$id'
     | '/shop/accessories'
@@ -219,6 +258,7 @@ export interface FileRouteTypes {
     | '/shop/football'
     | '/shop/retro'
     | '/shop/worldcup'
+    | '/blog/'
     | '/shop/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -226,11 +266,14 @@ export interface FileRouteTypes {
     | '/admin'
     | '/checkout'
     | '/login'
+    | '/new-kits'
     | '/profile'
     | '/reset-password'
     | '/search'
     | '/wishlist'
+    | '/$category/$slug'
     | '/auth/callback'
+    | '/blog/$slug'
     | '/info/$page'
     | '/product/$id'
     | '/shop/accessories'
@@ -240,6 +283,7 @@ export interface FileRouteTypes {
     | '/shop/football'
     | '/shop/retro'
     | '/shop/worldcup'
+    | '/blog'
     | '/shop'
   id:
     | '__root__'
@@ -247,12 +291,15 @@ export interface FileRouteTypes {
     | '/admin'
     | '/checkout'
     | '/login'
+    | '/new-kits'
     | '/profile'
     | '/reset-password'
     | '/search'
     | '/shop'
     | '/wishlist'
+    | '/$category/$slug'
     | '/auth/callback'
+    | '/blog/$slug'
     | '/info/$page'
     | '/product/$id'
     | '/shop/accessories'
@@ -262,6 +309,7 @@ export interface FileRouteTypes {
     | '/shop/football'
     | '/shop/retro'
     | '/shop/worldcup'
+    | '/blog/'
     | '/shop/'
   fileRoutesById: FileRoutesById
 }
@@ -270,14 +318,18 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
+  NewKitsRoute: typeof NewKitsRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRouteWithChildren
   WishlistRoute: typeof WishlistRoute
+  CategorySlugRoute: typeof CategorySlugRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   InfoPageRoute: typeof InfoPageRoute
   ProductIdRoute: typeof ProductIdRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -317,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/new-kits': {
+      id: '/new-kits'
+      path: '/new-kits'
+      fullPath: '/new-kits'
+      preLoaderRoute: typeof NewKitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -351,6 +410,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shop/'
       preLoaderRoute: typeof ShopIndexRouteImport
       parentRoute: typeof ShopRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/shop/worldcup': {
       id: '/shop/worldcup'
@@ -415,11 +481,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InfoPageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$category/$slug': {
+      id: '/$category/$slug'
+      path: '/$category/$slug'
+      fullPath: '/$category/$slug'
+      preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -454,14 +534,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
+  NewKitsRoute: NewKitsRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   ShopRoute: ShopRouteWithChildren,
   WishlistRoute: WishlistRoute,
+  CategorySlugRoute: CategorySlugRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  BlogSlugRoute: BlogSlugRoute,
   InfoPageRoute: InfoPageRoute,
   ProductIdRoute: ProductIdRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

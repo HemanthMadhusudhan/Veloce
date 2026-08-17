@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, User, Bot, Sparkles, ShoppingBag } from "lucide-react";
+import { MessageSquare, X, Send, User, Bot, Sparkles, ShoppingBag, ChevronLeft, ChevronRight, Box, Truck, RefreshCw, Ticket, CheckCircle2, HeadphonesIcon } from "lucide-react";
 import { useShop } from "@/lib/store";
 import { useCatalog } from "@/lib/catalog-store";
+import { useRouterState } from "@tanstack/react-router";
 
 type Message = {
   id: string;
@@ -13,6 +14,9 @@ type Message = {
 };
 
 export function SupportBot() {
+  const routerState = useRouterState();
+  const isHome = routerState.location.pathname === "/" || routerState.location.pathname === "";
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -25,8 +29,21 @@ export function SupportBot() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { addToCart, openCart } = useShop();
+  const [view, setView] = useState<"home" | "chat" | "ticket" | "ticket_success">("home");
+  const [ticketData, setTicketData] = useState({ email: "", desc: "" });
+
+  const { cartOpen, addToCart, openCart } = useShop();
   const { products } = useCatalog();
+
+  const [hasOverlay, setHasOverlay] = useState(false);
+
+  useEffect(() => {
+    const handleOverlay = (e: any) => {
+      setHasOverlay(!!e.detail?.open);
+    };
+    window.addEventListener("overlay-change", handleOverlay);
+    return () => window.removeEventListener("overlay-change", handleOverlay);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -39,6 +56,8 @@ export function SupportBot() {
     window.addEventListener("toggleSupportBot", handleToggle);
     return () => window.removeEventListener("toggleSupportBot", handleToggle);
   }, []);
+
+  if (!isHome) return null;
 
   const exactMatches: Record<string, string> = {
     "What are your shipping details?": "We ship all over India! Delivery takes 6-8 days in metros and 10-12 days. Customized jerseys need 2-3 extra days. Every order is securely packed and delivered fast. COD available on eligible orders. For any queries, just chat with us",
@@ -281,142 +300,254 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
   };
 
   return (
-    <div className="fixed bottom-16 right-4 z-[100] flex flex-col items-end sm:bottom-8 sm:right-8">
-      {/* Chat Window */}
+    <div className="fixed bottom-0 right-0 z-[100] flex flex-col items-end w-full sm:w-auto">
+      {/* Overlay for mobile when open */}
       {open && (
-        <div className="mb-4 flex h-[400px] w-[320px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-2xl border border-border/50 bg-background/95 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 sm:h-[450px] sm:w-[360px]">
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm sm:hidden animate-in fade-in z-[-1]" 
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Main Window */}
+      {open && (
+        <div className="flex h-[85vh] w-full sm:h-[600px] sm:w-[420px] sm:mb-24 sm:mr-8 flex-col overflow-hidden bg-white sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 border border-black/15 rounded-t-[2rem]">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border/50 bg-surface/50 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand/20 text-brand">
-                <Sparkles className="h-4 w-4" />
+          <div className="flex items-center justify-between bg-white px-6 py-4 border-b border-black/10 z-10 shrink-0">
+            <div className="flex items-center gap-3">
+              {view !== "home" && (
+                <button onClick={() => setView("home")} className="p-1 hover:bg-black/5 rounded-full transition-colors -ml-2">
+                  <ChevronLeft className="h-5 w-5 text-black" />
+                </button>
+              )}
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#d32f2f]/10 text-[#d32f2f]">
+                <HeadphonesIcon className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-foreground">Veloce Wear Concierge</h3>
-                <p className="text-[10px] uppercase tracking-wider text-brand">Online</p>
+                <h3 className="text-[15px] font-bold text-black tracking-tight leading-none mb-1">
+                  {view === "home" ? "Veloce Help Center" : view === "chat" ? "AI Support" : "Submit Ticket"}
+                </h3>
+                <p className="text-[10px] font-bold text-[#d32f2f] uppercase tracking-widest">
+                  {view === "home" ? "24/7 SUPPORT" : view === "chat" ? "ONLINE" : "WE'LL EMAIL YOU"}
+                </p>
               </div>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-white/10 hover:text-foreground transition"
+              className="rounded-full p-2 text-neutral-600 hover:bg-black/5 hover:text-black transition"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((msg) => {
-              if (msg.functionCall) return null; // Don't render raw function calls in UI
-              if (msg.functionResponse) {
-                if (msg.functionResponse.name === "searchProducts" && msg.functionResponse.response?.products?.length > 0) {
-                  return (
-                    <div key={msg.id} className="flex w-full justify-start overflow-x-auto pb-2 gap-3 no-scrollbar pl-8">
-                      {msg.functionResponse.response.products.map((p: any) => (
-                        <div key={p.id} className="min-w-[140px] max-w-[140px] rounded-xl border border-border/40 bg-surface shadow-sm overflow-hidden flex flex-col shrink-0">
-                          <img src={p.image} alt={p.name} className="w-full aspect-[4/5] object-cover" />
-                          <div className="p-3 flex flex-col flex-1">
-                            <h4 className="text-[11px] font-bold text-foreground truncate">{p.name}</h4>
-                            <p className="text-[9px] text-muted-foreground truncate">{p.team}</p>
-                            <span className="text-[10px] font-mono mt-1 block">₹{p.price.toLocaleString()}</span>
-                            <button onClick={() => { addToCart({ id: p.id, size: "M", color: "", qty: 1 }); openCart(); }} className="mt-2 flex w-full items-center justify-center gap-1.5 py-1.5 bg-brand text-white text-[10px] uppercase tracking-wider rounded font-bold hover:opacity-90 transition-opacity">
-                              <ShoppingBag className="h-3 w-3" />
-                              Add to Cart
-                            </button>
-                          </div>
+          {/* VIEWS */}
+          <div className="flex-1 overflow-hidden relative">
+            {/* HOME VIEW */}
+            {view === "home" && (
+              <div className="absolute inset-0 overflow-y-auto px-6 py-6 bg-white animate-in fade-in slide-in-from-left-4 duration-300">
+                <h2 className="text-[20px] font-black tracking-tight text-black mb-1">How can we help you?</h2>
+                <p className="text-[13px] text-neutral-600 mb-6 font-medium">Select an option below or chat with our AI concierge.</p>
+
+                <div className="flex flex-col gap-3">
+                  {[
+                    { icon: Box, label: "Help with an Order", text: "Check order status", highlight: false },
+                    { icon: Truck, label: "Shipping & Delivery", text: "What are your shipping details?", highlight: false },
+                    { icon: RefreshCw, label: "Returns & Exchanges", text: "What is your refund policy?", highlight: false },
+                    { icon: Sparkles, label: "Chat with AI Concierge", text: "Hello", highlight: true },
+                  ].map((opt, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => { setView("chat"); sendMessage(opt.text); }}
+                      className={`flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer ${
+                        opt.highlight 
+                          ? "border-[#d32f2f]/30 bg-[#d32f2f]/10 hover:border-[#d32f2f] shadow-xs" 
+                          : "border-black/15 bg-white/70 hover:bg-white hover:border-black/40 shadow-xs"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${opt.highlight ? "bg-[#d32f2f] text-white shadow-xs" : "bg-black/5 text-neutral-800"}`}>
+                          <opt.icon className="h-4 w-4" />
                         </div>
-                      ))}
-                    </div>
-                  );
-                }
-                return null;
-              }
-              
-              return (
-                <div key={msg.id} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`flex max-w-[85%] gap-2 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${msg.role === "user" ? "bg-foreground text-background" : "bg-brand/20 text-brand"}`}>
-                      {msg.role === "user" ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
-                    </div>
-                    <div className={`rounded-2xl px-3 py-2 text-[13px] leading-relaxed shadow-sm ${msg.role === "user" ? "bg-foreground text-background rounded-tr-sm" : "bg-surface text-foreground rounded-tl-sm border border-border/40"}`}>
-                      {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
-                        part.match(/(https?:\/\/[^\s]+)/g) ? (
-                          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
-                            {part}
-                          </a>
-                        ) : (
-                          part
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            {isTyping && (
-              <div className="flex w-full justify-start">
-                <div className="flex gap-2">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/20 text-brand">
-                    <Bot className="h-3 w-3" />
-                  </div>
-                  <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm border border-border/40 bg-surface px-4 py-3">
-                    <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: "0ms" }} />
-                    <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: "150ms" }} />
-                    <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: "300ms" }} />
+                        <span className={`text-[14px] font-bold ${opt.highlight ? "text-[#d32f2f]" : "text-black"}`}>{opt.label}</span>
+                      </div>
+                      <ChevronRight className={`h-4 w-4 ${opt.highlight ? "text-[#d32f2f]" : "text-neutral-400"}`} />
+                    </button>
+                  ))}
+                  
+                  <div className="mt-3 border-t border-black/10 pt-5">
+                    <p className="text-[11px] font-bold text-neutral-600 uppercase tracking-widest mb-3">Still need human help?</p>
+                    <button 
+                      onClick={() => setView("ticket")}
+                      className="flex items-center justify-between w-full p-4 rounded-2xl border border-black/15 bg-white/70 hover:bg-white hover:border-black/40 shadow-xs transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                          <Ticket className="h-4 w-4" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-[14px] font-bold text-black leading-tight mb-0.5">Submit a Ticket</span>
+                          <span className="text-[11px] text-neutral-600 font-medium">We'll reach out to you via email</span>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-neutral-400" />
+                    </button>
                   </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Quick Actions / Suggested Questions */}
-          {messages.length === 1 && (
-            <div className="flex flex-wrap gap-2 p-3 bg-surface border-t border-border/50 overflow-y-auto max-h-[160px]">
-              {[
-                "What are your shipping details?",
-                "Player Version vs Fan Version - What's the difference?",
-                "Need help or have a special request?",
-                "Do you accept bulk orders or custom name & number requests?",
-              ].map((q) => (
-                <button
-                  key={q}
-                  onClick={() => sendMessage(q)}
-                  className="text-left text-[11px] border border-border/70 rounded-full px-3 py-1.5 hover:bg-foreground hover:text-background transition-colors text-foreground"
+            {/* CHAT VIEW */}
+            {view === "chat" && (
+              <div className="absolute inset-0 flex flex-col bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 bg-white">
+                  {messages.map((msg) => {
+                    if (msg.functionCall) return null;
+                    if (msg.functionResponse) {
+                      if (msg.functionResponse.name === "searchProducts" && msg.functionResponse.response?.products?.length > 0) {
+                        return (
+                          <div key={msg.id} className="flex w-full justify-start overflow-x-auto pb-2 gap-3 no-scrollbar pl-10">
+                            {msg.functionResponse.response.products.map((p: any) => (
+                              <div key={p.id} className="min-w-[140px] max-w-[140px] rounded-2xl border border-black/20 bg-white shadow-xs overflow-hidden flex flex-col shrink-0 p-2">
+                                <img src={p.image} alt={p.name} className="w-full aspect-square object-contain rounded-xl bg-black/5" />
+                                <div className="pt-2 flex flex-col flex-1">
+                                  <h4 className="text-[12px] font-bold text-black leading-tight mb-1 line-clamp-2">{p.name}</h4>
+                                  <span className="text-[12px] font-bold text-[#d32f2f] mt-auto block font-mono">₹{p.price.toLocaleString()}</span>
+                                  <button onClick={() => { addToCart({ id: p.id, size: "M", color: "", qty: 1 }); openCart(); }} className="mt-2 flex w-full items-center justify-center gap-1.5 py-1.5 bg-[#d32f2f] text-white text-[10px] uppercase tracking-wider rounded-full font-bold hover:bg-red-700 transition-colors">
+                                    <ShoppingBag className="h-3 w-3" /> Add
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }
+                    
+                    return (
+                      <div key={msg.id} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                        <div className={`flex max-w-[85%] gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                          {msg.role === "bot" && (
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#d32f2f] text-white shadow-xs mt-1">
+                              <Sparkles className="h-3.5 w-3.5" />
+                            </div>
+                          )}
+                          <div className={`rounded-2xl px-4 py-3 text-[13px] sm:text-[14px] leading-relaxed shadow-xs ${msg.role === "user" ? "bg-black text-white rounded-tr-xs font-medium" : "bg-white text-neutral-900 rounded-tl-xs border border-black/15 font-medium"}`}>
+                            {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
+                              part.match(/(https?:\/\/[^\s]+)/g) ? (
+                                <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-[#d32f2f] hover:underline font-bold">
+                                  {part}
+                                </a>
+                              ) : (
+                                part
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {isTyping && (
+                    <div className="flex w-full justify-start">
+                      <div className="flex gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#d32f2f] text-white shadow-xs mt-1">
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-xs border border-black/15 bg-white px-4 py-3 shadow-xs">
+                          <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d32f2f]" style={{ animationDelay: "0ms" }} />
+                          <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d32f2f]" style={{ animationDelay: "150ms" }} />
+                          <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d32f2f]" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white p-4 border-t border-black/10 shrink-0">
+                  <form onSubmit={handleSend} className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Type a message..."
+                      className="w-full rounded-full border border-black/20 bg-white py-3 pl-5 pr-12 text-[14px] text-black outline-none focus:border-[#d32f2f] transition-colors placeholder:text-neutral-500 font-medium"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!input.trim()}
+                      className="absolute right-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-[#d32f2f] text-white transition disabled:opacity-40 hover:bg-red-700 shadow-xs cursor-pointer"
+                    >
+                      <Send className="h-4 w-4 -ml-0.5" />
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* TICKET VIEW */}
+            {view === "ticket" && (
+              <div className="absolute inset-0 overflow-y-auto px-6 py-6 bg-white animate-in fade-in slide-in-from-right-4 duration-300">
+                <h2 className="text-[20px] font-black tracking-tight text-black mb-1">Submit a Ticket</h2>
+                <p className="text-[13px] text-neutral-600 mb-6 leading-relaxed font-medium">Please describe your issue in detail. Our support team will review it and get back to you within 24 hours.</p>
+
+                <form onSubmit={(e) => { e.preventDefault(); setView("ticket_success"); }} className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-black uppercase tracking-wider mb-1.5">Email Address</label>
+                    <input 
+                      required
+                      type="email" 
+                      value={ticketData.email}
+                      onChange={e => setTicketData({...ticketData, email: e.target.value})}
+                      placeholder="you@example.com" 
+                      className="w-full border border-black/20 bg-white p-3.5 text-[14px] rounded-xl focus:border-[#d32f2f] outline-none transition-colors font-medium text-black" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-black uppercase tracking-wider mb-1.5">Description</label>
+                    <textarea 
+                      required
+                      value={ticketData.desc}
+                      onChange={e => setTicketData({...ticketData, desc: e.target.value})}
+                      placeholder="Please provide order number and issue details..." 
+                      className="w-full border border-black/20 bg-white p-3.5 text-[14px] rounded-xl focus:border-[#d32f2f] outline-none min-h-[120px] resize-none transition-colors font-medium text-black" 
+                    />
+                  </div>
+                  <button type="submit" className="mt-2 w-full bg-[#d32f2f] text-white py-3.5 rounded-full text-[12px] font-bold uppercase tracking-widest hover:bg-red-700 transition-colors shadow-md active:scale-95 cursor-pointer">
+                    Submit Ticket
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* TICKET SUCCESS VIEW */}
+            {view === "ticket_success" && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-8 bg-white text-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-16 h-16 bg-[#d32f2f]/10 rounded-full flex items-center justify-center text-[#d32f2f] mb-6 shadow-xs">
+                  <CheckCircle2 className="h-8 w-8" />
+                </div>
+                <h2 className="text-[22px] font-black tracking-tight text-black mb-2">Ticket Submitted</h2>
+                <p className="text-[13px] text-neutral-700 mb-6 leading-relaxed font-medium">
+                  Your ticket <span className="font-bold text-black font-mono">#VEL-{Math.floor(1000 + Math.random() * 9000)}</span> has been created successfully. Our team will reach out to you at <span className="font-bold text-black">{ticketData.email}</span> within 24 hours.
+                </p>
+                <button 
+                  onClick={() => { setView("home"); setTicketData({email: "", desc: ""}); }} 
+                  className="w-full bg-black text-white py-3.5 rounded-full text-[12px] font-bold uppercase tracking-widest hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
-                  {q}
+                  Return to Home
                 </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input Area */}
-          <div className="border-t border-border/50 bg-surface/30 p-3">
-            <form onSubmit={handleSend} className="relative flex items-center">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="w-full rounded-full border border-border/70 bg-background py-2.5 pl-4 pr-12 text-sm outline-none focus:border-foreground"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim()}
-                className="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background transition disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 hover:bg-foreground/90"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            </form>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Floating Button */}
+      {/* Floating Chat Button */}
       <button
-        onClick={() => setOpen(!open)}
-        className={`flex group h-14 w-14 items-center justify-center rounded-full bg-brand text-background shadow-[0_8px_30px_rgba(246,92,41,0.5)] transition-all duration-300 hover:scale-110 active:scale-95 ${open ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"}`}
+        onClick={() => { setOpen(!open); if(!open) setView("home"); }}
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[90] flex items-center gap-2.5 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-black rounded-full border border-black/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:border-black hover:scale-105 active:scale-95 cursor-pointer ${(open || cartOpen || hasOverlay) ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"}`}
       >
-        <MessageSquare className="h-6 w-6" />
+        <MessageSquare className="h-5 w-5 text-[#d32f2f] stroke-[2]" />
+        <span className="text-xs font-bold uppercase tracking-wider text-black">Support</span>
       </button>
     </div>
   );

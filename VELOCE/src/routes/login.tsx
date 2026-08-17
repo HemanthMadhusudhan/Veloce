@@ -35,17 +35,40 @@ function LoginPage() {
   const [keepLoggedChecked, setKeepLoggedChecked] = useState(false);
 
   useEffect(() => {
-    // Prevent redirecting to home if the user just verified a recovery OTP
-    // and is about to be redirected to the reset-password page.
-    if (!authLoading && userEmail && otpType !== "recovery") {
-      nav({ to: "/", replace: true });
+    // Redirect if logged in (unless actively on the OTP verification step for recovery)
+    if (!authLoading && userEmail) {
+      if (step === "verify-otp" && otpType === "recovery") {
+        return;
+      }
+      const redirectUrl = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("redirect") : null;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        nav({ to: "/", replace: true });
+      }
     }
-  }, [userEmail, isAdmin, authLoading, nav, otpType]);
+  }, [userEmail, isAdmin, authLoading, nav, step, otpType]);
+
+  const handleEditEmail = () => {
+    setStep("email");
+    setInfo(null);
+    setEmailErr(null);
+    setPassErr(null);
+    setNameErr(null);
+    setOtp("");
+    setOtpType("signup");
+  };
 
 
 
   const handleContinueEmail = async () => {
     setEmailErr(null);
+    setPassErr(null);
+    setNameErr(null);
+    setInfo(null);
+    setOtp("");
+    setOtpType("signup");
+
     if (!email.trim() || !email.includes("@")) {
       setEmailErr("Please enter a valid email address.");
       return;
@@ -74,6 +97,9 @@ function LoginPage() {
 
   const submitLogin = async () => {
     setPassErr(null);
+    setInfo(null);
+    setOtpType("signup");
+
     if (!password) {
       setPassErr("Please enter your password.");
       return;
@@ -355,7 +381,7 @@ function LoginPage() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="mb-6 flex items-center justify-between text-sm">
                 <span className="font-semibold">{email}</span>
-                <button type="button" onClick={() => setStep("email")} className="underline font-semibold text-brand hover:text-black">Edit</button>
+                <button type="button" onClick={handleEditEmail} className="underline font-semibold text-brand hover:text-black">Edit</button>
               </div>
               <FloatingInput 
                 label="PASSWORD *" 
@@ -378,7 +404,7 @@ function LoginPage() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="mb-6 flex items-center justify-between text-sm">
                 <span className="font-semibold">{email}</span>
-                <button type="button" onClick={() => setStep("email")} className="underline font-semibold text-brand hover:text-black">Edit</button>
+                <button type="button" onClick={handleEditEmail} className="underline font-semibold text-brand hover:text-black">Edit</button>
               </div>
               
               <div className="space-y-4">
@@ -425,7 +451,7 @@ function LoginPage() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="mb-6 flex items-center justify-between text-sm">
                 <span className="font-semibold">{email}</span>
-                <button type="button" onClick={() => setStep("email")} className="underline font-semibold text-brand hover:text-black">Edit</button>
+                <button type="button" onClick={handleEditEmail} className="underline font-semibold text-brand hover:text-black">Edit</button>
               </div>
               
               <div className="space-y-4">

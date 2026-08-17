@@ -15,11 +15,13 @@ export function ShopInner({
   subtitle,
   category,
   bannerUrl,
+  customProductIds,
 }: {
   title: string;
   subtitle: string;
   category?: Category;
   bannerUrl?: string;
+  customProductIds?: string[];
 }) {
   const { products } = useCatalog();
   const search = useSearch({ strict: false }) as { team?: string };
@@ -34,8 +36,21 @@ export function ShopInner({
     setTeam(search.team ?? null);
   }, [search.team]);
 
+  const randomOffsets = useMemo(() => {
+    return products.reduce((acc, p) => {
+      acc[p.id] = Math.random();
+      return acc;
+    }, {} as Record<string, number>);
+  }, [products]);
+
   const filtered = useMemo(() => {
-    let list = [...products].reverse();
+    let list = [...products];
+    if (!category && !team && sort === "featured") {
+       list.sort((a, b) => randomOffsets[a.id] - randomOffsets[b.id]);
+    } else {
+       // do nothing to maintain original order which might be new to old
+    }
+    
     if (category) {
       list = list.filter((p) =>
           category === "football"
@@ -43,13 +58,16 @@ export function ShopInner({
             : p.category === category,
         );
     }
+    if (customProductIds) {
+      list = list.filter((p) => customProductIds.includes(p.id));
+    }
     if (team) list = list.filter((p) => p.team === team);
     list = list.filter((p) => p.price >= price[0] && p.price <= price[1]);
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     else if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
-    else if (sort === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
+    else if (sort === "rating") list = [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     return list;
-  }, [category, team, price, sort, products]);
+  }, [category, team, price, sort, products, randomOffsets, customProductIds]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -69,23 +87,51 @@ export function ShopInner({
     ),
   ).sort();
 
+  const TEAM_SLOGANS: Record<string, string> = {
+    "Real Madrid": "# Hala Madrid!",
+    "Barcelona": "Més que un club",
+    "Manchester United": "Glory Glory Man United!",
+    "Arsenal": "Victoria Concordia Crescit",
+    "Liverpool": "You'll Never Walk Alone",
+    "Chelsea": "Keep the Blue Flag Flying High",
+    "Manchester City": "Pride in Battle",
+    "AC Milan": "Sempre Milan",
+    "Juventus": "Fino Alla Fine",
+    "Bayern Munich": "Mia San Mia",
+    "Paris Saint-Germain": "Ici c'est Paris",
+    "India": "Bleed Blue",
+    "Chennai Super Kings": "Whistle Podu",
+    "Royal Challengers Bangalore": "Play Bold",
+    "Mumbai Indians": "Duniya Hila Denge Hum",
+    "Los Angeles Lakers": "Showtime",
+    "Chicago Bulls": "See Red",
+    "Golden State Warriors": "Strength in Numbers",
+    "Red Bull Racing": "Gives You Wings",
+    "Ferrari": "Essere Ferrari",
+    "Mercedes": "Just Driven",
+    "McLaren": "Fearlessly Forward"
+  };
+
+  const displayTitle = team ? team : title;
+  const displaySubtitle = team ? (TEAM_SLOGANS[team] || `Official match-day kits and gear for ${team}.`) : subtitle;
+
   return (
     <div className="mx-auto max-w-7xl px-6 pt-8 pb-12">
-      {bannerUrl ? (
+      {bannerUrl && !team ? (
         <div className="relative mb-10 h-48 w-full overflow-hidden rounded-3xl sm:h-64 md:h-80">
-          <img src={bannerUrl} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+          <img src={bannerUrl} alt={displayTitle} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
           <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10">
             <div className="mb-2 text-[10px] uppercase tracking-[0.28em] text-brand drop-shadow-md">Collection</div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-white drop-shadow-md sm:text-6xl">{title}</h1>
-            <p className="mt-2 max-w-xl text-sm text-white/80 drop-shadow-sm">{subtitle}</p>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-white drop-shadow-md sm:text-6xl">{displayTitle}</h1>
+            <p className="mt-2 max-w-xl text-sm text-white/80 drop-shadow-sm">{displaySubtitle}</p>
           </div>
         </div>
       ) : (
         <header className="mb-10 flex flex-col gap-2">
-          <div className="text-[10px] uppercase tracking-[0.28em] text-brand">Collection</div>
-          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">{title}</h1>
-          <p className="max-w-xl text-sm text-muted-foreground">{subtitle}</p>
+          <div className="text-[10px] uppercase tracking-[0.28em] text-brand">{team ? "Team" : "Collection"}</div>
+          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">{displayTitle}</h1>
+          <p className="max-w-xl text-sm text-muted-foreground">{displaySubtitle}</p>
         </header>
       )}
       <div className="flex flex-col gap-6 lg:flex-row">

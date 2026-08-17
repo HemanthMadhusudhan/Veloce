@@ -20,6 +20,9 @@ import {
   Ban,
   CheckCircle2,
   User,
+  Wallet,
+  Video,
+  GripVertical,
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { useCatalog } from "@/lib/catalog-store";
@@ -46,6 +49,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { ImageCropper } from "@/components/ImageCropper";
 import { useTeams, type TeamData } from "@/lib/teams";
 import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, worldCupTeams, allLogoEntries } from "@/lib/logos";
+import { supabase } from "@/integrations/supabase/client";
+import { processAndStandardizeJerseyImage } from "@/lib/image-processing";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Veloce Wear" }, { name: "robots", content: "noindex" }] }),
@@ -79,7 +85,16 @@ function AdminGate() {
 }
 
 type Tab =
-  "products" | "inventory" | "orders" | "users" | "images" | "categories" | "drops" | "hotSelling" | "teams";
+  | "products"
+  | "inventory"
+  | "orders"
+  | "users"
+  | "images"
+  | "categories"
+  | "drops"
+  | "hotSelling"
+  | "teams"
+  | "newKits";
 
 function Admin() {
   const [tab, setTab] = useState<Tab>("products");
@@ -139,13 +154,6 @@ function Admin() {
           Categories
         </TabBtn>
         <TabBtn
-          active={tab === "drops"}
-          onClick={() => setTab("drops")}
-          icon={<Timer className="h-3.5 w-3.5" />}
-        >
-          Schedules
-        </TabBtn>
-        <TabBtn
           active={tab === "hotSelling"}
           onClick={() => setTab("hotSelling")}
           icon={<Package className="h-3.5 w-3.5" />}
@@ -159,6 +167,13 @@ function Admin() {
         >
           Teams
         </TabBtn>
+        <TabBtn
+          active={tab === "newKits"}
+          onClick={() => setTab("newKits")}
+          icon={<Package className="h-3.5 w-3.5" />}
+        >
+          New Kits
+        </TabBtn>
       </div>
 
       <div className="mt-8">
@@ -168,8 +183,8 @@ function Admin() {
         {tab === "users" && <UsersTab />}
         {tab === "images" && <SiteImagesTab />}
         {tab === "categories" && <CategoriesTab />}
-        {tab === "drops" && <DropsTab />}
-                {tab === "hotSelling" && <HotSellingTab />}
+        {tab === "hotSelling" && <HotSellingTab />}
+        {tab === "newKits" && <NewKitsTab />}
         {tab === "teams" && <TeamsTab />}
       </div>
     </div>
@@ -656,8 +671,16 @@ function EditProductDrawer({
                   onChange={async (e) => {
                     const files = Array.from(e.target.files ?? []);
                     if (files.length > 0) {
-                      const url = await fileToDataUrl(files[0]);
-                      setCropImageUrl(url);
+                      const toastId = toast.loading("Processing & standardizing jersey image...");
+                      try {
+                        const standardized = await processAndStandardizeJerseyImage(files[0]);
+                        setF((s) => ({ ...s, images: [...s.images, standardized] }));
+                        toast.success("Jersey background removed & standardized!", { id: toastId });
+                      } catch {
+                        const url = await fileToDataUrl(files[0]);
+                        setCropImageUrl(url);
+                        toast.dismiss(toastId);
+                      }
                     }
                     e.target.value = "";
                   }}
@@ -665,11 +688,21 @@ function EditProductDrawer({
               </label>
               <button
                 type="button"
-                onClick={() => {
-                  const u = prompt("Paste an image URL");
-                  if (u) setF(s => ({ ...s, images: [...s.images, u.trim()] }));
+                onClick={async () => {
+                  const u = prompt("Paste a product image URL");
+                  if (u && u.trim()) {
+                    const toastId = toast.loading("Removing background & standardizing image...");
+                    try {
+                      const standardized = await processAndStandardizeJerseyImage(u.trim());
+                      setF((s) => ({ ...s, images: [...s.images, standardized] }));
+                      toast.success("Jersey background removed & standardized!", { id: toastId });
+                    } catch {
+                      setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
+                      toast.dismiss(toastId);
+                    }
+                  }
                 }}
-                className="flex h-24 w-20 flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black"
+                className="flex h-24 w-20 flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black cursor-pointer"
               >
                 <ImageIcon className="h-4 w-4" /> URL
               </button>
@@ -1093,20 +1126,24 @@ function OrdersTab() {
                 <span>Total</span> <span className="font-mono">{formatINR(o.total)}</span>
               </div>
             </div>
-            {o.payment?.method === "upi" && (
+            {o.payment && (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-none border border-border/40 bg-gray-50 px-3 py-2 text-[11px]">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                  <span className="uppercase tracking-[0.22em] text-muted-foreground">
-                    {o.payment.mode === "cod" ? "COD (₹80 Prepaid)" : "UPI"}
+                  <span className="uppercase tracking-[0.22em] text-brand font-bold">
+                    {o.payment.method} {o.payment.mode === "cod" ? "(COD - ₹80 Prepaid)" : ""}
                   </span>
-                  <span>
-                    <span className="text-muted-foreground">VPA</span>{" "}
-                    <span className="font-mono">{o.payment.vpa}</span>
-                  </span>
-                  <span>
-                    <span className="text-muted-foreground">UTR</span>{" "}
-                    <span className="font-mono">{o.payment.txnId}</span>
-                  </span>
+                  {o.payment.vpa && (
+                    <span>
+                      <span className="text-muted-foreground">VPA</span>{" "}
+                      <span className="font-mono">{o.payment.vpa}</span>
+                    </span>
+                  )}
+                  {o.payment.txnId && (
+                    <span>
+                      <span className="text-muted-foreground">Txn ID</span>{" "}
+                      <span className="font-mono">{o.payment.txnId}</span>
+                    </span>
+                  )}
                   <span>
                     <span className="text-muted-foreground">Paid</span>{" "}
                     <span className="font-mono">{formatINR(o.payment.paidNow ?? o.total)}</span>
@@ -1230,9 +1267,16 @@ function NewProductRow({
 
   const addFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    // Just handle the first file for cropping to keep UX simple
-    const url = await fileToDataUrl(files[0]);
-    setCropImageUrl(url);
+    const toastId = toast.loading("Processing & standardizing jersey image...");
+    try {
+      const standardized = await processAndStandardizeJerseyImage(files[0]);
+      setF((s) => ({ ...s, images: [...s.images, standardized] }));
+      toast.success("Jersey background removed & standardized!", { id: toastId });
+    } catch {
+      const url = await fileToDataUrl(files[0]);
+      setCropImageUrl(url);
+      toast.dismiss(toastId);
+    }
   };
 
   const handleCropComplete = (croppedImageUrl: string) => {
@@ -1242,9 +1286,19 @@ function NewProductRow({
 
   const removeImg = (i: number) =>
     setF((s) => ({ ...s, images: s.images.filter((_, idx) => idx !== i) }));
-  const addUrl = () => {
-    const u = prompt("Paste an image URL");
-    if (u) setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
+  const addUrl = async () => {
+    const u = prompt("Paste a product image URL");
+    if (u && u.trim()) {
+      const toastId = toast.loading("Removing background & standardizing image...");
+      try {
+        const standardized = await processAndStandardizeJerseyImage(u.trim());
+        setF((s) => ({ ...s, images: [...s.images, standardized] }));
+        toast.success("Jersey background removed & standardized!", { id: toastId });
+      } catch {
+        setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
+        toast.dismiss(toastId);
+      }
+    }
   };
   const slug = (v: string) =>
     v
@@ -1871,6 +1925,7 @@ function UsersTab() {
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [editingTab, setEditingTab] = useState<"profile" | "wallet">("profile");
   const { userId: myId, isOwner } = useShop();
 
   const reload = async () => {
@@ -1951,7 +2006,7 @@ function UsersTab() {
               {filtered.map((u) => {
                 const isAdmin = u.roles.includes("admin");
                 const isMe = u.id === myId;
-                const isTargetOwner = u.email === import.meta.env.VITE_OWNER_EMAIL;
+                const isTargetOwner = (u.email?.toLowerCase().trim() === import.meta.env.VITE_OWNER_EMAIL?.toLowerCase().trim()) || (isMe && isOwner);
                 const b = busy === u.id;
                 return (
                   <tr
@@ -2006,7 +2061,7 @@ function UsersTab() {
                       <div className="flex justify-end gap-2">
                         <button
                           disabled={b}
-                          onClick={() => setEditing(u)}
+                          onClick={() => { setEditing(u); setEditingTab("profile"); }}
                           className="text-muted-foreground hover:text-black disabled:opacity-40"
                           aria-label="Edit"
                         >
@@ -2041,6 +2096,14 @@ function UsersTab() {
                           <Ban className="h-4 w-4" />
                         </button>
                         <button
+                          disabled={b}
+                          onClick={() => { setEditing(u); setEditingTab("wallet"); }}
+                          className="text-muted-foreground hover:text-green-500 disabled:opacity-40"
+                          title="Manage Wallet Balance"
+                        >
+                          <Wallet className="h-4 w-4" />
+                        </button>
+                        <button
                           disabled={b || isMe || isTargetOwner}
                           onClick={() => {
                             if (confirm(`Permanently delete ${u.email}?`))
@@ -2071,6 +2134,7 @@ function UsersTab() {
       {editing && (
         <EditUserDrawer
           user={editing}
+          defaultTab={editingTab}
           onClose={() => setEditing(null)}
           onSave={async (patch) => {
             try {
@@ -2089,10 +2153,12 @@ function UsersTab() {
 
 function EditUserDrawer({
   user,
+  defaultTab = "profile",
   onClose,
   onSave,
 }: {
   user: AdminUser;
+  defaultTab?: "profile" | "wallet";
   onClose: () => void;
   onSave: (patch: {
     fullName: string;
@@ -2103,6 +2169,7 @@ function EditUserDrawer({
     postalCode: string;
   }) => void;
 }) {
+  const [tab, setTab] = useState(defaultTab);
   const [f, setF] = useState({
     fullName: user.fullName,
     phone: user.phone,
@@ -2111,6 +2178,45 @@ function EditUserDrawer({
     state: user.state,
     postalCode: user.postalCode,
   });
+
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [amt, setAmt] = useState("");
+  const [desc, setDesc] = useState("Admin adjustment");
+  const [walletLoading, setWalletLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    if (tab === "wallet") {
+      supabase.from("users").select("wallet_balance").eq("id", user.id).single().then(({ data }) => {
+        if (mounted) setWalletBalance(data?.wallet_balance || 0);
+      });
+    }
+    return () => { mounted = false; };
+  }, [tab, user.id]);
+
+  const updateWallet = async (amount: number) => {
+    if (!amount || amount === 0) return;
+    setWalletLoading(true);
+    try {
+      const { error } = await supabase.rpc("update_wallet_balance", { p_user_id: user.id, p_amount: amount });
+      if (error) throw error;
+      await supabase.from("wallet_transactions").insert({
+        user_id: user.id,
+        amount: Math.abs(amount),
+        type: amount >= 0 ? "credit" : "debit",
+        description: desc
+      });
+      alert("Wallet updated successfully!");
+      setAmt("");
+      const { data } = await supabase.from("users").select("wallet_balance").eq("id", user.id).single();
+      setWalletBalance(data?.wallet_balance || 0);
+    } catch(e: any) {
+      alert("Failed to update wallet: " + e.message);
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-[100] flex justify-end bg-background/70 backdrop-blur-sm"
@@ -2118,12 +2224,12 @@ function EditUserDrawer({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="h-full w-full max-w-md overflow-y-auto border-l border-gray-300 bg-background p-6 shadow-2xl"
+        className="h-full w-full max-w-md overflow-y-auto border-l border-gray-300 bg-background p-6 shadow-2xl flex flex-col"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-[10px] uppercase tracking-[0.28em] text-brand">
-              Editing profile
+              Editing {tab === "profile" ? "profile" : "wallet"}
             </div>
             <div className="font-display text-lg font-semibold">{user.email}</div>
           </div>
@@ -2131,73 +2237,103 @@ function EditUserDrawer({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-6 space-y-4 text-sm">
-          <Field label="Full name">
-            <input
-              value={f.fullName}
-              onChange={(e) => setF({ ...f, fullName: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Phone">
-            <input
-              value={f.phone}
-              onChange={(e) => setF({ ...f, phone: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Address">
-            <input
-              value={f.addressLine1}
-              onChange={(e) => setF({ ...f, addressLine1: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="City">
-              <input
-                value={f.city}
-                onChange={(e) => setF({ ...f, city: e.target.value })}
-                className={inputCls}
-              />
-            </Field>
-            <Field label="State">
-              <input
-                value={f.state}
-                onChange={(e) => setF({ ...f, state: e.target.value })}
-                className={inputCls}
-              />
-            </Field>
+
+        <div className="flex border-b border-gray-200 mb-6">
+          <button onClick={() => setTab("profile")} className={`pb-2 px-4 text-sm font-bold uppercase tracking-wider ${tab === "profile" ? "border-b-2 border-black text-black" : "text-gray-400 hover:text-gray-600"}`}>Profile</button>
+          <button onClick={() => setTab("wallet")} className={`pb-2 px-4 text-sm font-bold uppercase tracking-wider ${tab === "wallet" ? "border-b-2 border-black text-black" : "text-gray-400 hover:text-gray-600"}`}>Wallet</button>
+        </div>
+
+        {tab === "profile" ? (
+          <>
+            <div className="space-y-4 text-sm flex-1">
+              <Field label="Full name">
+                <input
+                  value={f.fullName}
+                  onChange={(e) => setF({ ...f, fullName: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Phone">
+                <input
+                  value={f.phone}
+                  onChange={(e) => setF({ ...f, phone: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Address">
+                <input
+                  value={f.addressLine1}
+                  onChange={(e) => setF({ ...f, addressLine1: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="City">
+                  <input
+                    value={f.city}
+                    onChange={(e) => setF({ ...f, city: e.target.value })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="State">
+                  <input
+                    value={f.state}
+                    onChange={(e) => setF({ ...f, state: e.target.value })}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <Field label="Postal code">
+                <input
+                  value={f.postalCode}
+                  onChange={(e) => setF({ ...f, postalCode: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+            <div className="mt-6 flex gap-2">
+              <button
+                onClick={() => onSave(f)}
+                className="flex-1 rounded-none bg-black py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white"
+              >
+                Save changes
+              </button>
+              <button
+                onClick={onClose}
+                className="rounded-none border border-gray-300 px-5 py-3 text-xs uppercase tracking-[0.24em]"
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="space-y-6 text-sm flex-1">
+             <div className="bg-gray-50 p-6 border border-gray-200 rounded-xl flex flex-col items-center justify-center">
+               <div className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Available Balance</div>
+               <div className="text-4xl font-display font-black">{walletBalance !== null ? `₹${walletBalance.toLocaleString("en-IN")}` : "..."}</div>
+             </div>
+             
+             <Field label="Amount (₹)">
+               <input type="number" value={amt} onChange={e => setAmt(e.target.value)} className={inputCls} placeholder="e.g. 500" />
+             </Field>
+             <Field label="Description / Reason">
+               <input type="text" value={desc} onChange={e => setDesc(e.target.value)} className={inputCls} />
+             </Field>
+             
+             <div className="grid grid-cols-2 gap-3 mt-4">
+               <button onClick={() => updateWallet(Number(amt))} disabled={walletLoading || !amt || isNaN(Number(amt))} className="bg-[#10b981] hover:bg-[#059669] text-white py-3 text-[11px] font-bold uppercase tracking-[0.2em] disabled:opacity-50 transition-colors">Add Funds</button>
+               <button onClick={() => updateWallet(-Math.abs(Number(amt)))} disabled={walletLoading || !amt || isNaN(Number(amt))} className="bg-red-500 hover:bg-red-600 text-white py-3 text-[11px] font-bold uppercase tracking-[0.2em] disabled:opacity-50 transition-colors">Deduct Funds</button>
+             </div>
           </div>
-          <Field label="Postal code">
-            <input
-              value={f.postalCode}
-              onChange={(e) => setF({ ...f, postalCode: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-        </div>
-        <div className="mt-6 flex gap-2">
-          <button
-            onClick={() => onSave(f)}
-            className="flex-1 rounded-none bg-black py-3 text-xs font-semibold uppercase tracking-[0.24em] text-white"
-          >
-            Save changes
-          </button>
-          <button
-            onClick={onClose}
-            className="rounded-none border border-gray-300 px-5 py-3 text-xs uppercase tracking-[0.24em]"
-          >
-            Cancel
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* ---------- HOT SELLING TAB ---------- */
+/* ---------- HOT SELLING & NEW KITS TAB ---------- */
 import { useHotSelling } from "@/lib/hot-selling";
+import { useNewKits } from "@/lib/new-kits";
 
 function HotSellingTab() {
   const { products } = useCatalog();
@@ -2228,7 +2364,7 @@ function HotSellingTab() {
                 <span className="font-medium truncate max-w-[150px]">{p.name}</span>
               </div>
               <button
-                onClick={() => setHotSellingIds(hotSellingIds.filter((id) => id !== p.id))}
+                onClick={() => setHotSellingIds(selectedProducts.map(sp => sp.id).filter((id) => id !== p.id))}
                 className="rounded-none bg-brand/10 p-2 text-brand hover:bg-brand/20 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
@@ -2269,7 +2405,106 @@ function HotSellingTab() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setHotSellingIds([...hotSellingIds, p.id])}
+                  onClick={() => setHotSellingIds([...selectedProducts.map(sp => sp.id), p.id])}
+                  className="rounded-none bg-black px-3 py-1 text-[10px] uppercase tracking-wider text-white hover:bg-black/80 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NewKitsTab() {
+  const { products } = useCatalog();
+  const { newKitsIds, setNewKitsIds } = useNewKits();
+  const [search, setSearch] = useState("");
+
+  const selectedProducts = newKitsIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter(Boolean) as import("@/lib/catalog").Product[];
+
+  const availableProducts = products.filter(
+    (p) => !newKitsIds.includes(p.id) && p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      <div className="rounded-none border border-gray-300 p-6">
+        <h2 className="font-display text-xl font-bold">Current New 2026/27 Kits</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          These appear in the mobile hamburger menu (maximum 100).
+        </p>
+        <div className="mt-4 space-y-2">
+          {selectedProducts.map((p, i) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between rounded-none border border-border/40 p-2 bg-gray-50"
+            >
+              <div className="flex items-center gap-3 text-sm">
+                <span className="font-mono text-xs text-muted-foreground w-4">{i + 1}.</span>
+                {p.images[0] && <img src={p.images[0]} className="h-10 w-8 rounded object-cover" />}
+                <span className="font-medium truncate max-w-[150px]">{p.name}</span>
+              </div>
+              <button
+                onClick={() => setNewKitsIds(selectedProducts.map(sp => sp.id).filter((id) => id !== p.id))}
+                className="rounded-none bg-brand/10 p-2 text-brand hover:bg-brand/20 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          {selectedProducts.length === 0 && (
+            <div className="rounded-none border border-dashed border-gray-300 p-6 text-center text-xs text-muted-foreground">
+              No kits selected.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-none border border-gray-300 p-6 flex flex-col">
+        <h2 className="font-display text-xl font-bold">Add Kits</h2>
+        <p className="mt-1 text-xs text-muted-foreground mb-4">
+          Select kits to feature in the side menu.
+        </p>
+        
+        <div className="relative mb-4">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search kits..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-none border border-gray-300 bg-white py-2 pl-9 pr-4 text-sm outline-none focus:border-black"
+          />
+        </div>
+
+        {selectedProducts.length >= 100 ? (
+          <div className="mt-4 rounded border border-brand/50 bg-brand/10 p-3 text-xs text-brand">
+            You have reached the maximum of 100 featured kits. Remove some to add others.
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 h-[400px] overflow-y-auto pr-2 space-y-2">
+            {availableProducts.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-none border border-border/40 p-2"
+              >
+                <div className="flex items-center gap-3 text-sm">
+                  {p.images[0] && (
+                    <img src={p.images[0]} className="h-10 w-8 rounded object-cover" />
+                  )}
+                  <div className="truncate w-[180px] text-xs">
+                    <div className="font-medium truncate">{p.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{p.team}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setNewKitsIds([...selectedProducts.map(sp => sp.id), p.id])}
                   className="rounded-none bg-black px-3 py-1 text-[10px] uppercase tracking-wider text-white hover:bg-black/80 transition-colors"
                 >
                   Add
@@ -2381,4 +2616,6 @@ function TeamsTab() {
     </div>
   );
 }
+
+
 

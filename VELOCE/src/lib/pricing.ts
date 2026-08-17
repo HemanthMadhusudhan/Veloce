@@ -37,7 +37,7 @@ export function computeCart(
     .filter((x): x is { item: CartItem; product: Product } => !!x.product);
 
   const itemCount = enriched.reduce((a, b) => a + b.item.qty, 0);
-  const subtotal = enriched.reduce((a, b) => a + b.product.price * b.item.qty, 0);
+  const subtotal = enriched.reduce((a, b) => a + (b.product.price + (b.item.customName ? 100 : 0)) * b.item.qty, 0);
 
   let bogoDivisor = 3; // Default is B2G1 (Buy 2 Get 1)
 
@@ -62,8 +62,9 @@ export function computeCart(
   // Expand into individual units for BOGO logic (cheapest per every N is free)
   const units: { id: string; size: string; color: string; price: number }[] = [];
   for (const { item, product } of enriched) {
+    const unitPrice = product.price + (item.customName ? 100 : 0);
     for (let i = 0; i < item.qty; i++) {
-      units.push({ id: item.id, size: item.size, color: item.color, price: product.price });
+      units.push({ id: item.id, size: item.size, color: item.color, price: unitPrice });
     }
   }
   const totalFreeUnits = Math.floor(units.length / bogoDivisor);
@@ -82,7 +83,11 @@ export function computeCart(
   let discount = 0;
   let couponApplied: string | null = null;
 
-  if (couponCode === "FIRST50" && isFirstOrder) {
+  if (couponCode?.startsWith("VEL-699-")) {
+    discount = Math.min(subtotal, 699);
+    couponApplied = couponCode;
+    freeCountByKey.clear();
+  } else if (couponCode === "FIRST50" && isFirstOrder) {
     discount = subtotal * 0.5;
     couponApplied = "FIRST50";
     freeCountByKey.clear(); // Overrides B2G1 free line items
@@ -103,12 +108,16 @@ export function computeCart(
   const lines: CartLine[] = enriched.map(({ item, product }) => {
     const k = `${item.id}|${item.size}|${item.color}`;
     const freeUnits = freeCountByKey.get(k) ?? 0;
-    const lineSubtotal = product.price * item.qty;
+    const unitPrice = product.price + (item.customName ? 100 : 0);
+    const lineSubtotal = unitPrice * item.qty;
     
     let lineDiscount = 0;
     if (couponApplied === "FIRST50") lineDiscount = lineSubtotal * 0.5;
+    else if (couponApplied?.startsWith("VEL-699-")) {
+      lineDiscount = subtotal > 0 ? (lineSubtotal / subtotal) * Math.min(subtotal, 699) : 0;
+    }
     else if (fortuneDiscount > 0) lineDiscount = Math.round(lineSubtotal * fortuneDiscount);
-    else lineDiscount = product.price * freeUnits;
+    else lineDiscount = unitPrice * freeUnits;
     
     return { item, product, freeUnits, lineSubtotal, lineDiscount };
   });

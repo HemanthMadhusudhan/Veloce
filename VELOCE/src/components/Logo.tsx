@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 
 export function Logo({
   className = "",
-  showWord = true,
 }: {
   className?: string;
   showWord?: boolean;
@@ -10,21 +9,15 @@ export function Logo({
   return (
     <Link
       to="/"
-      className={`group inline-flex items-center gap-2 ${className}`}
-      aria-label="Veloce Wear home"
+      className={`group inline-flex flex-col items-center leading-none select-none transition-transform active:scale-95 ${className}`}
+      aria-label="Veloce home"
     >
-      <img
-        src="/logo.png?v=3"
-        width={48}
-        height={48}
-        alt="Veloce Wear"
-        className="transition-transform duration-500 group-hover:scale-110 object-contain drop-shadow-sm brightness-0 scale-125"
-      />
-      {showWord && (
-        <span className="font-display text-[15px] font-bold uppercase tracking-[0.28em] gold-text">
-          Veloce Wear
-        </span>
-      )}
+      <span className="font-black text-[24px] sm:text-[28px] tracking-tight uppercase text-[#d32f2f] font-display leading-none">
+        VELOCE
+      </span>
+      <span className="font-serif italic text-[12px] sm:text-[13px] tracking-[0.22em] text-[#d32f2f] -mt-0.5 font-black leading-none">
+        Wear
+      </span>
     </Link>
   );
 }

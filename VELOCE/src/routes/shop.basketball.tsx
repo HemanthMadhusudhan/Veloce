@@ -1,29 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteChrome } from "@/components/chrome";
 import { ShopInner } from "./shop";
-
-import { useSiteImage } from "@/lib/site-images";
+import categorySeo from "@/lib/category-seo.json";
 
 export const Route = createFileRoute("/shop/basketball")({
   head: () => ({
     meta: [
-      { title: "Basketball Jerseys — Veloce Wear" },
-      {
-        name: "description",
-        content: "Authentic match-day basketball jerseys from the world's elite teams.",
-      },
+      { title: categorySeo.basketball.title },
+      { name: "description", content: categorySeo.basketball.description },
     ],
   }),
   component: () => {
-    const bannerUrl = useSiteImage("category-basketball");
     return (
       <SiteChrome>
         <ShopInner
           title="Basketball"
-          subtitle="Match-day jerseys from the world's elite teams."
+          subtitle="Premium hardwood classics and game-day jerseys."
           category="basketball"
-          bannerUrl={bannerUrl}
         />
+        <div className="mx-auto max-w-7xl px-5 sm:px-6" dangerouslySetInnerHTML={{ __html: categorySeo.basketball.content }} />
       </SiteChrome>
     );
   },

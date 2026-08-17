@@ -98,25 +98,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "/logo.png" },
       { name: "twitter:title", content: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
       {
         name: "twitter:description",
         content:
           "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
       },
+      { name: "google-site-verification", content: "oPzpm4BDpj02pakSqCyZa4EDEF5TlkRyLNyesRTQUI4" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.png?v=3", type: "image/png" },
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      { rel: "icon", href: "/favicon-48x48.png", type: "image/png", sizes: "48x48" },
+      { rel: "icon", href: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+      { rel: "icon", href: "/favicon-192x192.png", type: "image/png", sizes: "192x192" },
+      { rel: "apple-touch-icon", href: "/favicon-192x192.png", sizes: "192x192" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
+      {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
   }),
@@ -126,11 +138,49 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+import { useLocation } from "@tanstack/react-router";
+
 function RootShell({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const currentUrl = `https://velocewear.shop${location.pathname}`;
+  
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Veloce Wear",
+    "url": "https://velocewear.shop",
+    "logo": "https://velocewear.shop/logo.png"
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://velocewear.shop"
+      }
+    ]
+  };
+
+  if (location.pathname.startsWith('/shop')) {
+    breadcrumbData.itemListElement.push({
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Shop",
+      "item": "https://velocewear.shop/shop"
+    });
+  }
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        <link rel="canonical" href={currentUrl} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }} />
       </head>
       <body>
         {children}
@@ -138,6 +188,14 @@ function RootShell({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+}
+
+function ScrollToTop() {
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.search]);
+  return null;
 }
 
 function RootComponent() {
@@ -149,10 +207,11 @@ function RootComponent() {
         <ShopProvider>
           <SiteImagesProvider>
             <TeamsProvider>
+              <ScrollToTop />
               {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
               <Outlet />
               <SupportBot />
-              <Toaster />
+              <Toaster duration={1500} />
             </TeamsProvider>
           </SiteImagesProvider>
         </ShopProvider>
