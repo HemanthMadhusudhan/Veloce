@@ -34,6 +34,7 @@ type Ctx = {
   addProduct: (p: Product) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
+  deductStock: (items: { id: string; size?: string; qty: number }[]) => Promise<void>;
 };
 
 const C = createContext<Ctx | null>(null);
@@ -45,6 +46,8 @@ const NATURAL_IMG_MAP: Record<string, string[]> = {};
   }
 });
 
+import { generateProductSlug, slugify } from "./slugify";
+
 // Helper to map DB row to Product object
 function mapDbRowToProduct(r: any): Product {
   const localImgs = NATURAL_IMG_MAP[r.id];
@@ -52,9 +55,13 @@ function mapDbRowToProduct(r: any): Product {
     ? localImgs
     : (r.images || []);
 
+  const name = r.name || "Jersey";
+  const slug = r.slug || generateProductSlug(name) || r.id;
+
   return {
     id: r.id,
-    name: r.name,
+    slug: slug,
+    name: name,
     category: r.category as Category,
     series: r.series || undefined,
     zone: r.zone || undefined,
@@ -71,8 +78,8 @@ function mapDbRowToProduct(r: any): Product {
     material: r.material,
     rating: Number(r.rating || 5),
     reviews: Number(r.reviews || 0),
-    stock: Number(r.stock || 0),
-    stockBySize: r.stock_by_size || undefined,
+    stock: Number(r.stock ?? 0),
+    stockBySize: typeof r.stock_by_size === "object" && r.stock_by_size !== null ? r.stock_by_size : undefined,
     hasVideo: r.has_video || false,
     has360: r.has_360 || false,
   };
@@ -93,16 +100,31 @@ export function getLiveProducts(): Product[] {
   return LIVE;
 }
 export function getLiveProductBySlug(slug: string): Product | undefined {
-  return LIVE.find((p) => p.slug === slug || p.id === slug);
+  if (!slug) return undefined;
+  const s = slug.toLowerCase();
+  return LIVE.find(
+    (p) =>
+      p.id?.toLowerCase() === s ||
+      p.slug?.toLowerCase() === s ||
+      (p.name && slugify(p.name).toLowerCase() === s)
+  );
 }
 export function getLiveProduct(id: string): Product | undefined {
-  return LIVE.find((p) => p.id === id);
+  if (!id) return undefined;
+  const target = id.toLowerCase();
+  return LIVE.find(
+    (p) =>
+      p.id?.toLowerCase() === target ||
+      p.slug?.toLowerCase() === target ||
+      (p.name && slugify(p.name).toLowerCase() === target)
+  );
 }
 
 // Helper to map Product object to DB row fields
 function mapProductToDbRow(p: Product): any {
   return {
     id: p.id,
+    slug: p.slug || generateProductSlug(p.name) || p.id,
     name: p.name,
     category: p.category,
     series: p.series || null,
@@ -160,6 +182,22 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refresh().then(() => setLoaded(true));
+
+    // Listen for Realtime stock & product updates across the whole site
+    const channel = supabase
+      .channel("public:products_stock_live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => {
+          refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [refresh]);
 
   const updateProduct = useCallback(
@@ -264,6 +302,127 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     [refresh],
   );
 
+  const deductStock = useCallback(
+    async (items: { id: string; size?: string; qty: number }[]) => {
+      if (!items || items.length === 0) return;
+
+      // Optimistically deduct in memory and update local cache
+      setProducts((prev) =>
+        prev.map((p) => {
+          const matchingItems = items.filter((it) => it.id === p.id);
+          if (matchingItems.length === 0) return p;
+
+          const updatedStockBySize = { ...(p.stockBySize || {}) };
+          let updatedTotalStock = p.stock;
+
+          matchingItems.forEach((it) => {
+            const size = it.size;
+            const qty = it.qty || 1;
+            if (size) {
+              const currentSizeStock =
+                updatedStockBySize[size] !== undefined
+                  ? updatedStockBySize[size]
+                  : updatedTotalStock;
+              updatedStockBySize[size] = Math.max(0, currentSizeStock - qty);
+            } else {
+              updatedTotalStock = Math.max(0, updatedTotalStock - qty);
+            }
+          });
+
+          if (Object.keys(updatedStockBySize).length > 0) {
+            updatedTotalStock = Object.values(updatedStockBySize).reduce((a, b) => a + b, 0);
+          }
+
+          return {
+            ...p,
+            stock: updatedTotalStock,
+            stockBySize: updatedStockBySize,
+          };
+        })
+      );
+
+      LIVE = LIVE.map((p) => {
+        const matchingItems = items.filter((it) => it.id === p.id);
+        if (matchingItems.length === 0) return p;
+
+        const updatedStockBySize = { ...(p.stockBySize || {}) };
+        let updatedTotalStock = p.stock;
+
+        matchingItems.forEach((it) => {
+          const size = it.size;
+          const qty = it.qty || 1;
+          if (size) {
+            const currentSizeStock =
+              updatedStockBySize[size] !== undefined
+                ? updatedStockBySize[size]
+                : updatedTotalStock;
+            updatedStockBySize[size] = Math.max(0, currentSizeStock - qty);
+          } else {
+            updatedTotalStock = Math.max(0, updatedTotalStock - qty);
+          }
+        });
+
+        if (Object.keys(updatedStockBySize).length > 0) {
+          updatedTotalStock = Object.values(updatedStockBySize).reduce((a, b) => a + b, 0);
+        }
+
+        return {
+          ...p,
+          stock: updatedTotalStock,
+          stockBySize: updatedStockBySize,
+        };
+      });
+
+      listeners.forEach((l) => l());
+
+      // Update directly in Supabase products table
+      for (const it of items) {
+        try {
+          const { data: prodData } = await supabase
+            .from("products")
+            .select("stock, stock_by_size")
+            .eq("id", it.id)
+            .maybeSingle();
+
+          if (prodData) {
+            let currentStockBySize: Record<string, number> = prodData.stock_by_size || {};
+            let currentTotalStock = Number(prodData.stock || 0);
+            const size = it.size;
+            const qty = it.qty || 1;
+
+            if (size) {
+              const currentSizeVal =
+                currentStockBySize[size] !== undefined
+                  ? currentStockBySize[size]
+                  : currentTotalStock;
+              const newSizeVal = Math.max(0, currentSizeVal - qty);
+              currentStockBySize = {
+                ...currentStockBySize,
+                [size]: newSizeVal,
+              };
+              currentTotalStock = Object.values(currentStockBySize).reduce((a, b) => a + b, 0);
+            } else {
+              currentTotalStock = Math.max(0, currentTotalStock - qty);
+            }
+
+            await supabase
+              .from("products")
+              .update({
+                stock: currentTotalStock,
+                stock_by_size: currentStockBySize,
+              })
+              .eq("id", it.id);
+          }
+        } catch (err) {
+          console.error("Error updating stock in Supabase for item:", it.id, err);
+        }
+      }
+
+      refresh();
+    },
+    [refresh]
+  );
+
   const value: Ctx = {
     products,
     getById: (id) => products.find((p) => p.id === id),
@@ -271,6 +430,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     addProduct,
     removeProduct,
     refresh,
+    deductStock,
   };
   return <C.Provider value={value}>{children}</C.Provider>;
 }

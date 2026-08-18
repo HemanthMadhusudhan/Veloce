@@ -49,7 +49,7 @@ function CheckoutPage() {
     cart, clearCart, placeOrder, userEmail, userId, updateProfile, profile, 
     orders, updateQty, removeFromCart, addToCart, wishlist, toggleWishlist, addWalletBalance 
   } = useShop();
-  const { getById, products } = useCatalog();
+  const { getById, products, deductStock } = useCatalog();
   const nav = useNavigate();
   const search = Route.useSearch() as { step?: string };
 
@@ -501,6 +501,19 @@ function CheckoutPage() {
         }
       }
 
+      // Deduct stock for all ordered items immediately and sync across app
+      try {
+        await deductStock(
+          lines.map((l) => ({
+            id: l.product.id,
+            size: l.item.size,
+            qty: l.item.qty,
+          }))
+        );
+      } catch (stockDeductErr) {
+        console.error("Failed to deduct stock:", stockDeductErr);
+      }
+
       clearCart();
       setCompletedOrder(created);
       setIsProcessing(false);
@@ -511,6 +524,24 @@ function CheckoutPage() {
     }
   };
 
+  // When order is completed, intercept browser back / popstate and direct to home page
+  useEffect(() => {
+    if (!completedOrder) return;
+
+    window.history.pushState({ orderDone: true }, "", window.location.href);
+
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      setCompletedOrder(null);
+      nav({ to: "/" });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [completedOrder, nav]);
+
   // Order Confirmed State - Animated Thermal Receipt Printer
   if (completedOrder) {
     return (
@@ -519,6 +550,7 @@ function CheckoutPage() {
           order={completedOrder}
           onContinueShopping={() => {
             setCompletedOrder(null);
+            nav({ to: "/" });
           }}
         />
       </div>

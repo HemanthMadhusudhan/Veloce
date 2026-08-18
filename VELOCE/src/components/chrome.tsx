@@ -138,14 +138,19 @@ export function SiteNav() {
         </div>
 
         {/* Subnavigation Bar */}
-        <div className="hidden md:flex items-center justify-center gap-8 py-2 border-t border-black/5 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-800">
-          <Link to="/" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold underline underline-offset-4" }}>Home</Link>
-          <Link to="/shop" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Shop All</Link>
-          <Link to="/shop/f1" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>F1 Merch</Link>
-          <Link to="/shop/football" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Football Kits</Link>
-          <Link to="/shop/cricket" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Cricket Jerseys</Link>
-          <Link to="/shop/basketball" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>Basketball</Link>
-          <Link to="/shop/worldcup" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-bold" }}>World Cup</Link>
+        <div className="hidden md:flex items-center justify-center gap-6 lg:gap-8 py-2 border-t border-black/5 text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-800">
+          <Link to="/" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-black" }}>Home</Link>
+          <Link to="/new-kits" className="hover:text-[#d32f2f] transition-colors flex items-center gap-1" activeProps={{ className: "text-[#d32f2f] font-black" }}>
+            <span>New Kits</span>
+            <span className="bg-[#d32f2f] text-white text-[8px] px-1 py-0.2 rounded font-mono font-black">26/27</span>
+          </Link>
+          <Link to="/shop" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-black" }}>Shop All</Link>
+          <FootballMenu />
+          <F1Menu />
+          <CricketMenu />
+          <BasketballMenu />
+          <WorldCupMenu />
+          <Link to="/shop/accessories" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-black" }}>Accessories</Link>
         </div>
       </nav>
 
@@ -1081,20 +1086,29 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
 
         {/* Menu Navigation List */}
         <div className="flex-1 px-5 py-3 space-y-1.5">
+          {/* HOME */}
+          <button
+            onClick={() => handleNav("/")}
+            className="w-full text-left font-extrabold text-[15px] tracking-wide text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+          >
+            HOME
+          </button>
+
           {/* NEW 2026/27 KITS */}
           <button
             onClick={() => handleNav("/new-kits")}
-            className="w-full text-left font-extrabold text-[15px] tracking-wide text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            className="w-full text-left font-extrabold text-[15px] tracking-wide text-[#d32f2f] py-2 hover:opacity-80 transition cursor-pointer flex items-center justify-between"
           >
-            NEW 2026/27 KITS
+            <span>NEW 2026/27 KITS</span>
+            <span className="bg-[#d32f2f] text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-black uppercase">NEW</span>
           </button>
 
-          {/* PLAYER VERSION KITS */}
+          {/* SHOP ALL */}
           <button
-            onClick={() => handleNav("/shop", { tag: "player-version" })}
+            onClick={() => handleNav("/shop")}
             className="w-full text-left font-extrabold text-[15px] tracking-wide text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
           >
-            PLAYER VERSION KITS
+            SHOP ALL COLLECTIONS
           </button>
 
           {/* Football Jerseys (Accordion) */}
@@ -1130,23 +1144,23 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
             )}
           </div>
 
-          {/* Basketball Jerseys (Accordion) */}
+          {/* Formula 1 Store (Accordion) */}
           <div className="border-t border-black/5 pt-1.5">
             <button
-              onClick={() => toggleCategory("basketball")}
+              onClick={() => toggleCategory("f1")}
               className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
             >
-              <span>Basketball Jerseys</span>
-              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "basketball" ? "rotate-180" : ""}`} />
+              <span>Formula 1 Store</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "f1" ? "rotate-180" : ""}`} />
             </button>
 
-            {openCategory === "basketball" && (
+            {openCategory === "f1" && (
               <div className="pt-2 pb-4 animate-in fade-in duration-200">
                 <div className="grid grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                  {combinedB.map(([t, logo]) => (
+                  {combinedF1.map(([t, logo]) => (
                     <button
                       key={t}
-                      onClick={() => handleNav("/shop/basketball", { team: t })}
+                      onClick={() => handleNav("/shop/f1", { team: t })}
                       className="flex flex-col items-center gap-1 group cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
@@ -1219,23 +1233,23 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
             )}
           </div>
 
-          {/* Formula 1 Store (Accordion) */}
+          {/* Basketball Jerseys (Accordion) */}
           <div className="border-t border-black/5 pt-1.5">
             <button
-              onClick={() => toggleCategory("f1")}
+              onClick={() => toggleCategory("basketball")}
               className="w-full flex items-center justify-between font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
             >
-              <span>Formula 1 Store</span>
-              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "f1" ? "rotate-180" : ""}`} />
+              <span>Basketball Jerseys</span>
+              <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${openCategory === "basketball" ? "rotate-180" : ""}`} />
             </button>
 
-            {openCategory === "f1" && (
+            {openCategory === "basketball" && (
               <div className="pt-2 pb-4 animate-in fade-in duration-200">
                 <div className="grid grid-cols-4 gap-2.5 max-h-60 overflow-y-auto pr-1">
-                  {combinedF1.map(([t, logo]) => (
+                  {combinedB.map(([t, logo]) => (
                     <button
                       key={t}
-                      onClick={() => handleNav("/shop/f1", { team: t })}
+                      onClick={() => handleNav("/shop/basketball", { team: t })}
                       className="flex flex-col items-center gap-1 group cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
@@ -1277,6 +1291,16 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                 </div>
               </div>
             )}
+          </div>
+
+          {/* PLAYER VERSION KITS */}
+          <div className="border-t border-black/5 pt-1.5">
+            <button
+              onClick={() => handleNav("/shop", { tag: "player-version" })}
+              className="w-full text-left font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+            >
+              Player Version Kits
+            </button>
           </div>
 
           {/* Accessories */}

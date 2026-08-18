@@ -22,9 +22,9 @@ import {
 import { SiteChrome } from "@/components/chrome";
 import { ProductCard } from "@/components/ProductCard";
 import { Carousel, CarouselContent, CarouselItem, CarouselDots } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 import { CATEGORY_LABEL } from "@/lib/catalog";
 import { useCatalog, getLiveProduct } from "@/lib/catalog-store";
+import { slugify } from "@/lib/slugify";
 import { formatINR } from "@/lib/format";
 import { useShop } from "@/lib/store";
 import { TEAM_LOGOS } from "@/lib/logos";
@@ -491,7 +491,12 @@ function MobilePdp({
 
         {/* Quantity Stepper Row */}
         <div className="mt-4 flex items-center justify-between pt-3 border-t border-neutral-100">
-          <span className="text-xs font-black uppercase tracking-wider text-neutral-900">Quantity</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black uppercase tracking-wider text-neutral-900">Quantity</span>
+            <span className="text-[11px] font-semibold text-neutral-500">
+              ({size ? `${product.stockBySize?.[size] !== undefined ? product.stockBySize[size] : product.stock} in stock` : `${product.stock} in stock`})
+            </span>
+          </div>
           <div className="flex items-center gap-3 bg-neutral-100 rounded-xl px-3 py-1.5 border border-neutral-200/80">
             <button
               onClick={() => setQty(Math.max(1, qty - 1))}
@@ -543,57 +548,6 @@ function MobilePdp({
           )}
         </div>
       </div>
-
-      {/* CUSTOMISATION ACCORDION */}
-      {canCustomise && (
-        <div className="bg-white px-4.5 py-4 border-t border-neutral-100">
-          <div className="rounded-2xl border border-neutral-200 overflow-hidden bg-neutral-50/60">
-            <button 
-              onClick={() => {
-                setCustomiseOpen(!customiseOpen);
-                if (customiseOpen) { setCustomName(""); setCustomNumber(""); }
-              }}
-              className="w-full flex items-center justify-between p-4 text-left active:bg-neutral-100 transition-colors cursor-pointer"
-            >
-              <span className="text-xs uppercase tracking-wider font-bold text-neutral-900">
-                {customiseOpen ? "Remove Customisation" : "Add Custom Name & Number"}
-              </span>
-              <span className="text-xs uppercase tracking-wider text-neutral-600 font-bold">
-                {customiseOpen ? "− ₹100" : "+ ₹100"}
-              </span>
-            </button>
-            
-            {customiseOpen && (
-              <div className="p-4 pt-0 animate-in slide-in-from-top-2 fade-in duration-200 border-t border-neutral-200/80">
-                <div className="flex flex-col gap-3 mt-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-neutral-600 uppercase tracking-wider">Name (Max 14)</label>
-                    <input
-                      type="text"
-                      maxLength={14}
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value.toUpperCase())}
-                      placeholder="e.g. MESSI"
-                      className="w-full bg-white border border-neutral-300 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-black uppercase font-bold text-neutral-900"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-neutral-600 uppercase tracking-wider">Number (Max 3)</label>
-                    <input
-                      type="text"
-                      maxLength={3}
-                      value={customNumber}
-                      onChange={(e) => setCustomNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                      placeholder="e.g. 10"
-                      className="w-full bg-white border border-neutral-300 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-black font-bold text-neutral-900"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* 4-GRID TRUST SIGNALS */}
       <div className="px-4.5 py-5 border-t border-neutral-100 bg-white">
@@ -743,7 +697,14 @@ function Pdp() {
     product: import("@/lib/catalog").Product | null;
   };
   const { getById, products } = useCatalog();
-  const product = getById(id) ?? seed;
+  const targetId = (id || "").toLowerCase();
+  const product =
+    products.find(
+      (p) =>
+        p.id?.toLowerCase() === targetId ||
+        p.slug?.toLowerCase() === targetId ||
+        (p.name && slugify(p.name).toLowerCase() === targetId)
+    ) ?? getById(id) ?? seed;
   const nav = useNavigate();
 
   if (!product) {

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, Plus, Star, ShoppingBag } from "lucide-react";
 import { useShop } from "@/lib/store";
+import { useCatalog } from "@/lib/catalog-store";
 import type { Product } from "@/lib/catalog";
 import { formatINR } from "@/lib/format";
 import { Picture } from "./Picture";
@@ -11,8 +12,10 @@ const GRID_SIZES =
   "(min-width: 1280px) 320px, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 const LIST_SIZES = "(min-width: 640px) 160px, 128px";
 
-export function ProductCard({ p, view = "grid", priority = false }: { p: Product; view?: "grid" | "list"; priority?: boolean }) {
+export function ProductCard({ p: initialP, view = "grid", priority = false }: { p: Product; view?: "grid" | "list"; priority?: boolean }) {
   const { wishlist, toggleWishlist, addToCart, isAdmin } = useShop();
+  const { getById } = useCatalog();
+  const p = getById(initialP.id) ?? initialP;
   const wished = wishlist.includes(p.id);
   const [showSizes, setShowSizes] = useState(false);
   const quickAdd = () => {

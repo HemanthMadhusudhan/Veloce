@@ -13,15 +13,17 @@ import {
   X,
   Lock,
   Banknote,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { ProductCard } from "@/components/ProductCard";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselDots } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
-import { Minus, Plus } from "lucide-react";
 import { CATEGORY_LABEL } from "@/lib/catalog";
 import { useCatalog, getLiveProductBySlug } from "@/lib/catalog-store";
+import { slugify } from "@/lib/slugify";
 import { formatINR } from "@/lib/format";
 import { useShop } from "@/lib/store";
 import { useSiteImage } from "@/lib/site-images";
@@ -253,57 +255,6 @@ function MobilePdp({
         </div>
       </div>
 
-      {/* CUSTOMISATION */}
-      {canCustomise && (
-        <div className="bg-white px-5 pt-4 pb-2 mt-2 shadow-sm">
-          <div className="rounded-[4px] bg-[#f5f5f5] overflow-hidden border border-gray-100">
-            <button 
-              onClick={() => {
-                setCustomiseOpen(!customiseOpen);
-                if (customiseOpen) { setCustomName(""); setCustomNumber(""); }
-              }}
-              className="w-full flex items-center justify-between px-5 py-4 text-left active:bg-gray-200 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-black">
-                {customiseOpen ? "Remove Customisation" : "Add Custom Name & Number"}
-              </span>
-              <span className="text-[10px] uppercase tracking-widest text-black font-bold">
-                {customiseOpen ? "− ₹100" : "+ ₹100"}
-              </span>
-            </button>
-            
-            {customiseOpen && (
-              <div className="p-5 pt-0 animate-in slide-in-from-top-2 fade-in duration-200">
-                <div className="flex flex-col gap-4 mt-2">
-                  <div className="flex-1 space-y-1.5">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Name (Max 14)</label>
-                    <input
-                      type="text"
-                      maxLength={14}
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value.toUpperCase())}
-                      placeholder="e.g. MESSI"
-                      className="w-full bg-white border border-gray-200 rounded-[4px] px-4 py-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all uppercase font-medium"
-                    />
-                  </div>
-                  <div className="w-full space-y-1.5">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Number (Max 3)</label>
-                    <input
-                      type="text"
-                      maxLength={3}
-                      value={customNumber}
-                      onChange={(e) => setCustomNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                      placeholder="e.g. 10"
-                      className="w-full bg-white border border-gray-200 rounded-[4px] px-4 py-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all font-medium"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* INLINE ADD TO CART & WISHLIST */}
       <div className="bg-white px-5 pb-8 pt-4 flex items-center gap-3" ref={inlineAddRef}>
         {!isAdmin && (
@@ -472,7 +423,14 @@ function Pdp() {
     product: import("@/lib/catalog").Product | null;
   };
   const { products } = useCatalog();
-  const product = products.find((p: any) => p.slug === slug || p.id === slug) ?? seed;
+  const target = (slug || "").toLowerCase();
+  const product =
+    products.find(
+      (p: any) =>
+        p.id?.toLowerCase() === target ||
+        p.slug?.toLowerCase() === target ||
+        (p.name && slugify(p.name).toLowerCase() === target)
+    ) ?? seed;
   if (!product) {
     return (
       <div className="mx-auto max-w-xl px-6 py-20 text-center">
@@ -835,58 +793,7 @@ function Pdp() {
               </div>
             </div>
 
-            {canCustomise && (
-              <div className="mt-6 rounded-xl border border-border/50 bg-brand/5 overflow-hidden">
-                <button 
-                  onClick={() => {
-                    setCustomiseOpen(!customiseOpen);
-                    if (customiseOpen) {
-                      setCustomName("");
-                      setCustomNumber("");
-                    }
-                  }}
-                  className="w-full flex items-center justify-between p-4 text-left transition hover:bg-brand/10"
-                >
-                  <span className="text-[10px] uppercase tracking-[0.24em] text-brand font-bold">
-                    {customiseOpen ? "Remove Customisation" : "Add Custom Name & Number"}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
-                    {customiseOpen ? "− ₹100" : "+ ₹100"}
-                  </span>
-                </button>
-                
-                {customiseOpen && (
-                  <div className="p-4 pt-0 animate-in slide-in-from-top-2 fade-in duration-200">
-                    <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Name (Max 14)</label>
-                        <input
-                          type="text"
-                          maxLength={14}
-                          value={customName}
-                          onChange={(e) => setCustomName(e.target.value.toUpperCase())}
-                          placeholder="e.g. MESSI"
-                          className="w-full bg-surface border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand transition-colors uppercase"
-                        />
-                      </div>
-                      <div className="w-full sm:w-[120px] space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Number (Max 3)</label>
-                        <input
-                          type="text"
-                          maxLength={3}
-                          value={customNumber}
-                          onChange={(e) => setCustomNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                          placeholder="e.g. 10"
-                          className="w-full bg-surface border border-border/50 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand transition-colors"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ADD TO BAG & WISHLIST BUTTONS (INLINE) */}
+              {/* ADD TO BAG & WISHLIST BUTTONS (INLINE) */}
             <div className="mt-6 flex flex-col gap-3">
               {!isAdmin && (
                 <div className="flex items-center gap-3">

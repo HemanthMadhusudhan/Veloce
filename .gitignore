@@ -34,3 +34,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Scratch & Backups
+VELOCE_BACKUP/
+*.txt
+*.html
+

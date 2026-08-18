@@ -86,11 +86,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://velocewear.shop/f1/mercedes-t-shirt</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://velocewear.shop/cricket/puma-x-rcb-2026-mens-official-match-jersey</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -222,6 +217,11 @@
   </url>
   <url>
     <loc>https://velocewear.shop/cricket/india-t20-cricket-jersey-2026</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/jordan-miami-heat-essential-nba-t-shirt-tough-red</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -571,11 +571,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://velocewear.shop/worldcup/neymar-version-brazil-home-jersey-2627</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://velocewear.shop/worldcup/vini-jr-version-brazil-home-jersey-2627</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -852,11 +847,6 @@
   </url>
   <url>
     <loc>https://velocewear.shop/worldcup/japan-away-player-version-2627</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://velocewear.shop/cricket/puma-x-rcb-2026-mens-vk18-official-jersey</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1351,6 +1341,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://velocewear.shop/f1/carlos-sainz-f1-oversized-t-shirt-smooth-operator</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://velocewear.shop/football/arsenal-adidas-2627-home-shirt</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -1372,6 +1367,11 @@
   </url>
   <url>
     <loc>https://velocewear.shop/football/psg-nike-home-stadium-shirt-2627</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/miami-heat-nba-large-wordmark-dark-oversized-t-shirt-red</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1401,7 +1401,237 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://velocewear.shop/worldcup/neymar-version-brazil-home-jersey-2627</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/new-era-nba-boston-celtics-satin-bomber-jacket-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/boston-celtics-jayson-tatum-dri-fit-nba-swingman-icon-edition-jersey-green</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/shai-gilgeous-alexander-oklahoma-city-thunder-202425-city-edition-dri-fit-nba-swingman-jersey-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://velocewear.shop/football/siuu-the-cristiano-special-kit</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/cricket/puma-x-rcb-2026-mens-virat18-official-jersey</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/nba-boston-celtics-lightweight-jacket-blackgreen</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/new-era-boston-celtics-nba-championship-oversized-t-shirt-grey</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/boston-celtics-nba-large-wordmark-oversized-t-shirt-green</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/nike-jayson-tatum-boston-celtics-202425-city-edition-dri-fit-nba-swingman-jersey-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/shai-gilgeous-alexander-oklahoma-city-thunder-icon-edition-dri-fit-nba-swingman-jersey-signal-blue</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/oklahoma-city-thunder-josh-giddey-dri-fit-nba-swingman-icon-edition-202223-jersey-blue</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/new-era-miami-heat-nba-large-infill-oversized-t-shirt-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/new-era-miami-heat-nba-championship-oversized-t-shirt-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/mercedes-amg-blue-wonder-tshirt-oversized</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/kimi-antonelli-oversize-tshirt-blue-wonder</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/george-russell-oversize-tshirt-blue-wonder</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/mercedes-amg-petronas-f1-team-polo-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/mercedes-amg-petronas-f1-team-polo-white</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/kimi-antonelli-mercedes-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/kimi-antonelli-oversized-t-shirt-helmet-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/max-verstappen-f1-oversized-t-shirt-simply-lovely</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/max-verstappen-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/max-verstappen-red-bull-racing-f1-polo-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lewis-hamilton-f1-oversized-t-shirt-hammer-time</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lewis-hamilton-ferrari-f1-polo-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/audi-formula-1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lewis-hamilton-ferrari-f1-oversized-t-shirt-monza-blue-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/carlos-sainz-f1-oversized-t-shirt-smooth-operator-black</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/charles-leclerc-f1-oversized-t-shirt-water-drop-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/daniel-ricciardo-f1-tribute-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/max-verstappen-f1-oversized-t-shirt-mv3-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/ayrton-senna-formula-1-tribute-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/charles-leclerc-ferrari-f1-polo-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/charles-leclerc-ferrari-f1-oversized-t-shirt-monza-blue-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/charles-leclerc-ferrari-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lewis-hamilton-ferrari-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lando-norris-f1-oversized-t-shirt-world-champion-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/oscar-piastri-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/christian-horner-red-bull-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lando-norris-mclaren-f1-polo-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lando-norris-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/oscar-piastri-mclaren-f1-polo-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/carlos-sainz-formula-1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/max-verstappen-oversized-t-shirt-helmet-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/lewis-hamilton-oversized-t-shirt-helmet-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/monza-formula-1-oversized-t-shirt</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

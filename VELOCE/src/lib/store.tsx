@@ -510,8 +510,53 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           .select("*")
           .single();
         if (error) throw error;
-        // Stock deduction is now handled completely automatically by the Supabase Postgres Trigger (tr_order_stock)
-        // which bypasses RLS securely and handles both order placement and order cancellation/rejection.
+        // Deduct stock for each ordered item directly in Supabase
+        if (o.items && Array.isArray(o.items)) {
+          for (const it of o.items) {
+            try {
+              const prodId = it.id;
+              const size = it.size;
+              const qty = it.qty || 1;
+              if (!prodId) continue;
+
+              const { data: prodData } = await supabase
+                .from("products")
+                .select("stock, stock_by_size")
+                .eq("id", prodId)
+                .maybeSingle();
+
+              if (prodData) {
+                let currentStockBySize: Record<string, number> = prodData.stock_by_size || {};
+                let currentTotalStock = Number(prodData.stock || 0);
+
+                if (size) {
+                  const currentSizeVal =
+                    currentStockBySize[size] !== undefined
+                      ? currentStockBySize[size]
+                      : currentTotalStock;
+                  const newSizeVal = Math.max(0, currentSizeVal - qty);
+                  currentStockBySize = {
+                    ...currentStockBySize,
+                    [size]: newSizeVal,
+                  };
+                  currentTotalStock = Object.values(currentStockBySize).reduce((a, b) => a + b, 0);
+                } else {
+                  currentTotalStock = Math.max(0, currentTotalStock - qty);
+                }
+
+                await supabase
+                  .from("products")
+                  .update({
+                    stock: currentTotalStock,
+                    stock_by_size: currentStockBySize,
+                  })
+                  .eq("id", prodId);
+              }
+            } catch (stockErr) {
+              console.error("Failed to deduct product stock in store.tsx:", stockErr);
+            }
+          }
+        }
 
         const newOrder: Order = {
           id: record.id,
