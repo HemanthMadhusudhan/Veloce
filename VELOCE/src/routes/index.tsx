@@ -1,75 +1,104 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useMemo } from "react";
-import { ArrowUpRight, ChevronRight, ShieldCheck, CheckCircle2, ArrowRight, Sparkles, Layers } from "lucide-react";
+import { Search, ArrowUpRight, ChevronRight, Pause, Play, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { ProductCard } from "@/components/ProductCard";
 import { useCatalog } from "@/lib/catalog-store";
 import { useHotSelling } from "@/lib/hot-selling";
 import { useTeams } from "@/lib/teams";
+import { useShop } from "@/lib/store";
+import { useSiteImages } from "@/lib/site-images";
+
+import dualFootball from "@/assets/dual-football.jpg";
+import dualF1 from "@/assets/dual-f1.jpg";
+import heroBg from "@/assets/hero-bg.jpg";
+import product1 from "@/assets/product-1.jpg";
+import product2 from "@/assets/product-2.jpg";
+import product3 from "@/assets/product-3.jpg";
+import product4 from "@/assets/product-4.jpg";
 
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Veloce Wear — Built For The Game | Men's Sportswear & Matchwear" },
+      { title: "Veloce Wear — Wear The Game | Authentic Sports & Matchday Jerseys" },
       {
         name: "description",
         content:
-          "Men's performance sportswear and matchwear for Cricket, Football, Basketball & Badminton. Premium breathable fabrics, athletic tailored fit, and museum-grade craftsmanship.",
+          "Men's authentic performance sportswear and matchwear for Football, Cricket, Basketball & Formula 1. Engineered for movement, comfort, and identity.",
       },
-      { property: "og:title", content: "Veloce Wear — Built For The Game" },
+      { property: "og:title", content: "Veloce Wear — Wear The Game" },
       {
         property: "og:description",
-        content: "Men's performance sportswear and matchwear for Cricket, Football, Basketball & Badminton.",
+        content: "Men's authentic performance sportswear for Football, Cricket, Basketball & Formula 1.",
       },
     ],
   }),
 });
 
-const SPORTS_COLLECTION = [
-  {
-    id: "cricket",
-    name: "CRICKET",
-    subtitle: "Matchday Kits",
-    description: "Official team jerseys, player editions & training kits.",
-    link: "/shop/cricket",
-    image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=1200&q=85",
-    fallback: "/images/nav-grid-cricket.webp",
-    badge: "IPL & INTL",
-    count: "40+ KITS",
-  },
+const SPOTLIGHT_CATEGORIES = [
   {
     id: "football",
-    name: "FOOTBALL",
-    subtitle: "Club & National",
-    description: "Authentic match-grade club kits and national jerseys.",
+    title: "Football Kits",
     link: "/shop/football",
-    image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=85",
-    fallback: "/images/nav-grid-football.webp",
-    badge: "2026/27 DROP",
-    count: "150+ KITS",
+    image: "/products/standardized/arsenal-home-player-version-26-27-main.webp",
+    fallback: dualFootball,
+  },
+  {
+    id: "cricket",
+    title: "Cricket Kits",
+    link: "/shop/cricket",
+    image: "/products/standardized/india-t20-cricket-jersey-2026-main.webp",
+    fallback: product1,
+  },
+  {
+    id: "f1",
+    title: "Formula 1 Tees",
+    link: "/shop/f1",
+    image: "/products/standardized/carlos-sainz-f1-oversized-t-shirt-smooth-operator-0.webp",
+    fallback: dualF1,
   },
   {
     id: "basketball",
-    name: "BASKETBALL",
-    subtitle: "Court Editions",
-    description: "Iconic swingman jerseys and oversized court matchwear.",
+    title: "Basketball Jerseys",
     link: "/shop/basketball",
-    image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=85",
-    fallback: "/images/nav-grid-basketball.webp",
-    badge: "CITY EDITIONS",
-    count: "30+ KITS",
+    image: "/products/standardized/boston-celtics-jayson-tatum-dri-fit-nba-swingman-icon-edition-jersey-green-0.webp",
+    fallback: product2,
   },
   {
-    id: "badminton",
-    name: "BADMINTON",
-    subtitle: "Performance Wear",
-    description: "Lightweight, moisture-wicking match tees & shorts.",
-    link: "/shop?sport=badminton",
-    image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=85",
-    fallback: "https://images.unsplash.com/photo-1613918108466-292b78a8ef95?auto=format&fit=crop&w=1200&q=85",
-    badge: "PRO SERIES",
-    count: "NEW DROP",
+    id: "player",
+    title: "Player Editions",
+    link: "/shop?tag=player-version",
+    image: "/products/standardized/ac-milan-home-player-version-26-27-main.webp",
+    fallback: product3,
+  },
+  {
+    id: "worldcup",
+    title: "World Cup Kits",
+    link: "/shop/worldcup",
+    image: "/products/standardized/argentina-home-player-version-wc-26-27-main.webp",
+    fallback: product4,
+  },
+  {
+    id: "retro",
+    title: "Retro Classics",
+    link: "/shop/retro",
+    image: "/products/standardized/argentina-home-2006-retro-main.webp",
+    fallback: dualFootball,
+  },
+  {
+    id: "caps",
+    title: "Caps & Accessories",
+    link: "/shop/accessories",
+    image: "/products/standardized/cricket-australia-t20-25-26-cap-main.webp",
+    fallback: product1,
+  },
+  {
+    id: "oversized",
+    title: "Oversized Tees",
+    link: "/shop?tag=oversized",
+    image: "/products/standardized/chicago-bulls-nba-championship-oversized-t-shirt-black-main.webp",
+    fallback: product2,
   },
 ];
 
@@ -90,13 +119,33 @@ function Index() {
 
 function Home() {
   const { products } = useCatalog();
+  const { openSearch } = useShop();
+  const siteImages = useSiteImages();
+  const navigate = useNavigate();
   const [selectedSportTab, setSelectedSportTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
+
+  const heroVideoUrl = siteImages.get("hero-video");
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate({ to: "/shop", search: { q: searchQuery.trim() } as never });
+    } else {
+      openSearch();
+    }
+  };
+
+  const bestsellers = useMemo(() => {
+    if (!products.length) return [];
+    return products.slice(0, 8);
+  }, [products]);
 
   const curatedProducts = useMemo(() => {
     if (!products.length) return [];
     
-    // Filter out accessories from main sport showcase
-    let nonAccessories = products.filter(
+    const nonAccessories = products.filter(
       (p) =>
         p.category !== "accessories" &&
         (!p.tag || !p.tag.toLowerCase().includes("accessories"))
@@ -111,23 +160,16 @@ function Home() {
     if (selectedSportTab === "basketball") {
       return nonAccessories.filter((p) => p.category === "basketball").slice(0, 12);
     }
-    if (selectedSportTab === "badminton") {
-      const badmintonMatches = nonAccessories.filter((p) => 
-        p.category === "badminton" || 
-        (p.tag && p.tag.toLowerCase().includes("badminton")) ||
-        p.name.toLowerCase().includes("badminton")
-      );
-      return badmintonMatches.length > 0 ? badmintonMatches.slice(0, 12) : nonAccessories.slice(0, 12);
+    if (selectedSportTab === "f1") {
+      return nonAccessories.filter((p) => p.category === "f1").slice(0, 12);
     }
 
-    // Default "all" - balanced mix across sports
     const cricket = nonAccessories.filter((p) => p.category === "cricket").slice(0, 4);
     const football = nonAccessories.filter((p) => p.category === "football").slice(0, 6);
     const basketball = nonAccessories.filter((p) => p.category === "basketball").slice(0, 2);
-    const others = nonAccessories.slice(0, 4);
+    const f1 = nonAccessories.filter((p) => p.category === "f1").slice(0, 2);
     
-    const combined = [...cricket, ...football, ...basketball, ...others];
-    // Remove duplicates
+    const combined = [...cricket, ...football, ...basketball, ...f1, ...nonAccessories];
     const seen = new Set<string>();
     return combined.filter((p) => {
       if (seen.has(p.id)) return false;
@@ -138,132 +180,102 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-white text-black selection:bg-[#d32f2f] selection:text-white">
-      <h1 className="sr-only">Veloce Wear — Built For The Game | Men's Sportswear</h1>
+      <h1 className="sr-only">Veloce Wear — Wear The Game | Premium Sports Jerseys</h1>
 
       {/* 
         ========================================================================
-        1. HERO SECTION (Fully Tailored Responsive Hierarchy)
-        - Compact, instant-impact 2x2 grid on Mobile (all 4 sports visible on 1st screen)
-        - Widescreen editorial campaign on Desktop
+        MAIN HERO SECTION (Clean Full-Width Full-Height Video / Media Banner)
+        - Video background support (admin panel configurable via 'hero-video' slot)
+        - Full viewport height on PC version (h-[95vh])
+        - Clean edge-to-edge video player with autoPlay, loop, muted & playsInline
+        - No text overlays or wordings as requested
         ========================================================================
       */}
-      <section className="relative w-full overflow-hidden bg-[#fafafa] border-b border-black/10 pt-4 pb-6 sm:py-10 lg:py-14">
-        {/* Subtle grid pattern background */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000000_1px,transparent_1px)] [background-size:16px_16px]" />
+      <section className="relative w-full h-[70vh] sm:h-[88vh] lg:h-[95vh] min-h-[500px] bg-black overflow-hidden">
+        
+        {/* Background Media: MP4 Video or Fallback Image */}
+        {heroVideoUrl ? (
+          <video
+            src={heroVideoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <img
+            src={dualFootball}
+            alt="Veloce Wear Campaign Hero"
+            className="w-full h-full object-cover object-center"
+            loading="eager"
+          />
+        )}
+      </section>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 
+        ========================================================================
+        FEATURED SECTION (Directly below Hero - Matching Nike Reference Screenshot 2 & 3)
+        - 100% FULL-WIDTH EDGE-TO-EDGE IMAGES
+        - NO ROUNDED CORNERS (rounded-none), NO MARGINS, NO PADDING, NO GAPS
+        - High-res athlete photography filling full width
+        ========================================================================
+      */}
+      <section className="w-full bg-white py-0 my-0">
+        <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-black tracking-tight px-6 pt-8 pb-4">
+          Featured
+        </h2>
+
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 p-0 m-0">
           
-          {/* Header Introduction Block */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 pb-5 sm:pb-8 border-b border-black/10">
-            <div className="max-w-2xl text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 border border-black/10 text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-[#d32f2f] mb-2 sm:mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#d32f2f] animate-pulse" />
-                <span>MEN'S ATHLETIC & MATCHWEAR</span>
-              </div>
+          {/* Featured Card 1 (Edge to Edge, 0px gap, 0px rounded) */}
+          <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
+            <img
+              src={dualFootball}
+              alt="Training Apparel"
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
-              <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-black leading-[0.94]">
-                BUILT FOR <br className="hidden sm:inline" />
-                <span className="text-[#d32f2f]">THE GAME.</span>
-              </h2>
-
-              <p className="mt-2 sm:mt-3 text-xs sm:text-base text-neutral-700 font-medium leading-relaxed max-w-xl">
-                Men's performance wear for <strong className="text-black font-bold">Cricket, Football, Basketball & Badminton</strong>. Engineered with matchday-grade breathable fabrics for athletic performance.
-              </p>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex items-center gap-2.5 sm:gap-4 shrink-0 pt-1 sm:pt-0">
+            <div className="relative z-10 text-white">
+              <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
+                Training Apparel
+              </span>
+              <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
+                All Work, No Sweat
+              </h3>
               <Link
-                to="/shop"
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#d32f2f] text-white hover:bg-red-700 text-xs sm:text-sm font-bold uppercase tracking-[0.18em] transition-all rounded-full shadow-lg hover:shadow-red-500/20 active:scale-95 cursor-pointer"
+                to="/shop/football"
+                className="px-6 py-2.5 bg-white text-black hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block cursor-pointer shadow-md"
               >
-                <span>SHOP MEN'S</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                Shop
               </Link>
-              <a
-                href="#sports-grid"
-                className="inline-flex items-center justify-center px-5 sm:px-6 py-3 sm:py-3.5 bg-white border border-black/20 hover:border-black text-black text-xs sm:text-sm font-bold uppercase tracking-[0.14em] transition-all rounded-full active:scale-95"
-              >
-                EXPLORE SPORTS
-              </a>
             </div>
           </div>
 
-          {/* 
-            ====================================================================
-            FOUR SPORTS CARDS:
-            - Mobile: Clean, compact 2x2 grid (all 4 sports visible immediately)
-            - Desktop: High-impact 4-column cards with action imagery
-            ====================================================================
-          */}
-          <div id="sports-grid" className="pt-4 sm:pt-6">
-            <div className="flex items-center justify-between mb-3 sm:mb-5">
-              <div className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.22em] text-neutral-600">
-                FOUR DISCIPLINES • ONE ATELIER
-              </div>
-              <span className="hidden sm:inline-block text-[10px] font-bold uppercase tracking-wider text-[#d32f2f]">
-                OFFICIAL MATCHWEAR
+          {/* Featured Card 2 (Edge to Edge, 0px gap, 0px rounded) */}
+          <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
+            <img
+              src={dualF1}
+              alt="Studio Matchwear"
+              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+            <div className="relative z-10 text-white">
+              <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
+                It's Just a Matchwear Until It's Not
               </span>
+              <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
+                Studio Matchwear
+              </h3>
+              <Link
+                to="/shop/f1"
+                className="px-6 py-2.5 bg-white text-black hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block cursor-pointer shadow-md"
+              >
+                Shop
+              </Link>
             </div>
-
-            {/* 2x2 Grid on Mobile, 4-Cols on Desktop */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
-              {SPORTS_COLLECTION.map((sport, index) => (
-                <Link
-                  key={sport.id}
-                  to={sport.link as never}
-                  className="group relative flex flex-col justify-end aspect-[4/5] sm:aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 border border-black/10 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                >
-                  {/* Background Athlete Image */}
-                  <img
-                    src={sport.image}
-                    alt={`${sport.name} Mens Sportswear`}
-                    loading={index < 2 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.88] contrast-[1.05] group-hover:scale-105 transition-transform duration-700 ease-out"
-                    onError={(e) => {
-                      if (sport.fallback) {
-                        e.currentTarget.src = sport.fallback;
-                      }
-                    }}
-                  />
-
-                  {/* Dark Gradient Overlay for Maximum Contrast & Readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
-
-                  {/* Top Badge */}
-                  <div className="absolute top-2 sm:top-3.5 left-2 sm:left-3.5 z-10">
-                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-white">
-                      {sport.badge}
-                    </span>
-                  </div>
-
-                  {/* Bottom Content Plate */}
-                  <div className="relative z-10 p-2.5 sm:p-4 lg:p-5 flex flex-col">
-                    <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.18em] text-[#d32f2f] drop-shadow-sm">
-                      {sport.subtitle}
-                    </span>
-                    
-                    <div className="flex items-center justify-between mt-0.5">
-                      <h3 className="font-display text-base sm:text-xl lg:text-2xl font-black uppercase text-white tracking-tight leading-none group-hover:text-red-400 transition-colors">
-                        {sport.name}
-                      </h3>
-                      
-                      <div className="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#d32f2f] group-hover:text-white transition-all duration-300 shrink-0">
-                        <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Subtle "SHOP" indicator */}
-                    <div className="mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-white/15 flex items-center justify-between text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-neutral-300 group-hover:text-white transition-colors">
-                      <span>SHOP COLLECTION</span>
-                      <span className="text-[8px] text-neutral-400 font-mono hidden sm:inline">{sport.count}</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
           </div>
 
         </div>
@@ -271,16 +283,35 @@ function Home() {
 
       {/* 
         ========================================================================
-        2. TRUST STRIP (Compact, high-confidence brand assurance)
+        BESTSELLERS SECTION (Matching Nike Reference Screenshot 2)
+        - Headline: Bestsellers
+        - Product cards carousel / grid with price ₹ formatting
         ========================================================================
       */}
-      <section className="w-full bg-white border-b border-black/10 py-3 sm:py-3.5">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-black/10">
+        <h2 className="font-display text-3xl sm:text-4xl font-black text-black tracking-tight mb-6 sm:mb-8">
+          Bestsellers
+        </h2>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+          {bestsellers.map((p, i) => (
+            <ProductCard key={p.id} p={p} priority={i < 4} />
+          ))}
+        </div>
+      </section>
+
+      {/* 
+        ========================================================================
+        TRUST STRIP
+        ========================================================================
+      */}
+      <section className="w-full bg-neutral-50 border-y border-black/10 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {TRUST_POINTS.map((pt, i) => (
-              <div key={i} className="flex items-center gap-2 sm:gap-2.5 py-1 px-2 rounded-xl bg-black/[0.02]">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/5 text-[#d32f2f] flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+              <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-xl bg-white border border-black/5">
+                <div className="w-7 h-7 rounded-full bg-[#d32f2f]/10 text-[#d32f2f] flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-black truncate">
@@ -298,223 +329,91 @@ function Home() {
 
       {/* 
         ========================================================================
-        3. SHOP THE GAME / FEATURED COLLECTION (Cross-Sport Products Showcase)
+        SHOP BY TEAM (Continuous Marquee)
         ========================================================================
       */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 pb-3 sm:pb-4 border-b border-black/10 gap-3 sm:gap-4">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#d32f2f]">
-              MATCHDAY PERFORMANCE
-            </div>
-            <h2 className="mt-0.5 sm:mt-1 font-display text-2xl sm:text-4xl font-black uppercase tracking-tight text-black">
-              SHOP THE GAME
-            </h2>
-          </div>
-
-          {/* Sport Filter Tabs */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {[
-              { id: "all", label: "ALL SPORTS" },
-              { id: "cricket", label: "CRICKET" },
-              { id: "football", label: "FOOTBALL" },
-              { id: "basketball", label: "BASKETBALL" },
-              { id: "badminton", label: "BADMINTON" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedSportTab(tab.id)}
-                className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
-                  selectedSportTab === tab.id
-                    ? "bg-black text-white shadow-sm"
-                    : "bg-black/5 hover:bg-black/10 text-neutral-700"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5">
-          {curatedProducts.map((p, i) => (
-            <ProductCard key={p.id} p={p} priority={i < 4} />
-          ))}
-          {curatedProducts.length === 0 && (
-            <div className="col-span-full py-14 text-center text-neutral-600 bg-black/5 rounded-2xl border border-black/10">
-              No products found in this category. Check back soon for new drops!
-            </div>
-          )}
-        </div>
-
-        <div className="mt-8 sm:mt-10 text-center">
-          <Link
-            to="/shop"
-            className="inline-flex items-center justify-center gap-2 px-7 sm:px-8 py-3 sm:py-3.5 bg-black text-white hover:bg-[#d32f2f] text-xs font-bold uppercase tracking-[0.18em] transition-all rounded-full shadow-md active:scale-95"
-          >
-            <span>VIEW ALL MEN'S SPORTSWEAR</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* 
-        ========================================================================
-        4. SHOP BY TEAM (Continuous Marquee)
-        ========================================================================
-      */}
-      <div className="w-full bg-white py-3.5 sm:py-5 border-y border-black/10">
+      <div className="w-full bg-white py-6 border-b border-black/10">
         <UnifiedShopByTeam />
       </div>
 
       {/* 
         ========================================================================
-        5. HOT SELLING SECTION
+        HOT SELLING SECTION
         ========================================================================
       */}
       <HotSellingSection />
 
       {/* 
         ========================================================================
-        6. THE VELOCE STANDARD (Brand Storytelling)
+        BRAND STATEMENT ("MOVE DIFFERENT.")
         ========================================================================
       */}
-      <section className="max-w-4xl mx-auto my-6 sm:my-14 px-6 text-center border-y border-black/10 py-10 sm:py-14">
-        <div className="text-[10px] uppercase tracking-[0.28em] font-bold text-[#d32f2f]">
-          The Veloce Standard
+      <section className="max-w-5xl mx-auto my-12 sm:my-18 px-6 text-center border-y border-black/10 py-12 sm:py-16">
+        <div className="text-[11px] uppercase tracking-[0.3em] font-black text-[#d32f2f] mb-3">
+          BRAND STATEMENT
         </div>
-        <p className="mt-3 sm:mt-4 font-display text-lg sm:text-2xl lg:text-3xl leading-snug tracking-tight text-balance text-black font-bold">
-          "Engineered for intense matchdays and everyday athletic lifestyle. Built with high-grade breathable weaves, precision crest embroidery and player-tailored ergonomics."
+
+        <h2 className="font-display text-4xl sm:text-6xl font-black uppercase tracking-tight text-black mb-4">
+          MOVE DIFFERENT.
+        </h2>
+
+        <p className="font-display text-lg sm:text-3xl leading-snug tracking-tight text-balance text-black font-bold max-w-3xl mx-auto">
+          "Veloce is built for people who don't just watch the game. They wear it."
         </p>
-        <div className="mt-3 sm:mt-4 text-[10px] sm:text-xs uppercase tracking-[0.22em] text-neutral-600 font-semibold">
-          — Veloce Sports Atelier
+
+        <div className="mt-6 text-xs uppercase tracking-[0.25em] text-neutral-600 font-semibold">
+          — VELOCE SPORTS ATELIER
         </div>
       </section>
 
       {/* 
         ========================================================================
-        7. CERTIFIED AUTHENTIC & SAFE REVIEWS
+        CERTIFIED AUTHENTIC & VERIFIED REVIEWS
         ========================================================================
       */}
-      <section className="max-w-xl mx-auto my-10 sm:my-16 px-4 sm:px-6 text-center">
-        {/* Trust Badges Header */}
-        <div className="mb-6 sm:mb-8 flex flex-col items-center">
-          <div className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.22em] text-neutral-600 mb-4 sm:mb-5">
+      <section className="max-w-2xl mx-auto my-12 sm:my-16 px-4 sm:px-6 text-center">
+        <div className="mb-8 flex flex-col items-center">
+          <div className="text-[11px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-5">
             CERTIFIED AUTHENTIC & SAFE
           </div>
 
-          <div className="flex items-center justify-center gap-10 sm:gap-16 w-full mb-5 sm:mb-6">
-            {/* Trustpilot */}
+          <div className="flex items-center justify-center gap-12 sm:gap-16 w-full mb-6">
             <div className="flex flex-col items-center">
-              <span className="font-display text-2xl sm:text-3xl font-black text-black">4.9 / 5</span>
-              <div className="mt-0.5 sm:mt-1 flex items-center gap-1 text-[#00b67a] text-xs sm:text-sm font-bold">
+              <span className="font-display text-3xl font-black text-black">4.9 / 5</span>
+              <div className="mt-1 flex items-center gap-1 text-[#00b67a] text-xs font-bold">
                 <span className="text-[#00b67a] text-base leading-none">★</span>
                 <span>Trustpilot</span>
               </div>
             </div>
 
-            {/* Scamadviser */}
             <div className="flex flex-col items-center">
-              <span className="font-display text-2xl sm:text-3xl font-black text-black">100/100</span>
-              <div className="mt-0.5 sm:mt-1 flex items-center gap-1 text-[#f59e0b] text-xs sm:text-sm font-bold">
+              <span className="font-display text-3xl font-black text-black">100/100</span>
+              <div className="mt-1 flex items-center gap-1 text-[#f59e0b] text-xs font-bold">
                 <ShieldCheck className="w-4 h-4 text-[#f59e0b]" />
                 <span>Scamadviser</span>
               </div>
             </div>
           </div>
-
-          {/* Google Verified */}
-          <div className="flex flex-col items-center border-t border-black/10 pt-3 sm:pt-4 w-44 sm:w-48">
-            <span className="font-display text-2xl sm:text-3xl font-black text-black">4.8 / 5</span>
-            <div className="mt-0.5 sm:mt-1 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-neutral-800">
-              <GoogleGIcon />
-              <span>Google Verified</span>
-            </div>
-          </div>
         </div>
 
-        {/* 2 Exact Verified Reviews */}
-        <div className="flex flex-col gap-3.5 sm:gap-4 text-left">
-          {/* Review 1 */}
-          <div className="rounded-2xl sm:rounded-3xl border border-black/15 bg-white/80 backdrop-blur-xs p-5 sm:p-6 shadow-xs">
-            <div className="flex gap-1 text-amber-400 mb-2.5 sm:mb-3 text-sm">
+        <div className="flex flex-col gap-4 text-left">
+          <div className="rounded-2xl border border-black/15 bg-white p-6 shadow-xs">
+            <div className="flex gap-1 text-amber-400 mb-3 text-sm">
               ★ ★ ★ ★ ★
             </div>
-            <p className="text-xs sm:text-base text-neutral-800 leading-relaxed font-medium mb-4 sm:mb-5">
+            <p className="text-xs sm:text-base text-neutral-800 leading-relaxed font-medium mb-4">
               "Honestly didn't expect much for the price, but the Virat Kohli Cricket Kit blew me away. The embroidery is spot on and the fit is perfect for 5-a-side."
             </p>
-            <div className="flex items-center justify-between border-t border-black/5 pt-2.5 sm:pt-3">
+            <div className="flex items-center justify-between border-t border-black/5 pt-3">
               <div>
                 <div className="text-xs sm:text-sm font-bold text-black">Arun Choudhary</div>
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-600 mt-0.5">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 mt-0.5">
                   VERIFIED BUYER
                 </div>
               </div>
-              <GoogleGIcon />
-            </div>
-          </div>
-
-          {/* Review 2 */}
-          <div className="rounded-2xl sm:rounded-3xl border border-black/15 bg-white/80 backdrop-blur-xs p-5 sm:p-6 shadow-xs">
-            <div className="flex gap-1 text-amber-400 mb-2.5 sm:mb-3 text-sm">
-              ★ ★ ★ ★ ★
-            </div>
-            <p className="text-xs sm:text-base text-neutral-800 leading-relaxed font-medium mb-4 sm:mb-5">
-              "Took advantage of the B2G1 offer. The material breathes really well, wore it for a full day match in the Mumbai heat and it held up great."
-            </p>
-            <div className="flex items-center justify-between border-t border-black/5 pt-2.5 sm:pt-3">
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-black">Karan S.</div>
-                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-600 mt-0.5">
-                  VERIFIED BUYER
-                </div>
-              </div>
-              <GoogleGIcon />
             </div>
           </div>
         </div>
-      </section>
-
-      {/* 
-        ========================================================================
-        8. VIP ACCESS / NEWSLETTER
-        ========================================================================
-      */}
-      <section className="max-w-2xl mx-auto my-10 sm:my-18 px-6 text-center">
-        <div className="text-[10px] uppercase tracking-[0.25em] font-bold text-[#d32f2f]">VIP CLUB</div>
-        <h3 className="mt-1.5 sm:mt-2 font-display text-xl sm:text-3xl lg:text-4xl font-black uppercase text-black leading-tight">
-          GET ₹200 WALLET CASH FOR YOUR FIRST ORDER
-        </h3>
-        <p className="text-xs text-neutral-600 mt-1 mb-4 font-medium">
-          Subscribe for early matchwear drop alerts, secret discount codes and restocks.
-        </p>
-        <form
-          className="mt-3 sm:mt-4 flex flex-col gap-2 sm:flex-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const email = (form.elements.namedItem("newsletter_email") as HTMLInputElement)?.value;
-            if (email) {
-              alert("Welcome to the club! Check your inbox.");
-              form.reset();
-            }
-          }}
-        >
-          <input
-            name="newsletter_email"
-            type="email"
-            required
-            placeholder="Enter your email address"
-            className="flex-1 rounded-full border border-black/20 bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm text-black outline-none focus:border-[#d32f2f] transition-colors"
-          />
-          <button
-            type="submit"
-            className="rounded-full bg-[#d32f2f] text-white px-6 sm:px-8 py-2.5 sm:py-3 text-xs font-bold uppercase tracking-[0.18em] hover:bg-red-700 transition-colors shadow-md active:scale-95 cursor-pointer"
-          >
-            Join VIP
-          </button>
-        </form>
       </section>
     </div>
   );
@@ -544,7 +443,6 @@ const UnifiedShopByTeam = React.memo(function UnifiedShopByTeam() {
         </div>
       </div>
 
-      {/* Continuously moving infinite marquee with eager-loaded logos */}
       <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)] pb-1">
         <div 
           className="flex w-max animate-team-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-pointer"
@@ -587,29 +485,6 @@ const UnifiedShopByTeam = React.memo(function UnifiedShopByTeam() {
   );
 });
 
-function GoogleGIcon() {
-  return (
-    <svg className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" viewBox="0 0 24 24">
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-      />
-    </svg>
-  );
-}
-
 function HotSellingSection() {
   const { products } = useCatalog();
   const { hotSellingIds, loaded } = useHotSelling();
@@ -622,7 +497,6 @@ function HotSellingSection() {
         .filter(Boolean) as typeof products;
       if (matched.length > 0) return matched;
     }
-    // Fallback to top popular picks from products
     return products.slice(0, 10);
   }, [products, hotSellingIds]);
 
@@ -630,9 +504,9 @@ function HotSellingSection() {
   if (!hotProducts.length) return null;
 
   return (
-    <section className="w-full bg-[#0a0a0a] text-white py-5 sm:py-8 overflow-hidden border-y border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-3 sm:mb-4 text-center">
-        <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-neutral-400 mb-0.5 sm:mb-1">
+    <section className="w-full bg-[#0a0a0a] text-white py-6 sm:py-10 overflow-hidden border-y border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 text-center">
+        <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-neutral-400 mb-1">
           TRENDING NOW
         </div>
         <h2 className="font-display text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight">
@@ -640,7 +514,6 @@ function HotSellingSection() {
         </h2>
       </div>
 
-      {/* Continuously Running Black Product Banner with immediate eager image loading */}
       <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)] pb-2">
         <div className="flex w-max animate-team-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-pointer">
           {[0, 1].map((copyIdx) => (
@@ -674,7 +547,7 @@ function HotSellingSection() {
                       </p>
                     </div>
 
-                    <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-white/10 flex items-center justify-between">
+                    <div className="mt-2.5 sm:mt-[#d32f2f] pt-2 sm:pt-2.5 border-t border-white/10 flex items-center justify-between">
                       <span className="font-mono text-xs sm:text-base font-bold text-white">
                         ₹{p.price.toLocaleString("en-IN")}
                       </span>

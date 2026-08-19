@@ -338,3 +338,52 @@
     0 0 0 1px color-mix(in oklab, var(--gold) 40%, transparent),
     0 12px 40px -12px color-mix(in oklab, var(--gold) 55%, transparent);
 }
+
+/* ============ Editorial Sportswear Utilities ============ */
+@utility tracking-editorial {
+  letter-spacing: 0.22em;
+}
+@utility tracking-ultra {
+  letter-spacing: 0.35em;
+}
+
+@keyframes editorial-float {
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.015);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.animate-editorial-float {
+  animation: editorial-float 12s ease-in-out infinite;
+}
+
+@keyframes subtle-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: subtle-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hide scrollbars gracefully for horizontal editorial rails */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

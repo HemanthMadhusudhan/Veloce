@@ -14,6 +14,7 @@ import dualF1 from "@/assets/dual-f1.jpg";
 import defaultSiteImagesRaw from "./default-site-images.json";
 
 export type SiteImageSlot =
+  | "hero-video"
   | "worldcup-banner"
   | "category-football"
   | "category-f1"
@@ -28,6 +29,11 @@ export type SiteImageSlot =
   | "promo-popup";
 
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
+  {
+    slot: "hero-video",
+    label: "Main Hero Video / Banner (MP4 Video or Image)",
+    description: "Featured primary video background on the main homepage Hero section.",
+  },
   {
     slot: "worldcup-banner",
     label: "World Cup banner (Image or Video)",
@@ -71,6 +77,7 @@ export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description:
 ];
 
 const DEFAULTS: Record<SiteImageSlot, string> = {
+  "hero-video": "",
   "worldcup-banner": "",
   "category-football": "",
   "category-f1": "",

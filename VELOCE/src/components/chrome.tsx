@@ -25,23 +25,22 @@ const FOOTBALL_SUB = [
 
 export function TopAnnouncementTicker() {
   const textItems = [
-    "Free Shipping PAN India",
-    "COD Available",
-    "Worn by 1,000+ Fans",
-    "100% Authentic Matchwear",
-    "4-Day Easy Exchange",
-    "Premium Streetwear Drop",
+    "WORN BY 1,000+ FANS",
+    "100% AUTHENTIC MATCHWEAR",
+    "4-DAY EASY EXCHANGE",
+    "FREE SHIPPING PAN INDIA",
+    "COD AVAILABLE",
   ];
 
   return (
-    <div className="w-full bg-[#d32f2f] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider py-1.5 overflow-hidden whitespace-nowrap select-none flex items-center border-b border-black/10">
+    <div className="w-full bg-[#0c0f17] text-white text-[10px] sm:text-[11px] font-medium uppercase tracking-widest py-1.5 overflow-hidden whitespace-nowrap select-none flex items-center border-b border-white/10">
       <div className="flex w-max animate-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-default">
         {[0, 1].map((copyIdx) => (
-          <div key={copyIdx} className="flex shrink-0 items-center gap-10 sm:gap-16 pr-10 sm:pr-16" aria-hidden={copyIdx > 0}>
+          <div key={copyIdx} className="flex shrink-0 items-center gap-8 sm:gap-14 pr-8 sm:pr-14" aria-hidden={copyIdx > 0}>
             {textItems.map((item, idx) => (
-              <span key={idx} className="inline-flex items-center gap-3 font-semibold tracking-widest">
-                <span className="text-white/80 text-sm">•</span>
-                <span>{item}</span>
+              <span key={idx} className="inline-flex items-center gap-3 tracking-widest">
+                <span className="text-white/40 text-xs">•</span>
+                <span className="text-neutral-300">{item}</span>
               </span>
             ))}
           </div>
@@ -51,13 +50,53 @@ export function TopAnnouncementTicker() {
   );
 }
 
+export function NikeSearchIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="5.8" />
+      <line x1="14.8" y1="14.8" x2="19.5" y2="19.5" />
+    </svg>
+  );
+}
+
+export function NikeHeartIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+  );
+}
+
+export function NikeBagIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 8.5V6.5a3 3 0 0 1 6 0v2" />
+      <path d="M5.5 8.5h13a1 1 0 0 1 1 1v8.5a3 3 0 0 1-3 3H7.5a3 3 0 0 1-3-3V9.5a1 1 0 0 1 1-1z" />
+    </svg>
+  );
+}
+
+export function NikeMenuIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+      <line x1="4" y1="8" x2="20" y2="8" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="16" x2="20" y2="16" />
+    </svg>
+  );
+}
+
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { cart, wishlist, isAdmin, userEmail, signOut, openSearch } = useShop();
+  const location = useLocation();
   const nav = useNavigate();
   const { getById } = useCatalog();
   const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
+
+  const isHome = location.pathname === "/";
+  const isTransparent = isHome && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -68,89 +107,120 @@ export function SiteNav() {
 
   return (
     <>
-      <nav className={`fixed inset-x-0 top-0 z-50 flex flex-col bg-white/95 backdrop-blur-md border-b border-black/10 transition-all duration-300 ${scrolled ? "shadow-md shadow-black/5" : ""}`}>
-        {/* Red Running Announcement Bar */}
-        <TopAnnouncementTicker />
+      <nav
+        className={`fixed inset-x-0 top-0 z-50 flex flex-col transition-all duration-300 ${
+          isTransparent
+            ? "bg-gradient-to-b from-black/80 via-black/40 to-transparent text-white border-b-0 shadow-none"
+            : "bg-white/95 backdrop-blur-md text-neutral-900 border-b border-black/10 shadow-md shadow-black/5"
+        }`}
+      >
+        {/* Main Header */}
+        <div className="flex w-full max-w-7xl mx-auto items-center justify-between px-4 sm:px-8 py-3.5 gap-2 sm:gap-4">
+          {/* Left: Brand Logo (Always Red) */}
+          <div className="flex items-center shrink-0">
+            <Logo />
+          </div>
 
-        {/* Main Desktop Header */}
-        <div className="flex w-full max-w-7xl mx-auto items-center justify-between px-6 sm:px-10 py-3">
-          {/* Left: Hamburger & Search */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-black hover:bg-black/5 transition"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5 stroke-[2]" />
-            </button>
+          {/* Center: Desktop Navigation Bar (Nike Style Clean Spacing) */}
+          <div
+            className={`hidden lg:flex items-center justify-center gap-5 xl:gap-7 text-xs sm:text-[13px] font-bold uppercase tracking-wider whitespace-nowrap flex-1 px-4 transition-colors duration-300 ${
+              isTransparent ? "text-white" : "text-neutral-900"
+            }`}
+          >
+            <Link to="/new-kits" className="hover:opacity-80 transition-opacity flex items-center gap-1" activeProps={{ className: "font-black underline" }}>
+              <span>New Kits</span>
+            </Link>
+            <Link to="/shop" className="hover:opacity-80 transition-opacity" activeProps={{ className: "font-black underline" }}>Shop All</Link>
+            <FootballMenu />
+            <F1Menu />
+            <CricketMenu />
+            <BasketballMenu />
+            <WorldCupMenu />
+            <Link to="/shop/accessories" className="hover:opacity-80 transition-opacity" activeProps={{ className: "font-black underline" }}>Accessories</Link>
+          </div>
+
+          {/* Right Utilities Container */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 pr-1 sm:pr-2">
+            {/* Desktop Pill Search Input (Image 1 PC Target) */}
             <button
               onClick={openSearch}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-black hover:bg-black/5 transition"
+              className={`hidden lg:flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs w-36 xl:w-44 cursor-pointer border transition shadow-2xs ${
+                isTransparent
+                  ? "bg-white/15 hover:bg-white/25 text-white border-white/20"
+                  : "bg-[#f5f5f5] hover:bg-[#eaeaea] text-neutral-500 border-transparent focus-within:border-black/10"
+              }`}
+              aria-label="Search"
+            >
+              <NikeSearchIcon className={`h-4 w-4 shrink-0 ${isTransparent ? "text-white" : "text-black"}`} />
+              <span className={`text-xs font-medium ${isTransparent ? "text-white/80" : "text-neutral-400"}`}>Search</span>
+            </button>
+
+            {/* Mobile / Tablet Search Icon */}
+            <button
+              onClick={openSearch}
+              className={`flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
+              }`}
               aria-label="Search store"
             >
-              <Search className="h-5 w-5 stroke-[2]" />
+              <NikeSearchIcon className="h-5 w-5 currentColor" />
+            </button>
+
+            {/* Desktop Wishlist Heart Icon (Image 1 PC Target) */}
+            <Link
+              to="/wishlist"
+              className={`relative hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
+              }`}
+              onClick={(e) => {
+                if (!userEmail) {
+                  e.preventDefault();
+                  nav({ to: "/login" });
+                }
+              }}
+              aria-label="Wishlist"
+            >
+              <NikeHeartIcon className="h-5.5 w-5.5 currentColor" />
+              {wishlist.length > 0 && (
+                <span className="pointer-events-none absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d32f2f] px-1 font-mono text-[9px] font-bold text-white shadow-xs">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
+            {/* Shopping Bag Icon (PC & Mobile) */}
+            <button
+              onClick={() => {
+                if (window.innerWidth >= 640 && !userEmail) {
+                  nav({ to: "/login" });
+                } else {
+                  nav({ to: "/checkout" });
+                }
+              }}
+              className={`relative flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
+              }`}
+              aria-label="Bag"
+            >
+              <NikeBagIcon className="h-5.5 w-5.5 currentColor" />
+              {cartCount > 0 && (
+                <span className="pointer-events-none absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d32f2f] px-1 font-mono text-[9px] font-bold text-white shadow-xs">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Hamburger Drawer Trigger Icon (Mobile & Tablet) */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className={`flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
+              }`}
+              aria-label="Open menu"
+            >
+              <NikeMenuIcon className="h-5.5 w-5.5 currentColor" />
             </button>
           </div>
-
-          {/* Center: Brand Logo */}
-          <Logo />
-
-          {/* Right: Wishlist, Cart & Profile */}
-          <div className="flex items-center gap-3">
-            {isAdmin ? (
-              <>
-                <Link to="/admin"><IconChip label="Admin"><Settings className="h-4 w-4 text-black" /></IconChip></Link>
-                <button onClick={signOut} className="items-center gap-1.5 rounded-full border border-black/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black hover:bg-black/5 inline-flex">Sign out</button>
-              </>
-            ) : (
-              <>
-                <Link to="/wishlist" className="relative" onClick={(e) => {
-                  if (window.innerWidth >= 640 && !userEmail) {
-                    e.preventDefault();
-                    nav({ to: "/login" });
-                  }
-                }}>
-                  <IconChip label="Wishlist"><Heart className="h-5 w-5 stroke-[1.8] text-black" /></IconChip>
-                  {wishlist.length > 0 && <Dot>{wishlist.length}</Dot>}
-                </Link>
-                <button onClick={() => {
-                  if (window.innerWidth >= 640 && !userEmail) {
-                    nav({ to: "/login" });
-                  } else {
-                    nav({ to: "/checkout" });
-                  }
-                }} className="relative" aria-label="Bag">
-                  <IconChip label="Bag"><ShoppingBag className="h-5 w-5 stroke-[1.8] text-black" /></IconChip>
-                  {cartCount > 0 && (
-                    <span className="pointer-events-none absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#d32f2f] px-1 font-mono text-[9px] font-bold text-white shadow-xs">
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
-                <Link to={userEmail ? "/profile" : "/login"} aria-label={userEmail ? "Profile" : "Account"}>
-                  <IconChip label={userEmail ? "Profile" : "Account"}>
-                    <User className="h-5 w-5 stroke-[1.8] text-black" />
-                  </IconChip>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Subnavigation Bar */}
-        <div className="hidden md:flex items-center justify-center gap-6 lg:gap-8 py-2 border-t border-black/5 text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-800">
-          <Link to="/" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-black" }}>Home</Link>
-          <Link to="/new-kits" className="hover:text-[#d32f2f] transition-colors flex items-center gap-1" activeProps={{ className: "text-[#d32f2f] font-black" }}>
-            <span>New Kits</span>
-            <span className="bg-[#d32f2f] text-white text-[8px] px-1 py-0.2 rounded font-mono font-black">26/27</span>
-          </Link>
-          <Link to="/shop" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-black" }}>Shop All</Link>
-          <FootballMenu />
-          <F1Menu />
-          <CricketMenu />
-          <BasketballMenu />
-          <WorldCupMenu />
-          <Link to="/shop/accessories" className="hover:text-[#d32f2f] transition-colors" activeProps={{ className: "text-[#d32f2f] font-black" }}>Accessories</Link>
         </div>
       </nav>
 
@@ -184,7 +254,7 @@ function FootballMenu() {
   const { combinedFootball, combinedWC } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to="/shop/football" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+      <Link to="/shop/football" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
         Football <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
@@ -230,7 +300,7 @@ function WorldCupMenu() {
   const { combinedWC } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to="/shop/worldcup" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+      <Link to="/shop/worldcup" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
         World Cup <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
@@ -261,7 +331,7 @@ function F1Menu() {
   const { combinedF1 } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to="/shop/f1" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+      <Link to="/shop/f1" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
         Formula 1 <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
@@ -292,7 +362,7 @@ function BasketballMenu() {
   const { combinedB } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to="/shop/basketball" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+      <Link to="/shop/basketball" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
         Basketball <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
@@ -323,7 +393,7 @@ function CricketMenu() {
   const { combinedCricketIPL, combinedCricketInt } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to="/shop/cricket" className="flex items-center gap-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+      <Link to="/shop/cricket" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
         Cricket <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (
@@ -605,71 +675,55 @@ function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
 }
 
 export function SearchDialog() {
-  const { searchOpen, closeSearch, recent, pushRecent } = useShop();
+  const { searchOpen, closeSearch } = useShop();
   const { products } = useCatalog();
-  const [q, setQ] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string>("all");
   const nav = useNavigate();
+  const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (!searchOpen) {
-      setQ("");
-      setActiveCategory("all");
+  const ALL_SUGGESTIONS = useMemo(() => {
+    const list: string[] = [];
+    
+    // 1. Add actual store product names from catalog
+    products.forEach((p) => {
+      if (p.name && !list.includes(p.name)) {
+        list.push(p.name);
+      }
+    });
+
+    // 2. Add product team names
+    products.forEach((p) => {
+      if (p.team && !list.includes(p.team)) {
+        list.push(p.team);
+      }
+    });
+
+    return list;
+  }, [products]);
+
+  const handleSuggestionClick = (suggestion: string) => {
+    const matchingProduct = products.find(
+      (p) => p.name.toLowerCase() === suggestion.toLowerCase()
+    );
+    if (matchingProduct) {
+      go(matchingProduct.id);
     } else {
+      setQ(suggestion);
+      handleSearchSubmit(suggestion);
+    }
+  };
+
+  useEffect(() => {
+    if (searchOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
+    } else {
+      setQ("");
     }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeSearch();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [searchOpen, closeSearch]);
-
-  const TRENDING_TOPICS = [
-    { label: "Real Madrid", category: "football" },
-    { label: "Scuderia Ferrari", category: "f1" },
-    { label: "RCB Virat Kohli", category: "cricket" },
-    { label: "FC Barcelona", category: "football" },
-    { label: "Red Bull Racing", category: "f1" },
-    { label: "CSK Dhoni", category: "cricket" },
-    { label: "Argentina Messi", category: "football" },
-    { label: "Mercedes AMG", category: "f1" },
-  ];
-
-  const CATEGORIES = [
-    { id: "all", label: "All" },
-    { id: "football", label: "Football" },
-    { id: "f1", label: "Formula 1" },
-    { id: "cricket", label: "Cricket" },
-    { id: "basketball", label: "Basketball" },
-    { id: "worldcup", label: "World Cup" },
-  ];
-
-  const results = useMemo(() => {
-    let list = products;
-    if (activeCategory !== "all") {
-      list = list.filter((p) =>
-        activeCategory === "football"
-          ? p.category === "football" || p.category === "worldcup"
-          : p.category === activeCategory
-      );
-    }
-    if (!q.trim()) return list.slice(0, 8);
-    const s = q.toLowerCase().trim();
-    return list.filter((p) =>
-      p.name.toLowerCase().includes(s) ||
-      p.team.toLowerCase().includes(s) ||
-      (p.driver ?? "").toLowerCase().includes(s) ||
-      p.tag.toLowerCase().includes(s) ||
-      (p.category && p.category.toLowerCase().includes(s))
-    ).slice(0, 16);
-  }, [q, activeCategory, products]);
+  }, [searchOpen]);
 
   if (!searchOpen) return null;
 
   const go = (id: string) => {
-    if (q.trim()) pushRecent(q.trim());
     closeSearch();
     nav({ to: "/product/$id", params: { id } });
   };
@@ -677,177 +731,132 @@ export function SearchDialog() {
   const handleSearchSubmit = (searchWord?: string) => {
     const term = (searchWord || q).trim();
     if (!term) return;
-    pushRecent(term);
     closeSearch();
     nav({ to: "/search", search: { q: term } as any });
   };
 
-  return (
-    <div className="fixed inset-0 z-[200] flex flex-col bg-black/60 backdrop-blur-md animate-in fade-in duration-200 font-sans" role="dialog">
-      {/* Background click to close */}
-      <div className="absolute inset-0 -z-10" onClick={closeSearch} />
+  const results = q.trim()
+    ? products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q.toLowerCase()) ||
+          p.category.toLowerCase().includes(q.toLowerCase()) ||
+          (p.team && p.team.toLowerCase().includes(q.toLowerCase())) ||
+          (p.driver && p.driver.toLowerCase().includes(q.toLowerCase()))
+      )
+    : [];
 
-      {/* Main Search Panel - Minimalist Mobile-First Design */}
-      <div className="relative w-full max-w-2xl mx-auto flex flex-col h-full sm:h-auto sm:max-h-[85vh] sm:my-auto bg-white sm:rounded-3xl border-0 sm:border border-neutral-200 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        
-        {/* Minimalist Top Header: Back Arrow + Full-Width Search Input */}
-        <div className="flex items-center gap-3 px-3.5 sm:px-5 py-3.5 bg-white border-b border-neutral-100">
-          <button 
-            onClick={closeSearch}
-            className="p-2 text-neutral-800 hover:text-black hover:bg-neutral-100 rounded-full transition-colors cursor-pointer shrink-0"
-            aria-label="Close search"
-          >
-            <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
-          </button>
-          
-          <div className="flex-1 flex items-center gap-2.5 bg-neutral-100/90 px-3.5 py-2.5 rounded-full border border-neutral-200/80 focus-within:border-black focus-within:bg-white transition-all shadow-2xs">
-            <Search className="h-4 w-4 text-neutral-500 shrink-0 stroke-[2.5]" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearchSubmit();
-              }}
-              placeholder="Search jerseys, teams, kits..."
-              className="flex-1 bg-transparent text-sm sm:text-base text-neutral-900 outline-none placeholder:text-neutral-500 font-bold"
-            />
-            {q && (
+  const topSuggestions = ALL_SUGGESTIONS.filter((s) =>
+    !q.trim() ? true : s.toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 8);
+
+  const renderHighlightedText = (text: string, query: string) => {
+    if (!query.trim()) return <span className="font-normal text-neutral-800">{text}</span>;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return <span className="font-normal text-neutral-800">{text}</span>;
+    const match = text.slice(idx, idx + query.length);
+    const before = text.slice(0, idx);
+    const after = text.slice(idx + query.length);
+
+    return (
+      <span className="text-base">
+        {before && <span className="font-normal text-neutral-700">{before}</span>}
+        <strong className="font-extrabold text-black">{match}</strong>
+        {after && <span className="font-normal text-neutral-700">{after}</span>}
+      </span>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[300] flex flex-col bg-white font-sans animate-in fade-in duration-150" role="dialog">
+      {/* Top Search Bar Row (Matching Nike Image 2 & Image 3 Target) */}
+      <div className="w-full max-w-4xl mx-auto flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-black/5">
+        <div className="flex-1 flex items-center bg-[#f5f5f5] rounded-full px-3.5 py-2 border border-transparent focus-within:border-black/20 focus-within:bg-white transition-all shadow-2xs">
+          <Search className="h-4.5 w-4.5 text-neutral-800 mr-2.5 shrink-0 stroke-[2]" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearchSubmit();
+            }}
+            placeholder="Search"
+            className="w-full bg-transparent text-sm sm:text-base text-neutral-900 outline-none placeholder:text-neutral-500 font-medium"
+          />
+          {q && (
+            <button
+              onClick={() => setQ("")}
+              className="p-1 rounded-full text-neutral-400 hover:text-black hover:bg-neutral-200 transition cursor-pointer shrink-0"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4 stroke-[2]" />
+            </button>
+          )}
+        </div>
+
+        <button
+          onClick={closeSearch}
+          className="text-sm font-bold text-black hover:opacity-70 transition cursor-pointer shrink-0 ml-1"
+        >
+          Cancel
+        </button>
+      </div>
+
+      {/* Top Suggestions & Results Container */}
+      <div className="flex-1 max-w-4xl w-full mx-auto px-5 sm:px-6 py-5 overflow-y-auto">
+        {/* Top Suggestions List */}
+        <div className="mb-6">
+          <div className="text-xs font-semibold text-neutral-500 mb-3">
+            Top Suggestions
+          </div>
+          <div className="flex flex-col gap-3">
+            {topSuggestions.map((s) => (
               <button
-                onClick={() => setQ("")}
-                className="p-1 rounded-full text-neutral-400 hover:text-black hover:bg-neutral-200 transition cursor-pointer shrink-0"
-                aria-label="Clear query"
+                key={s}
+                onClick={() => {
+                  setQ(s);
+                  handleSearchSubmit(s);
+                }}
+                className="text-left py-1 hover:text-[#d32f2f] transition cursor-pointer"
               >
-                <X className="h-4 w-4 stroke-[2.5]" />
+                {renderHighlightedText(s, q)}
               </button>
-            )}
+            ))}
           </div>
         </div>
 
-        {/* Minimalist Category Filter Pills */}
-        <div className="flex items-center gap-2 px-3.5 sm:px-5 py-2 bg-neutral-50/80 border-b border-neutral-100 overflow-x-auto no-scrollbar select-none">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
-                activeCategory === cat.id
-                  ? "bg-black text-white shadow-xs"
-                  : "bg-white text-neutral-700 border border-neutral-200/80 hover:border-black"
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Search Content Body */}
-        <div className="flex-1 overflow-y-auto px-3.5 sm:px-5 py-3.5 space-y-4">
-          {q === "" && (
-            <div className="space-y-3.5">
-              {/* Trending Searches */}
-              <div>
-                <div className="mb-2 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-neutral-500">
-                  <TrendingUp className="h-3.5 w-3.5 text-[#d32f2f] stroke-[2.5]" />
-                  <span>Trending Searches</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {TRENDING_TOPICS.map((t) => (
-                    <button
-                      key={t.label}
-                      onClick={() => {
-                        setQ(t.label);
-                        handleSearchSubmit(t.label);
-                      }}
-                      className="px-3 py-1.5 rounded-full bg-neutral-100 border border-neutral-200 text-xs font-extrabold text-neutral-800 hover:border-black hover:bg-black hover:text-white transition-all cursor-pointer active:scale-95"
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Results Grid */}
-          <div>
-            <div className="mb-2.5 flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-neutral-500">
-                {q ? `Top Matches (${results.length})` : "Recommended Jerseys"}
-              </span>
-              {q && results.length > 0 && (
-                <button
-                  onClick={() => handleSearchSubmit()}
-                  className="text-xs text-[#d32f2f] hover:underline font-black uppercase"
-                >
-                  View All &rarr;
-                </button>
-              )}
+        {/* Results Grid */}
+        {q.trim() && (
+          <div className="mt-6 border-t border-neutral-100 pt-6">
+            <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">
+              Products ({results.length})
             </div>
 
             {results.length === 0 ? (
-              <div className="py-10 text-center">
-                <div className="w-12 h-12 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center mx-auto mb-2 text-neutral-400">
-                  <Search className="h-5 w-5 stroke-[2]" />
-                </div>
-                <div className="text-sm font-black text-neutral-900">No jerseys found for "{q}"</div>
-                <div className="text-xs text-neutral-500 mt-1 font-semibold">Try searching for "Real Madrid", "Ferrari", or "RCB"</div>
+              <div className="py-6 text-neutral-500 text-sm">
+                No products found for "{q}".
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
-                {results.map((p) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {results.slice(0, 8).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => go(p.id)}
-                    className="group flex flex-col bg-white hover:bg-neutral-50 border border-neutral-200 hover:border-black rounded-xl p-2 sm:p-2.5 text-left transition-all duration-200 cursor-pointer shadow-2xs active:scale-98"
+                    className="group flex flex-col text-left cursor-pointer"
                   >
-                    <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-[#f8f8f8] mb-1.5 p-1 flex items-center justify-center">
+                    <div className="aspect-square w-full rounded-xl bg-neutral-50 p-2 border border-black/5 mb-2 overflow-hidden">
                       <img
                         src={p.images[0]}
                         alt={p.name}
-                        loading="lazy"
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                       />
-                      {p.tag && (
-                        <span className="absolute top-1 left-1 px-1.5 py-0.2 rounded bg-black/80 backdrop-blur-sm text-[8px] font-black uppercase tracking-wider text-white">
-                          {p.tag}
-                        </span>
-                      )}
                     </div>
-                    <div className="text-[10px] font-black uppercase tracking-wider text-[#d32f2f] truncate mb-0.5">
-                      {p.team || p.category}
-                    </div>
-                    <div className="text-xs font-bold text-neutral-900 line-clamp-1 leading-snug">
-                      {p.name}
-                    </div>
-                    <div className="mt-1 flex items-center gap-1 text-xs font-black text-neutral-900">
-                      <span>{formatINR(p.price)}</span>
-                      {p.price > 500 && (
-                        <span className="text-[10px] text-neutral-400 line-through font-medium">
-                          {formatINR(Math.round(p.price * 1.5))}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-xs font-bold text-black truncate">{p.name}</span>
+                    <span className="text-xs font-mono font-bold text-[#d32f2f]">₹{p.price.toLocaleString("en-IN")}</span>
                   </button>
                 ))}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Minimalist Bottom Bar */}
-        {q && results.length > 0 && (
-          <div className="p-3 bg-white border-t border-neutral-100 flex items-center justify-between px-4 sm:px-5">
-            <span className="text-xs text-neutral-700 font-bold truncate pr-2">
-              Results for <strong className="text-black font-black">"{q}"</strong>
-            </span>
-            <button
-              onClick={() => handleSearchSubmit()}
-              className="px-4 py-2 rounded-full bg-black text-white font-black text-xs uppercase tracking-wider hover:bg-neutral-800 transition cursor-pointer shrink-0"
-            >
-              See All Results &rarr;
-            </button>
           </div>
         )}
       </div>
@@ -931,9 +940,8 @@ export function SiteChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="hidden sm:block"><SiteNav /></div>
-      <MobileTopNav />
-      <main className={`pt-0 pb-16 w-full overflow-x-hidden ${isHome ? "sm:pt-0 sm:pb-0" : "sm:pt-24 md:pt-[122px] sm:pb-8"}`}>{children}</main>
+      <SiteNav />
+      <main className={`w-full overflow-x-hidden ${isHome ? "pt-0 pb-0" : "pt-20 sm:pt-24 md:pt-[122px] pb-16 sm:pb-8"}`}>{children}</main>
       <SiteFooter />
       {/* <CartDrawer /> */}
       <SearchDialog />
@@ -1009,7 +1017,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
 
   return (
     <div 
-      className={`fixed inset-0 z-[250] flex transition-visibility duration-300 ${
+      className={`fixed inset-0 z-[250] flex justify-end transition-visibility duration-300 ${
         open ? "visible pointer-events-auto" : "invisible pointer-events-none"
       }`} 
       role="dialog" 
@@ -1023,65 +1031,36 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
         onClick={onClose} 
       />
 
-      {/* Drawer Panel */}
+      {/* Drawer Panel (Right Side Slide-out) */}
       <div 
-        className={`relative w-full max-w-xs sm:max-w-sm h-full bg-white text-black shadow-2xl flex flex-col z-10 border-r border-black/10 overflow-y-auto transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`relative w-full max-w-[320px] sm:max-w-sm h-full bg-white text-black shadow-2xl flex flex-col z-10 border-l border-black/10 overflow-y-auto transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
+          open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Top Header: Close, Search, VELOCE Wear Logo, Bag, Profile */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/10 bg-white">
+        {/* Top Header: Close Button on Right */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 bg-white">
+          {/* User Profile Header (Matching Nike Screenshot 2) */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="text-black hover:opacity-70 transition cursor-pointer p-0.5"
-              aria-label="Close menu"
-            >
-              <X className="h-5 w-5 stroke-[2]" />
-            </button>
-            <button
-              onClick={() => {
-                onClose();
-                openSearch();
-              }}
-              className="text-black hover:opacity-70 transition cursor-pointer p-0.5"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 stroke-[2]" />
-            </button>
+            <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold text-base border border-black/10 shrink-0">
+              <User className="h-5 w-5 stroke-[2] text-neutral-700" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-black leading-tight">
+                {userEmail ? `Hi, ${userEmail.split('@')[0]}` : "Hi, Guest"}
+              </span>
+              <span className="text-[10px] text-neutral-500 font-mono">
+                {userEmail || "Welcome to Veloce"}
+              </span>
+            </div>
           </div>
 
-          {/* Veloce Wear Red Brand Logo */}
-          <div className="flex flex-col items-center leading-none select-none">
-            <span className="font-black text-[22px] tracking-tight uppercase text-[#d32f2f] font-display leading-none">
-              VELOCE
-            </span>
-            <span className="font-serif italic text-[11px] tracking-[0.2em] text-[#d32f2f] -mt-0.5 font-black leading-none">
-              Wear
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleNav("/checkout")}
-              className="relative text-black hover:opacity-70 transition cursor-pointer p-0.5"
-              aria-label="Shopping Bag"
-            >
-              <ShoppingBag className="h-5 w-5 stroke-[1.8]" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-black text-[9px] font-bold text-white px-1 font-mono">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => handleNav(userEmail ? "/profile" : "/login")}
-              className="text-black hover:opacity-70 transition cursor-pointer p-0.5"
-              aria-label="Account"
-            >
-              <User className="h-5 w-5 stroke-[1.8]" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="text-black hover:bg-neutral-100 p-2 rounded-full transition cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5 stroke-[2.5]" />
+          </button>
         </div>
 
         {/* Menu Navigation List */}
@@ -1438,26 +1417,19 @@ export function MobileTopNav() {
         
         {/* Main Mobile Navbar */}
         <div className="relative flex items-center justify-between bg-white px-4 py-2.5 border-b border-black/10">
-          {/* Left: Side Hamburger Menu Button */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="text-black active:scale-95 transition-transform p-1.5"
-            aria-label="Open menu drawer"
-          >
-            <Menu className="h-6 w-6 stroke-[2]" />
-          </button>
-
-          {/* Center: Brand Logo */}
-          <Logo />
+          {/* Left: Brand Logo */}
+          <div className="flex items-center">
+            <Logo />
+          </div>
           
-          {/* Right: Search & Shopping Bag */}
-          <div className="flex items-center gap-2 z-10">
+          {/* Right: Search, Shopping Bag & Hamburger Menu */}
+          <div className="flex items-center gap-1 z-10">
             <button
               onClick={openSearch}
-              className="text-black active:scale-95 transition-transform p-1.5"
+              className="text-black active:scale-95 transition-transform p-1.5 cursor-pointer"
               aria-label="Search"
             >
-              <Search className="h-5 w-5 stroke-[2]" />
+              <NikeSearchIcon className="h-5.5 w-5.5 text-black" />
             </button>
 
             <button
@@ -1468,15 +1440,24 @@ export function MobileTopNav() {
                   nav({ to: "/checkout" });
                 }
               }}
-              className="relative text-black active:scale-95 transition-transform p-1.5"
+              className="relative text-black active:scale-95 transition-transform p-1.5 cursor-pointer"
               aria-label="Shopping Bag"
             >
-              <ShoppingBag className="h-5 w-5 stroke-[2]" />
+              <NikeBagIcon className="h-5.5 w-5.5 text-black" />
               {cartCount > 0 && (
-                <span className="absolute 0 top-0.5 right-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[8.5px] font-bold text-white shadow-xs">
+                <span className="absolute top-0.5 right-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-[#d32f2f] px-1 text-[8.5px] font-bold text-white shadow-xs">
                   {cartCount}
                 </span>
               )}
+            </button>
+
+            {/* Hamburger Drawer Trigger Icon on Right */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="text-black active:scale-95 transition-transform p-1.5 cursor-pointer"
+              aria-label="Open menu drawer"
+            >
+              <NikeMenuIcon className="h-6 w-6 text-black" />
             </button>
           </div>
         </div>
