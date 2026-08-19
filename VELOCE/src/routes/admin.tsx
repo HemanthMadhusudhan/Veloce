@@ -864,6 +864,21 @@ function SiteImageRow({
 
   const onFile = async (f: File | null) => {
     if (!f) return;
+    if (f.type.startsWith("video/") || f.name.endsWith(".mp4") || f.name.endsWith(".webm") || f.name.endsWith(".mov")) {
+      setUploading(true);
+      setUploadError(null);
+      try {
+        const publicUrl = await uploadSiteImageFile(slot, f);
+        setDraft(publicUrl);
+        onSave(publicUrl);
+      } catch (err: any) {
+        setUploadError(err.message || "Video upload failed");
+        console.error("Video upload error:", err);
+      } finally {
+        setUploading(false);
+      }
+      return;
+    }
     try {
       const dataUrl = await fileToDataUrl(f);
       setCropImageUrl(dataUrl);

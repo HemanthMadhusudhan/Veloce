@@ -124,9 +124,24 @@ function Home() {
   const navigate = useNavigate();
   const [selectedSportTab, setSelectedSportTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isVideoPaused, setIsVideoPaused] = useState(false);
 
-  const heroVideoUrl = siteImages.get("hero-video");
+  const heroMediaUrl = siteImages.get("hero-video");
+  const featured1MediaUrl = siteImages.get("featured-1");
+  const featured2MediaUrl = siteImages.get("featured-2");
+
+  const isVideoUrl = (url?: string) => {
+    if (!url) return false;
+    const clean = url.toLowerCase();
+    return (
+      clean.endsWith(".mp4") ||
+      clean.endsWith(".webm") ||
+      clean.endsWith(".ogg") ||
+      clean.endsWith(".mov") ||
+      clean.includes("player.vimeo.com") ||
+      clean.includes("youtube.com/embed") ||
+      clean.startsWith("data:video/")
+    );
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,18 +200,15 @@ function Home() {
       {/* 
         ========================================================================
         MAIN HERO SECTION (Clean Full-Width Full-Height Video / Media Banner)
-        - Video background support (admin panel configurable via 'hero-video' slot)
+        - Video / Photo background support (admin panel configurable via 'hero-video' slot)
         - Full viewport height on PC version (h-[95vh])
         - Clean edge-to-edge video player with autoPlay, loop, muted & playsInline
-        - No text overlays or wordings as requested
         ========================================================================
       */}
       <section className="relative w-full h-[70vh] sm:h-[88vh] lg:h-[95vh] min-h-[500px] bg-black overflow-hidden">
-        
-        {/* Background Media: MP4 Video or Fallback Image */}
-        {heroVideoUrl ? (
+        {heroMediaUrl && isVideoUrl(heroMediaUrl) ? (
           <video
-            src={heroVideoUrl}
+            src={heroMediaUrl}
             autoPlay
             loop
             muted
@@ -205,7 +217,7 @@ function Home() {
           />
         ) : (
           <img
-            src={dualFootball}
+            src={heroMediaUrl || dualFootball}
             alt="Veloce Wear Campaign Hero"
             className="w-full h-full object-cover object-center"
             loading="eager"
@@ -215,10 +227,9 @@ function Home() {
 
       {/* 
         ========================================================================
-        FEATURED SECTION (Directly below Hero - Matching Nike Reference Screenshot 2 & 3)
-        - 100% FULL-WIDTH EDGE-TO-EDGE IMAGES
+        FEATURED SECTION (Directly below Hero - Configurable via 'featured-1' & 'featured-2' Admin Slots)
+        - 100% FULL-WIDTH EDGE-TO-EDGE VIDEO OR PHOTO
         - NO ROUNDED CORNERS (rounded-none), NO MARGINS, NO PADDING, NO GAPS
-        - High-res athlete photography filling full width
         ========================================================================
       */}
       <section className="w-full bg-white py-0 my-0">
@@ -228,13 +239,24 @@ function Home() {
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 p-0 m-0">
           
-          {/* Featured Card 1 (Edge to Edge, 0px gap, 0px rounded) */}
+          {/* Featured Card 1 (Edge to Edge, Video or Photo support) */}
           <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
-            <img
-              src={dualFootball}
-              alt="Training Apparel"
-              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
-            />
+            {featured1MediaUrl && isVideoUrl(featured1MediaUrl) ? (
+              <video
+                src={featured1MediaUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+              />
+            ) : (
+              <img
+                src={featured1MediaUrl || dualFootball}
+                alt="Training Apparel"
+                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 text-white">
@@ -253,13 +275,24 @@ function Home() {
             </div>
           </div>
 
-          {/* Featured Card 2 (Edge to Edge, 0px gap, 0px rounded) */}
+          {/* Featured Card 2 (Edge to Edge, Video or Photo support) */}
           <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
-            <img
-              src={dualF1}
-              alt="Studio Matchwear"
-              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
-            />
+            {featured2MediaUrl && isVideoUrl(featured2MediaUrl) ? (
+              <video
+                src={featured2MediaUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+              />
+            ) : (
+              <img
+                src={featured2MediaUrl || dualF1}
+                alt="Studio Matchwear"
+                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 text-white">

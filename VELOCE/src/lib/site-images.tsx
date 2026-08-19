@@ -15,6 +15,8 @@ import defaultSiteImagesRaw from "./default-site-images.json";
 
 export type SiteImageSlot =
   | "hero-video"
+  | "featured-1"
+  | "featured-2"
   | "worldcup-banner"
   | "category-football"
   | "category-f1"
@@ -31,8 +33,18 @@ export type SiteImageSlot =
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
   {
     slot: "hero-video",
-    label: "Main Hero Video / Banner (MP4 Video or Image)",
-    description: "Featured primary video background on the main homepage Hero section.",
+    label: "1. Main Hero Banner (MP4 Video or Image)",
+    description: "Featured top video or photo background on the main homepage Hero section.",
+  },
+  {
+    slot: "featured-1",
+    label: "2. Featured Banner 1 - Left (MP4 Video or Image)",
+    description: "First featured card below Hero section (Training Apparel: All Work, No Sweat).",
+  },
+  {
+    slot: "featured-2",
+    label: "3. Featured Banner 2 - Right (MP4 Video or Image)",
+    description: "Second featured card below Hero section (Studio Matchwear).",
   },
   {
     slot: "worldcup-banner",
@@ -78,6 +90,8 @@ export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description:
 
 const DEFAULTS: Record<SiteImageSlot, string> = {
   "hero-video": "",
+  "featured-1": "",
+  "featured-2": "",
   "worldcup-banner": "",
   "category-football": "",
   "category-f1": "",
