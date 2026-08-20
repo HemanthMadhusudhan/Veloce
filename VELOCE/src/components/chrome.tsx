@@ -998,7 +998,6 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
   const { userEmail, wishlist, cart, signOut, profile, openSearch, isAdmin, isOwner } = useShop();
   const { combinedFootball, combinedF1, combinedB, combinedCricketIPL, combinedWC } = useTeams();
   const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const [supportExpanded, setSupportExpanded] = useState(false);
   const { getById } = useCatalog();
   const cartCount = cart.filter((x) => x.id && getById(x.id)).reduce((a, b) => a + b.qty, 0);
 
@@ -1013,7 +1012,6 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
       document.body.style.overflow = "";
       const timer = setTimeout(() => {
         setOpenCategory(null);
-        setSupportExpanded(false);
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -1347,34 +1345,6 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                 <span>Sign In</span>
               </button>
             )}
-
-            {/* Support Accordion */}
-            <div className="pt-2 pb-6 border-t border-black/5">
-              <button
-                onClick={() => setSupportExpanded(!supportExpanded)}
-                className="w-full flex items-center justify-between font-bold text-[13px] uppercase tracking-widest text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
-              >
-                <span>SUPPORT</span>
-                <ChevronDown className={`h-4.5 w-4.5 text-black transition-transform duration-200 ${supportExpanded ? "rotate-180" : ""}`} />
-              </button>
-
-              {supportExpanded && (
-                <div className="pt-1 pb-2 pl-3 space-y-2 text-xs font-medium text-neutral-700 animate-in fade-in duration-200">
-                  <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer" className="block hover:text-black">
-                    WhatsApp Chat
-                  </a>
-                  <a href="mailto:support@veloce.in" className="block hover:text-black">
-                    Email Support
-                  </a>
-                  <Link to="/info/$page" params={{ page: "shipping-policy" }} onClick={onClose} className="block hover:text-black">
-                    Shipping Policy
-                  </Link>
-                  <Link to="/info/$page" params={{ page: "exchange-policy" }} onClick={onClose} className="block hover:text-black">
-                    Exchange & Returns
-                  </Link>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
