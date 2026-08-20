@@ -115,15 +115,15 @@ export function SiteNav() {
         }`}
       >
         {/* Main Header */}
-        <div className="flex w-full max-w-7xl mx-auto items-center justify-between px-4 sm:px-8 py-3.5 gap-2 sm:gap-4">
+        <div className="flex w-full max-w-[1480px] mx-auto items-center justify-between px-3 sm:px-6 lg:px-8 py-3 gap-2 sm:gap-4">
           {/* Left: Brand Logo (Always Red) */}
           <div className="flex items-center shrink-0">
             <Logo />
           </div>
 
-          {/* Center: Desktop Navigation Bar (Nike Style Clean Spacing) */}
+          {/* Center: Desktop Navigation Bar (Clean Responsive Spacing) */}
           <div
-            className={`hidden lg:flex items-center justify-center gap-5 xl:gap-7 text-xs sm:text-[13px] font-bold uppercase tracking-wider whitespace-nowrap flex-1 px-4 transition-colors duration-300 ${
+            className={`hidden lg:flex items-center justify-center gap-2.5 xl:gap-5 2xl:gap-6 text-[11px] xl:text-xs 2xl:text-[13px] font-bold uppercase tracking-wide whitespace-nowrap flex-1 px-2 xl:px-4 transition-colors duration-300 ${
               isTransparent ? "text-white" : "text-neutral-900"
             }`}
           >
@@ -140,11 +140,11 @@ export function SiteNav() {
           </div>
 
           {/* Right Utilities Container */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 pr-1 sm:pr-2">
-            {/* Desktop Pill Search Input (Image 1 PC Target) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 xl:gap-2 shrink-0">
+            {/* Desktop Pill Search Input */}
             <button
               onClick={openSearch}
-              className={`hidden lg:flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs w-36 xl:w-44 cursor-pointer border transition shadow-2xs ${
+              className={`hidden lg:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs w-28 xl:w-36 2xl:w-44 cursor-pointer border transition shadow-2xs ${
                 isTransparent
                   ? "bg-white/15 hover:bg-white/25 text-white border-white/20"
                   : "bg-[#f5f5f5] hover:bg-[#eaeaea] text-neutral-500 border-transparent focus-within:border-black/10"
@@ -152,7 +152,7 @@ export function SiteNav() {
               aria-label="Search"
             >
               <NikeSearchIcon className={`h-4 w-4 shrink-0 ${isTransparent ? "text-white" : "text-black"}`} />
-              <span className={`text-xs font-medium ${isTransparent ? "text-white/80" : "text-neutral-400"}`}>Search</span>
+              <span className={`text-xs font-medium truncate ${isTransparent ? "text-white/80" : "text-neutral-400"}`}>Search</span>
             </button>
 
             {/* Mobile / Tablet Search Icon */}
@@ -166,7 +166,7 @@ export function SiteNav() {
               <NikeSearchIcon className="h-5 w-5 currentColor" />
             </button>
 
-            {/* Desktop Wishlist Heart Icon (Image 1 PC Target) */}
+            {/* Desktop Wishlist Heart Icon */}
             <Link
               to="/wishlist"
               className={`relative hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
@@ -186,6 +186,18 @@ export function SiteNav() {
                   {wishlist.length}
                 </span>
               )}
+            </Link>
+
+            {/* Desktop Profile Icon */}
+            <Link
+              to={userEmail ? "/profile" : "/login"}
+              className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+                isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
+              }`}
+              aria-label="Profile"
+              title={userEmail ? "Account Profile" : "Log In"}
+            >
+              <User className="h-5 w-5 currentColor" />
             </Link>
 
             {/* Shopping Bag Icon (PC & Mobile) */}
@@ -941,7 +953,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <SiteNav />
-      <main className={`w-full overflow-x-hidden ${isHome ? "pt-0 pb-0" : "pt-20 sm:pt-24 md:pt-[122px] pb-16 sm:pb-8"}`}>{children}</main>
+      <main className={`w-full overflow-x-hidden ${isHome ? "pt-0 pb-0" : "pt-16 sm:pt-20 md:pt-[84px] pb-16 sm:pb-8"}`}>{children}</main>
       <SiteFooter />
       {/* <CartDrawer /> */}
       <SearchDialog />
@@ -1312,27 +1324,6 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
             >
               <User className="h-5 w-5 stroke-[1.8]" />
               <span>Account</span>
-            </button>
-
-            {/* Wallet */}
-            <button
-              onClick={() => handleNav("/profile", { tab: "wallet" })}
-              className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-neutral-900 hover:text-[#d32f2f] transition cursor-pointer py-1"
-            >
-              <Wallet className="h-5 w-5 stroke-[1.8]" />
-              <span>Wallet (₹{profile?.walletBalance ?? 0})</span>
-            </button>
-
-            {/* Spin n Win */}
-            <button
-              onClick={() => {
-                onClose();
-                window.dispatchEvent(new CustomEvent("open-fortune-spin"));
-              }}
-              className="w-full flex items-center gap-3.5 font-semibold text-[14px] text-neutral-900 hover:text-[#d32f2f] transition cursor-pointer py-1"
-            >
-              <Gift className="h-5 w-5 stroke-[1.8]" />
-              <span>Spin n Win</span>
             </button>
 
             {/* Logout / Login */}

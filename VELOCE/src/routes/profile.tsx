@@ -12,10 +12,12 @@ import {
   ArrowLeft,
   Heart,
   Wallet,
+  Gift,
   HelpCircle,
   ChevronRight,
   Plus,
   Minus,
+  ShieldCheck,
 } from "lucide-react";
 import { type AppUser, supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -57,7 +59,7 @@ const DEFAULT_ADDR: Address = {
 
 function ProfilePage() {
   const nav = useNavigate();
-  const { userEmail, signOut, orders, profile, updateProfile, addWalletBalance, authLoading } = useShop();
+  const { userEmail, signOut, orders, profile, updateProfile, addWalletBalance, authLoading, isAdmin } = useShop();
   const { getById } = useCatalog();
   const search = Route.useSearch() as { tab?: string; orderId?: string };
   const tab = search.tab || (search.orderId ? "orders" : "menu");
@@ -239,10 +241,10 @@ function ProfilePage() {
               </div>
             </div>
 
-            {/* PAYMENT MODES */}
+            {/* PAYMENT & REWARDS */}
             <div>
               <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
-                PAYMENT MODES
+                PAYMENT & REWARDS
               </div>
               <div className="space-y-1">
                 <button
@@ -259,8 +261,50 @@ function ProfilePage() {
                     ₹{(profile?.walletBalance || 0).toLocaleString("en-IN")}
                   </span>
                 </button>
+
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-fortune-spin"))}
+                  className="w-full flex items-center justify-between py-3 hover:bg-neutral-50 rounded-xl transition cursor-pointer text-left"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+                      <Gift className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold text-neutral-900 block leading-tight">Spin & Win</span>
+                      <span className="text-[11px] font-medium text-neutral-500 block">Daily reward wheel & coupons</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-neutral-400" />
+                </button>
               </div>
             </div>
+
+            {/* ADMINISTRATOR SECTION - Only shown for admin accounts */}
+            {isAdmin && (
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
+                  ADMINISTRATOR
+                </div>
+                <div className="space-y-1">
+                  <Link
+                    to="/admin"
+                    className="w-full flex items-center justify-between py-3 px-3.5 hover:bg-red-50/80 rounded-xl transition cursor-pointer text-left border border-red-200 bg-red-50/50 group"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0 group-hover:scale-105 transition-transform">
+                        <ShieldCheck className="w-4.5 h-4.5 stroke-[2.2]" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold text-red-700 block leading-tight">Admin Dashboard</span>
+                        <span className="text-[11px] font-medium text-red-500/80 block">Manage products, orders & site settings</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-red-500" />
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* ACCOUNT ACTIONS */}
             <div>

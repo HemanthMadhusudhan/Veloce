@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useSiteImage } from "@/lib/site-images";
-
 export function PromoPopup() {
   const [isOpen, setIsOpen] = useState(false);
-  const promoImgUrl = useSiteImage("promo-popup");
+  const promoImgUrl = "/images/promo-popup.png";
 
   useEffect(() => {
     // Check if the user has already seen the popup in this session

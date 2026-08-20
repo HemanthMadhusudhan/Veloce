@@ -8,6 +8,7 @@ import {
   RotateCw,
   Star,
   ChevronRight,
+  ChevronLeft,
   ChevronDown,
   X,
   Lock,
@@ -219,33 +220,20 @@ function SizeGuideModal({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
-// Smooth Cross-Fade Image Slider (Auto-slides every 2s, loops infinitely, supports manual swipe & dot clicks)
-function ProductImageFadeSlider({ images, badge, isAdmin, wished, toggleWishlist, productId }: {
+// Manual Smooth Product Image Slider (No auto-scroll, super smooth manual swipe, drag & arrow navigation)
+function ProductImageFadeSlider({ images, badge, isAdmin, wished, toggleWishlist, productId, className }: {
   images: string[];
   badge?: string;
   isAdmin?: boolean;
   wished?: boolean;
   toggleWishlist?: (id: string) => void;
   productId?: string;
+  className?: string;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Auto-slide every 3.5 seconds in an infinite loop
-  useEffect(() => {
-    if (!images || images.length <= 1) return;
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 3500);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [images, currentIndex]);
+  const mouseStartX = useRef<number | null>(null);
 
   const goToNext = () => {
     if (!images || images.length <= 1) return;
@@ -257,6 +245,7 @@ function ProductImageFadeSlider({ images, badge, isAdmin, wished, toggleWishlist
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  // Touch Swipe Handlers (Mobile)
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchEndX.current = null;
@@ -269,46 +258,93 @@ function ProductImageFadeSlider({ images, badge, isAdmin, wished, toggleWishlist
   const handleTouchEnd = () => {
     if (touchStartX.current === null || touchEndX.current === null) return;
     const distance = touchStartX.current - touchEndX.current;
-    if (distance > 30) {
+    if (distance > 25) {
       goToNext();
-    } else if (distance < -30) {
+    } else if (distance < -25) {
       goToPrev();
     }
     touchStartX.current = null;
     touchEndX.current = null;
   };
 
+  // Mouse Drag Handlers (Desktop)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    mouseStartX.current = e.clientX;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (mouseStartX.current === null) return;
+    const distance = mouseStartX.current - e.clientX;
+    if (distance > 35) {
+      goToNext();
+    } else if (distance < -35) {
+      goToPrev();
+    }
+    mouseStartX.current = null;
+  };
+
   return (
     <div 
-      className="relative w-full aspect-square bg-white overflow-hidden select-none"
+      className={`relative w-full aspect-square bg-white overflow-hidden select-none group cursor-grab active:cursor-grabbing ${className || ""}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
     >
-      {/* Stacked Images with Smooth Cross-Fade Animation */}
+      {/* Stacked Images with Ultra-Smooth Cross-Fade Animation */}
       {images.map((img, i) => (
         <div
           key={i}
-          className={`absolute inset-0 flex items-center justify-center p-2 transition-all duration-700 ease-in-out ${
+          className={`absolute inset-0 flex items-center justify-center p-2 transition-all duration-500 ease-out ${
             i === currentIndex 
               ? "opacity-100 scale-100 z-10 pointer-events-auto" 
-              : "opacity-0 scale-[1.02] z-0 pointer-events-none"
+              : "opacity-0 scale-[1.03] z-0 pointer-events-none"
           }`}
         >
           <img 
             src={img} 
             alt={`Product view ${i + 1}`} 
-            className="w-full h-full object-contain scale-[1.03]"
+            className="w-full h-full object-contain pointer-events-none"
             loading={i === 0 ? "eager" : "lazy"}
           />
         </div>
       ))}
 
+      {/* Floating Desktop Navigation Arrows (Visible on PC hover) */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              goToPrev();
+            }}
+            className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-30 h-10 w-10 items-center justify-center rounded-full bg-white/95 border border-neutral-200 text-neutral-900 shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              goToNext();
+            }}
+            className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-30 h-10 w-10 items-center justify-center rounded-full bg-white/95 border border-neutral-200 text-neutral-900 shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+            aria-label="Next image"
+          >
+            <ChevronRight className="h-5 w-5 stroke-[2.5]" />
+          </button>
+        </>
+      )}
+
       {/* Wishlist Floating Button */}
       {!isAdmin && toggleWishlist && productId && (
-        <div className="absolute top-3 right-3 z-20">
+        <div className="absolute top-3 right-3 z-30">
           <button 
-            onClick={() => toggleWishlist(productId)} 
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(productId);
+            }} 
             className="w-10 h-10 rounded-full bg-white/90 border border-neutral-200 backdrop-blur-md flex items-center justify-center shadow-xs active:scale-90 transition-transform cursor-pointer"
             aria-label="Toggle wishlist"
           >
@@ -318,7 +354,7 @@ function ProductImageFadeSlider({ images, badge, isAdmin, wished, toggleWishlist
       )}
 
       {/* Year / Tag Badge */}
-      <div className="absolute top-3 left-3 z-20">
+      <div className="absolute top-3 left-3 z-30 pointer-events-none">
         <span className="rounded-full bg-black/80 backdrop-blur-sm text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-xs">
           {badge || "2026"}
         </span>
@@ -326,11 +362,14 @@ function ProductImageFadeSlider({ images, badge, isAdmin, wished, toggleWishlist
 
       {/* Pagination Dots */}
       {images.length > 1 && (
-        <div className="absolute bottom-2.5 left-0 right-0 z-20 flex justify-center items-center gap-1.5 pointer-events-auto">
+        <div className="absolute bottom-2.5 left-0 right-0 z-30 flex justify-center items-center gap-1.5 pointer-events-auto">
           {images.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrentIndex(i)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentIndex(i);
+              }}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 i === currentIndex 
                   ? "w-5 bg-black" 
@@ -842,8 +881,8 @@ function Pdp() {
       />
 
       {/* DESKTOP PDP */}
-      <div className="hidden md:block mx-auto max-w-7xl px-4 pt-6 sm:px-6 font-sans pb-16">
-        <nav className="mb-6 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-neutral-500">
+      <div className="hidden md:block mx-auto max-w-6xl px-4 pt-2 sm:px-6 font-sans pb-12">
+        <nav className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-neutral-500">
           <Link to="/shop" className="hover:text-black">
             Shop
           </Link>
@@ -866,59 +905,19 @@ function Pdp() {
           <span className="truncate text-black font-bold">{product.name}</span>
         </nav>
 
-        <div className="grid gap-10 lg:grid-cols-[1fr_minmax(340px,440px)]">
-          <div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Desktop Gallery with 2s Auto-Slide & Cross-Fade */}
-              <div className="w-full rounded-3xl overflow-hidden border border-neutral-200/60 bg-neutral-50 p-4">
-                <ProductImageFadeSlider
-                  images={product.images}
-                  badge={product.badge}
-                />
-              </div>
-            </div>
-
-            {/* Desktop Reviews Block */}
-            <div className="mt-12 border-t border-neutral-200 pt-8">
-              <div className="flex items-start justify-between gap-6 mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-900">Ratings & Customer Reviews</h3>
-                  <div className="flex items-baseline gap-3 mt-2">
-                    <span className="text-4xl font-black">{product.rating || 4.7}</span>
-                    <div className="flex items-center gap-1 text-amber-400">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400" />
-                      ))}
-                    </div>
-                    <span className="text-xs text-neutral-500 font-semibold">({product.reviews || 146} verified reviews)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress bars */}
-              <div className="max-w-md space-y-2 text-xs font-bold text-neutral-600">
-                {[
-                  { stars: 5, pct: 85 },
-                  { stars: 4, pct: 10 },
-                  { stars: 3, pct: 3 },
-                  { stars: 2, pct: 1 },
-                  { stars: 1, pct: 1 },
-                ].map((row) => (
-                  <div key={row.stars} className="flex items-center gap-2">
-                    <span className="w-6 text-neutral-800 font-bold">{row.stars} ★</span>
-                    <div className="flex-1 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400 rounded-full" style={{ width: `${row.pct}%` }} />
-                    </div>
-                    <span className="w-8 text-right text-xs font-medium text-neutral-500">{row.pct}%</span>
-                  </div>
-                ))}
-              </div>
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1fr)_420px] xl:grid-cols-[minmax(0,1fr)_440px] items-stretch">
+          <div className="flex flex-col justify-start">
+            <div className="w-full rounded-3xl overflow-hidden border border-neutral-200/60 bg-neutral-50 p-4 shadow-xs">
+              <ProductImageFadeSlider
+                images={product.images}
+                badge={product.badge}
+              />
             </div>
           </div>
 
           {/* Desktop Right Sidebar */}
-          <aside className="lg:sticky lg:top-24 lg:h-fit">
-            <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs space-y-5">
+          <aside className="h-full">
+            <div className="h-full rounded-3xl border border-neutral-200 bg-white p-6 space-y-4 shadow-xs flex flex-col justify-between">
               <div className="text-xs uppercase tracking-wider text-neutral-500 font-bold">
                 {product.team || product.category}
               </div>
@@ -1020,6 +1019,43 @@ function Pdp() {
               </ul>
             </div>
           </aside>
+        </div>
+
+        {/* Desktop Reviews Block */}
+        <div className="mt-12 border-t border-neutral-200 pt-8">
+          <div className="flex items-start justify-between gap-6 mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-neutral-900">Ratings & Customer Reviews</h3>
+              <div className="flex items-baseline gap-3 mt-2">
+                <span className="text-4xl font-black">{product.rating || 4.7}</span>
+                <div className="flex items-center gap-1 text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <span className="text-xs text-neutral-500 font-semibold">({product.reviews || 146} verified reviews)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bars */}
+          <div className="max-w-md space-y-2 text-xs font-bold text-neutral-600">
+            {[
+              { stars: 5, pct: 85 },
+              { stars: 4, pct: 10 },
+              { stars: 3, pct: 3 },
+              { stars: 2, pct: 1 },
+              { stars: 1, pct: 1 },
+            ].map((row) => (
+              <div key={row.stars} className="flex items-center gap-2">
+                <span className="w-6 text-neutral-800 font-bold">{row.stars} ★</span>
+                <div className="flex-1 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full" style={{ width: `${row.pct}%` }} />
+                </div>
+                <span className="w-8 text-right text-xs font-medium text-neutral-500">{row.pct}%</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Desktop Related Pieces */}

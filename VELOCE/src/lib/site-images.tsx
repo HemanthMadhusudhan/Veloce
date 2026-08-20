@@ -14,96 +14,59 @@ import dualF1 from "@/assets/dual-f1.jpg";
 import defaultSiteImagesRaw from "./default-site-images.json";
 
 export type SiteImageSlot =
+  | "hero-video-pc"
+  | "hero-video-mobile"
   | "hero-video"
+  | "featured-1-pc"
+  | "featured-1-mobile"
   | "featured-1"
-  | "featured-2"
-  | "worldcup-banner"
-  | "category-football"
-  | "category-f1"
-  | "category-basketball"
-  | "category-cricket"
-  | "category-accessories"
-  | "category-retro"
-  | "nav-grid-football"
-  | "nav-grid-f1"
-  | "nav-grid-basketball"
-  | "nav-grid-cricket"
-  | "promo-popup";
+  | "featured-2-pc"
+  | "featured-2-mobile"
+  | "featured-2";
 
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
   {
-    slot: "hero-video",
-    label: "1. Main Hero Banner (MP4 Video or Image)",
-    description: "Featured top video or photo background on the main homepage Hero section.",
+    slot: "hero-video-pc",
+    label: "1. Main Hero Banner - PC / Desktop (MP4 Video or Image)",
+    description: "Featured top video or photo background on desktop/PC homepage Hero section.",
   },
   {
-    slot: "featured-1",
-    label: "2. Featured Banner 1 - Left (MP4 Video or Image)",
-    description: "First featured card below Hero section (Training Apparel: All Work, No Sweat).",
+    slot: "hero-video-mobile",
+    label: "2. Main Hero Banner - Mobile (MP4 Video or Image)",
+    description: "Featured top video or photo background on mobile/tablet homepage Hero section.",
   },
   {
-    slot: "featured-2",
-    label: "3. Featured Banner 2 - Right (MP4 Video or Image)",
-    description: "Second featured card below Hero section (Studio Matchwear).",
+    slot: "featured-1-pc",
+    label: "3. Featured Banner 1 - Left (PC / Desktop) (MP4 Video or Image)",
+    description: "First featured card below Hero section on desktop/PC (Training Apparel).",
   },
   {
-    slot: "worldcup-banner",
-    label: "World Cup banner (Image or Video)",
-    description: "Editorial 'The countdown has begun' section background.",
+    slot: "featured-1-mobile",
+    label: "4. Featured Banner 1 - Left (Mobile) (MP4 Video or Image)",
+    description: "First featured card below Hero section on mobile/tablet (Training Apparel).",
   },
   {
-    slot: "category-football",
-    label: "Football category card (Image or Video)",
-    description: "Homepage tile linking to /shop/football.",
+    slot: "featured-2-pc",
+    label: "5. Featured Banner 2 - Right (PC / Desktop) (MP4 Video or Image)",
+    description: "Second featured card below Hero section on desktop/PC (Studio Matchwear).",
   },
   {
-    slot: "category-f1",
-    label: "Formula 1 category card (Image or Video)",
-    description: "Homepage tile linking to /shop/f1.",
-  },
-  {
-    slot: "nav-grid-football",
-    label: "Nav Grid · Football (Image)",
-    description: "Background for the Football block in the homepage grid.",
-  },
-  {
-    slot: "nav-grid-f1",
-    label: "Nav Grid · F1 (Image)",
-    description: "Background for the F1 block in the homepage grid.",
-  },
-  {
-    slot: "nav-grid-basketball",
-    label: "Nav Grid · Basketball (Image)",
-    description: "Background for the Basketball block in the homepage grid.",
-  },
-  {
-    slot: "nav-grid-cricket",
-    label: "Nav Grid · Cricket (Image)",
-    description: "Background for the Cricket block in the homepage grid.",
-  },
-  {
-    slot: "promo-popup",
-    label: "Promo Pop-up (Image)",
-    description: "Image shown in the first-load promo modal.",
+    slot: "featured-2-mobile",
+    label: "6. Featured Banner 2 - Right (Mobile) (MP4 Video or Image)",
+    description: "Second featured card below Hero section on mobile/tablet (Studio Matchwear).",
   },
 ];
 
 const DEFAULTS: Record<SiteImageSlot, string> = {
+  "hero-video-pc": "",
+  "hero-video-mobile": "",
   "hero-video": "",
+  "featured-1-pc": "",
+  "featured-1-mobile": "",
   "featured-1": "",
+  "featured-2-pc": "",
+  "featured-2-mobile": "",
   "featured-2": "",
-  "worldcup-banner": "",
-  "category-football": "",
-  "category-f1": "",
-  "category-basketball": "",
-  "category-cricket": "",
-  "category-accessories": "",
-  "category-retro": "",
-  "nav-grid-football": "",
-  "nav-grid-f1": "",
-  "nav-grid-basketball": "",
-  "nav-grid-cricket": "",
-  "promo-popup": "",
 };
 
 const CACHE_KEY = "veloce.admin.site-images.v1";

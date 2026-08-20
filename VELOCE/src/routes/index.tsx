@@ -125,9 +125,14 @@ function Home() {
   const [selectedSportTab, setSelectedSportTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const heroMediaUrl = siteImages.get("hero-video");
-  const featured1MediaUrl = siteImages.get("featured-1");
-  const featured2MediaUrl = siteImages.get("featured-2");
+  const heroPcMediaUrl = siteImages.get("hero-video-pc") || siteImages.get("hero-video");
+  const heroMobileMediaUrl = siteImages.get("hero-video-mobile") || heroPcMediaUrl;
+
+  const featured1PcMediaUrl = siteImages.get("featured-1-pc") || siteImages.get("featured-1");
+  const featured1MobileMediaUrl = siteImages.get("featured-1-mobile") || featured1PcMediaUrl;
+
+  const featured2PcMediaUrl = siteImages.get("featured-2-pc") || siteImages.get("featured-2");
+  const featured2MobileMediaUrl = siteImages.get("featured-2-mobile") || featured2PcMediaUrl;
 
   const isVideoUrl = (url?: string) => {
     if (!url) return false;
@@ -206,23 +211,47 @@ function Home() {
         ========================================================================
       */}
       <section className="relative w-full h-[70vh] sm:h-[88vh] lg:h-[95vh] min-h-[500px] bg-black overflow-hidden">
-        {heroMediaUrl && isVideoUrl(heroMediaUrl) ? (
-          <video
-            src={heroMediaUrl}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <img
-            src={heroMediaUrl || dualFootball}
-            alt="Veloce Wear Campaign Hero"
-            className="w-full h-full object-cover object-center"
-            loading="eager"
-          />
-        )}
+        {/* Mobile View Hero Banner */}
+        <div className="block md:hidden w-full h-full">
+          {heroMobileMediaUrl && isVideoUrl(heroMobileMediaUrl) ? (
+            <video
+              src={heroMobileMediaUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src={heroMobileMediaUrl || dualFootball}
+              alt="Veloce Wear Campaign Hero Mobile"
+              className="w-full h-full object-cover object-center"
+              loading="eager"
+            />
+          )}
+        </div>
+
+        {/* PC / Desktop View Hero Banner */}
+        <div className="hidden md:block w-full h-full">
+          {heroPcMediaUrl && isVideoUrl(heroPcMediaUrl) ? (
+            <video
+              src={heroPcMediaUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src={heroPcMediaUrl || dualFootball}
+              alt="Veloce Wear Campaign Hero Desktop"
+              className="w-full h-full object-cover object-center"
+              loading="eager"
+            />
+          )}
+        </div>
       </section>
 
       {/* 
@@ -241,22 +270,46 @@ function Home() {
           
           {/* Featured Card 1 (Edge to Edge, Video or Photo support) */}
           <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
-            {featured1MediaUrl && isVideoUrl(featured1MediaUrl) ? (
-              <video
-                src={featured1MediaUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
-              />
-            ) : (
-              <img
-                src={featured1MediaUrl || dualFootball}
-                alt="Training Apparel"
-                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
-              />
-            )}
+            {/* Mobile View Media */}
+            <div className="block md:hidden absolute inset-0 w-full h-full">
+              {featured1MobileMediaUrl && isVideoUrl(featured1MobileMediaUrl) ? (
+                <video
+                  src={featured1MobileMediaUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              ) : (
+                <img
+                  src={featured1MobileMediaUrl || dualFootball}
+                  alt="Training Apparel Mobile"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              )}
+            </div>
+
+            {/* PC / Desktop View Media */}
+            <div className="hidden md:block absolute inset-0 w-full h-full">
+              {featured1PcMediaUrl && isVideoUrl(featured1PcMediaUrl) ? (
+                <video
+                  src={featured1PcMediaUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              ) : (
+                <img
+                  src={featured1PcMediaUrl || dualFootball}
+                  alt="Training Apparel Desktop"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              )}
+            </div>
+
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 text-white">
@@ -277,22 +330,46 @@ function Home() {
 
           {/* Featured Card 2 (Edge to Edge, Video or Photo support) */}
           <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
-            {featured2MediaUrl && isVideoUrl(featured2MediaUrl) ? (
-              <video
-                src={featured2MediaUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
-              />
-            ) : (
-              <img
-                src={featured2MediaUrl || dualF1}
-                alt="Studio Matchwear"
-                className="absolute inset-0 w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
-              />
-            )}
+            {/* Mobile View Media */}
+            <div className="block md:hidden absolute inset-0 w-full h-full">
+              {featured2MobileMediaUrl && isVideoUrl(featured2MobileMediaUrl) ? (
+                <video
+                  src={featured2MobileMediaUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              ) : (
+                <img
+                  src={featured2MobileMediaUrl || dualF1}
+                  alt="Studio Matchwear Mobile"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              )}
+            </div>
+
+            {/* PC / Desktop View Media */}
+            <div className="hidden md:block absolute inset-0 w-full h-full">
+              {featured2PcMediaUrl && isVideoUrl(featured2PcMediaUrl) ? (
+                <video
+                  src={featured2PcMediaUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              ) : (
+                <img
+                  src={featured2PcMediaUrl || dualF1}
+                  alt="Studio Matchwear Desktop"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                />
+              )}
+            </div>
+
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
             <div className="relative z-10 text-white">
