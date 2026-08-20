@@ -494,6 +494,11 @@ export function OrderReceiptPrinter({
   const hasPlayedSoundRef = useRef(false);
 
   useEffect(() => {
+    // Auto scroll window to top before receipt printing animation starts
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
     // Stage 1: Processing (0 - 600ms)
     const t1 = setTimeout(() => {
       setStage("printing");

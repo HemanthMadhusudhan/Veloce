@@ -524,9 +524,13 @@ function CheckoutPage() {
     }
   };
 
-  // When order is completed, intercept browser back / popstate and direct to home page
+  // When order is completed, auto scroll to top immediately and intercept browser back navigation
   useEffect(() => {
     if (!completedOrder) return;
+
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
     window.history.pushState({ orderDone: true }, "", window.location.href);
 
