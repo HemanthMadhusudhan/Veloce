@@ -388,6 +388,15 @@ function Home() {
 
       {/* 
         ========================================================================
+        SHOP BY TEAM (Continuous Marquee)
+        ========================================================================
+      */}
+      <div className="w-full bg-white py-6 border-b border-black/10">
+        <UnifiedShopByTeam />
+      </div>
+
+      {/* 
+        ========================================================================
         BESTSELLERS SECTION (Matching Nike Reference Screenshot 2)
         - Headline: Bestsellers
         - Product cards carousel / grid with price ₹ formatting
@@ -404,15 +413,6 @@ function Home() {
           ))}
         </div>
       </section>
-
-      {/* 
-        ========================================================================
-        SHOP BY TEAM (Continuous Marquee)
-        ========================================================================
-      */}
-      <div className="w-full bg-white py-6 border-b border-black/10">
-        <UnifiedShopByTeam />
-      </div>
 
       {/* 
         ========================================================================
