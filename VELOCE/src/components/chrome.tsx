@@ -1049,20 +1049,25 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
       >
         {/* Top Header: Close Button on Right */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-black/10 bg-white">
-          {/* User Profile Header (Matching Nike Screenshot 2) */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold text-base border border-black/10 shrink-0">
+          {/* User Profile Header (Clickable -> Profile Page) */}
+          <button
+            onClick={() => handleNav(userEmail ? "/profile" : "/login")}
+            className="flex items-center gap-3 text-left group cursor-pointer hover:opacity-85 transition min-w-0 pr-2"
+          >
+            <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold text-base border border-black/10 shrink-0 group-hover:border-black transition">
               <User className="h-5 w-5 stroke-[2] text-neutral-700" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-black leading-tight">
-                {userEmail ? `Hi, ${userEmail.split('@')[0]}` : "Hi, Guest"}
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-black leading-tight truncate">
+                {userEmail
+                  ? `Hi, ${profile?.fullName || userEmail.split("@")[0]}`
+                  : "Hi, Guest"}
               </span>
-              <span className="text-[10px] text-neutral-500 font-mono">
+              <span className="text-[10px] text-neutral-500 font-mono truncate">
                 {userEmail || "Welcome to Veloce"}
               </span>
             </div>
-          </div>
+          </button>
 
           <button
             onClick={onClose}
