@@ -6,8 +6,10 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  useLocation,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 import appCss from "../styles.css?url";
 import { ShopProvider } from "@/lib/store";
@@ -138,7 +140,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-import { useLocation } from "@tanstack/react-router";
 
 function RootShell({ children }: { children: ReactNode }) {
   const location = useLocation();
@@ -198,6 +199,25 @@ function ScrollToTop() {
   return null;
 }
 
+function AnimatedRouteContent() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full flex-1"
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -208,8 +228,7 @@ function RootComponent() {
           <SiteImagesProvider>
             <TeamsProvider>
               <ScrollToTop />
-              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-              <Outlet />
+              <AnimatedRouteContent />
               <SupportBot />
               <Toaster duration={1500} />
             </TeamsProvider>

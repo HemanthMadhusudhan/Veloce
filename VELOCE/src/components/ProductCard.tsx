@@ -119,6 +119,7 @@ export function ProductCard({ p: initialP, view = "grid", priority = false }: { 
           <Link
             to="/product/$id"
             params={{ id: p.id }}
+            preload="intent"
             className="absolute inset-0 h-full w-full flex items-center justify-center p-0"
           >
             <Picture

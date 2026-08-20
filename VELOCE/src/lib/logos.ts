@@ -43,14 +43,16 @@ export const TEAM_LOGOS: Record<string, string> = {
   "Japan": "https://a.espncdn.com/i/teamlogos/countries/500/jpn.png",
 
   // Formula 1
-  "Ferrari": "https://upload.wikimedia.org/wikipedia/fr/thumb/c/c0/Scuderia_Ferrari_Logo.svg/960px-Scuderia_Ferrari_Logo.svg.png?_=20250316140006",
-  "Mercedes": "https://static.vecteezy.com/system/resources/thumbnails/022/498/229/small_2x/mercedes-benz-logos-popular-brands-of-cars-isolated-on-transparent-background-3d-render-free-png.png",
-  "Red Bull": "https://toppng.com/uploads/preview/red-bull-image-11526060413jb46ktndpi.png",
-  "McLaren": "https://cdn.vectorstock.com/i/preview-1x/90/67/mclaren-brand-symbol-logo-orange-design-vector-46089067.jpg",
-  "Alpine": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/Alpine_F1_Team_Logo.svg",
-  "Aston Martin": "https://www.carlogos.org/logo/Aston-Martin-logo-2003-6000x3000.png",
+  "Ferrari": "https://media.formula1.com/content/dam/fom-website/teams/2024/ferrari-logo.png",
+  "Mercedes": "https://media.formula1.com/content/dam/fom-website/teams/2024/mercedes-logo.png",
+  "Red Bull": "https://media.formula1.com/content/dam/fom-website/teams/2024/red-bull-racing-logo.png",
+  "Red Bull Racing": "https://media.formula1.com/content/dam/fom-website/teams/2024/red-bull-racing-logo.png",
+  "McLaren": "https://media.formula1.com/content/dam/fom-website/teams/2024/mclaren-logo.png",
+  "Alpine": "https://media.formula1.com/content/dam/fom-website/teams/2024/alpine-logo.png",
+  "Aston Martin": "https://media.formula1.com/content/dam/fom-website/teams/2024/aston-martin-logo.png",
+  "Aston Martin F1": "https://media.formula1.com/content/dam/fom-website/teams/2024/aston-martin-logo.png",
   "Williams": "https://media.formula1.com/content/dam/fom-website/teams/2024/williams-logo.png",
-  "Haas": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/MoneyGram_Haas_F1_Team_Logo.svg",
+  "Haas": "https://media.formula1.com/content/dam/fom-website/teams/2024/haas-f1-team-logo.png",
   "Audi": "https://wsrv.nl/?url=https://en.wikipedia.org/wiki/Special:FilePath/Audi-Logo_2016.svg",
   "Cadillac": "https://www.carlogos.org/car-logos/cadillac-logo-2021.png",
 

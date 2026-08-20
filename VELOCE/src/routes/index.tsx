@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useMemo } from "react";
-import { Search, ArrowUpRight, ChevronRight, Pause, Play, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Search, ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { motion } from "motion/react";
 import { SiteChrome } from "@/components/chrome";
 import { ProductCard } from "@/components/ProductCard";
 import { useCatalog } from "@/lib/catalog-store";
@@ -125,13 +126,13 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const heroPcMediaUrl = siteImages.get("hero-video-pc") || siteImages.get("hero-video");
-  const heroMobileMediaUrl = siteImages.get("hero-video-mobile") || heroPcMediaUrl;
+  const heroMobileMediaUrl = siteImages.get("hero-video-mobile");
 
   const featured1PcMediaUrl = siteImages.get("featured-1-pc") || siteImages.get("featured-1");
-  const featured1MobileMediaUrl = siteImages.get("featured-1-mobile") || featured1PcMediaUrl;
+  const featured1MobileMediaUrl = siteImages.get("featured-1-mobile");
 
   const featured2PcMediaUrl = siteImages.get("featured-2-pc") || siteImages.get("featured-2");
-  const featured2MobileMediaUrl = siteImages.get("featured-2-mobile") || featured2PcMediaUrl;
+  const featured2MobileMediaUrl = siteImages.get("featured-2-mobile");
 
   const isVideoUrl = (url?: string) => {
     if (!url) return false;
@@ -515,9 +516,7 @@ const UnifiedShopByTeam = React.memo(function UnifiedShopByTeam() {
       </div>
 
       <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)] pb-1">
-        <div 
-          className="flex w-max animate-team-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-pointer"
-        >
+        <div className="team-marquee-track cursor-pointer">
           {[0, 1].map((copyIdx) => (
             <div key={copyIdx} className="flex shrink-0 gap-3 sm:gap-5 pr-3 sm:pr-5" aria-hidden={copyIdx > 0}>
               {allTeams.map((t, i) => {
@@ -531,6 +530,7 @@ const UnifiedShopByTeam = React.memo(function UnifiedShopByTeam() {
                     key={`${t.name}-${copyIdx}-${i}`}
                     to={shopPath as never}
                     search={{ team: t.name } as never}
+                    preload="intent"
                     className="shrink-0 flex flex-col items-center gap-1.5 group/item w-[64px] sm:w-[86px]"
                   >
                     <div className="w-[64px] h-[64px] sm:w-[86px] sm:h-[86px] rounded-full bg-white border border-neutral-300 flex items-center justify-center p-2.5 sm:p-3.5 transition-all duration-300 group-hover/item:border-[#d32f2f] group-hover/item:scale-105 shadow-2xs">

@@ -266,7 +266,7 @@ function FootballMenu() {
   const { combinedFootball, combinedWC } = useTeams();
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to="/shop/football" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
+      <Link to="/shop/football" preload="intent" className="flex items-center gap-1 uppercase tracking-wider transition-opacity hover:opacity-80">
         Football <ChevronDown className="h-3 w-3" />
       </Link>
       {open && (

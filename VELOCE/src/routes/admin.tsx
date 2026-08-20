@@ -47,6 +47,7 @@ import {
 } from "@/lib/admin-users.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { ImageCropper } from "@/components/ImageCropper";
+import { VideoCropper } from "@/components/VideoCropper";
 import { useTeams, type TeamData } from "@/lib/teams";
 import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, worldCupTeams, allLogoEntries } from "@/lib/logos";
 import { supabase } from "@/integrations/supabase/client";
@@ -852,22 +853,13 @@ function SiteImageRow({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
+  const [cropVideoUrl, setCropVideoUrl] = useState<string | null>(null);
 
   const onFile = async (f: File | null) => {
     if (!f) return;
     if (f.type.startsWith("video/") || f.name.endsWith(".mp4") || f.name.endsWith(".webm") || f.name.endsWith(".mov")) {
-      setUploading(true);
-      setUploadError(null);
-      try {
-        const publicUrl = await uploadSiteImageFile(slot, f);
-        setDraft(publicUrl);
-        onSave(publicUrl);
-      } catch (err: any) {
-        setUploadError(err.message || "Video upload failed");
-        console.error("Video upload error:", err);
-      } finally {
-        setUploading(false);
-      }
+      const videoBlobUrl = URL.createObjectURL(f);
+      setCropVideoUrl(videoBlobUrl);
       return;
     }
     try {
@@ -875,6 +867,22 @@ function SiteImageRow({
       setCropImageUrl(dataUrl);
     } catch (err: any) {
       setUploadError(err.message || "Failed to read file");
+    }
+  };
+
+  const handleVideoCropComplete = async (videoFile: File) => {
+    setCropVideoUrl(null);
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const publicUrl = await uploadSiteImageFile(slot, videoFile);
+      setDraft(publicUrl);
+      onSave(publicUrl);
+    } catch (err: any) {
+      setUploadError(err.message || "Video upload failed");
+      console.error("Video upload error:", err);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -983,6 +991,13 @@ function SiteImageRow({
           imageUrl={cropImageUrl}
           onCropComplete={handleCropComplete}
           onCancel={() => setCropImageUrl(null)}
+        />
+      )}
+      {cropVideoUrl && (
+        <VideoCropper
+          videoUrl={cropVideoUrl}
+          onCropComplete={handleVideoCropComplete}
+          onCancel={() => setCropVideoUrl(null)}
         />
       )}
     </div>
