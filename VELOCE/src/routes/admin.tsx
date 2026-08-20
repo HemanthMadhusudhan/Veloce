@@ -92,7 +92,6 @@ type Tab =
   | "images"
   | "categories"
   | "drops"
-  | "hotSelling"
   | "teams"
   | "newKits";
 
@@ -154,13 +153,6 @@ function Admin() {
           Categories
         </TabBtn>
         <TabBtn
-          active={tab === "hotSelling"}
-          onClick={() => setTab("hotSelling")}
-          icon={<Package className="h-3.5 w-3.5" />}
-        >
-          Hot Selling
-        </TabBtn>
-        <TabBtn
           active={tab === "teams"}
           onClick={() => setTab("teams")}
           icon={<Users className="h-3.5 w-3.5" />}
@@ -183,7 +175,6 @@ function Admin() {
         {tab === "users" && <UsersTab />}
         {tab === "images" && <SiteImagesTab />}
         {tab === "categories" && <CategoriesTab />}
-        {tab === "hotSelling" && <HotSellingTab />}
         {tab === "newKits" && <NewKitsTab />}
         {tab === "teams" && <TeamsTab />}
       </div>
@@ -2346,93 +2337,8 @@ function EditUserDrawer({
   );
 }
 
-/* ---------- HOT SELLING & NEW KITS TAB ---------- */
-import { useHotSelling } from "@/lib/hot-selling";
+/* ---------- NEW KITS TAB ---------- */
 import { useNewKits } from "@/lib/new-kits";
-
-function HotSellingTab() {
-  const { products } = useCatalog();
-  const { hotSellingIds, setHotSellingIds } = useHotSelling();
-
-  const selectedProducts = hotSellingIds
-    .map((id) => products.find((p) => p.id === id))
-    .filter(Boolean) as import("@/lib/catalog").Product[];
-
-  const availableProducts = products.filter((p) => !hotSellingIds.includes(p.id));
-
-  return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div className="rounded-none border border-gray-300 p-6">
-        <h2 className="font-display text-xl font-bold">Current Hot Selling Kits</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          These appear in the mobile app carousel (maximum 15).
-        </p>
-        <div className="mt-4 space-y-2">
-          {selectedProducts.map((p, i) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between rounded-none border border-border/40 p-2 bg-gray-50"
-            >
-              <div className="flex items-center gap-3 text-sm">
-                <span className="font-mono text-xs text-muted-foreground w-4">{i + 1}.</span>
-                {p.images[0] && <img src={p.images[0]} className="h-10 w-8 rounded object-cover" />}
-                <span className="font-medium truncate max-w-[150px]">{p.name}</span>
-              </div>
-              <button
-                onClick={() => setHotSellingIds(selectedProducts.map(sp => sp.id).filter((id) => id !== p.id))}
-                className="rounded-none bg-brand/10 p-2 text-brand hover:bg-brand/20 transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-          {selectedProducts.length === 0 && (
-            <div className="rounded-none border border-dashed border-gray-300 p-6 text-center text-xs text-muted-foreground">
-              No kits selected. Default logic will be used.
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-none border border-gray-300 p-6">
-        <h2 className="font-display text-xl font-bold">Add Kits</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Select kits to feature on the homepage.
-        </p>
-        {selectedProducts.length >= 15 ? (
-          <div className="mt-4 rounded border border-brand/50 bg-brand/10 p-3 text-xs text-brand">
-            You have reached the maximum of 15 featured kits. Remove some to add others.
-          </div>
-        ) : (
-          <div className="mt-4 h-[400px] overflow-y-auto pr-2 space-y-2">
-            {availableProducts.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between rounded-none border border-border/40 p-2"
-              >
-                <div className="flex items-center gap-3 text-sm">
-                  {p.images[0] && (
-                    <img src={p.images[0]} className="h-10 w-8 rounded object-cover" />
-                  )}
-                  <div className="truncate w-[180px] text-xs">
-                    <div className="font-medium truncate">{p.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{p.team}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setHotSellingIds([...selectedProducts.map(sp => sp.id), p.id])}
-                  className="rounded-none bg-black px-3 py-1 text-[10px] uppercase tracking-wider text-white hover:bg-black/80 transition-colors"
-                >
-                  Add
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function NewKitsTab() {
   const { products } = useCatalog();

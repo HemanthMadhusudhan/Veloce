@@ -4,7 +4,6 @@ import { Search, ArrowUpRight, ChevronRight, Pause, Play, ShieldCheck, CheckCirc
 import { SiteChrome } from "@/components/chrome";
 import { ProductCard } from "@/components/ProductCard";
 import { useCatalog } from "@/lib/catalog-store";
-import { useHotSelling } from "@/lib/hot-selling";
 import { useTeams } from "@/lib/teams";
 import { useShop } from "@/lib/store";
 import { useSiteImages } from "@/lib/site-images";
@@ -210,48 +209,50 @@ function Home() {
         - Clean edge-to-edge video player with autoPlay, loop, muted & playsInline
         ========================================================================
       */}
-      <section className="relative w-full h-[70vh] sm:h-[88vh] lg:h-[95vh] min-h-[500px] bg-black overflow-hidden">
-        {/* Mobile View Hero Banner */}
-        <div className="block md:hidden w-full h-full">
-          {heroMobileMediaUrl && isVideoUrl(heroMobileMediaUrl) ? (
-            <video
-              src={heroMobileMediaUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <img
-              src={heroMobileMediaUrl || dualFootball}
-              alt="Veloce Wear Campaign Hero Mobile"
-              className="w-full h-full object-cover object-center"
-              loading="eager"
-            />
-          )}
-        </div>
+      <section className="relative w-full h-[70vh] sm:h-[88vh] lg:h-[95vh] min-h-[500px] bg-black overflow-hidden group">
+        <Link to="/new-kits" className="block w-full h-full cursor-pointer">
+          {/* Mobile View Hero Banner */}
+          <div className="block md:hidden w-full h-full">
+            {heroMobileMediaUrl && isVideoUrl(heroMobileMediaUrl) ? (
+              <video
+                src={heroMobileMediaUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700"
+              />
+            ) : (
+              <img
+                src={heroMobileMediaUrl || dualFootball}
+                alt="Veloce Wear Campaign Hero Mobile"
+                className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700"
+                loading="eager"
+              />
+            )}
+          </div>
 
-        {/* PC / Desktop View Hero Banner */}
-        <div className="hidden md:block w-full h-full">
-          {heroPcMediaUrl && isVideoUrl(heroPcMediaUrl) ? (
-            <video
-              src={heroPcMediaUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <img
-              src={heroPcMediaUrl || dualFootball}
-              alt="Veloce Wear Campaign Hero Desktop"
-              className="w-full h-full object-cover object-center"
-              loading="eager"
-            />
-          )}
-        </div>
+          {/* PC / Desktop View Hero Banner */}
+          <div className="hidden md:block w-full h-full">
+            {heroPcMediaUrl && isVideoUrl(heroPcMediaUrl) ? (
+              <video
+                src={heroPcMediaUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700"
+              />
+            ) : (
+              <img
+                src={heroPcMediaUrl || dualFootball}
+                alt="Veloce Wear Campaign Hero Desktop"
+                className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700"
+                loading="eager"
+              />
+            )}
+          </div>
+        </Link>
       </section>
 
       {/* 
@@ -268,8 +269,8 @@ function Home() {
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 p-0 m-0">
           
-          {/* Featured Card 1 (Edge to Edge, Video or Photo support) */}
-          <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
+          {/* Featured Card 1 - Formula 1 (Edge to Edge, Video or Photo support) */}
+          <Link to="/shop/f1" className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0 group cursor-pointer">
             {/* Mobile View Media */}
             <div className="block md:hidden absolute inset-0 w-full h-full">
               {featured1MobileMediaUrl && isVideoUrl(featured1MobileMediaUrl) ? (
@@ -279,13 +280,13 @@ function Home() {
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
-                  src={featured1MobileMediaUrl || dualFootball}
-                  alt="Training Apparel Mobile"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  src={featured1MobileMediaUrl || dualF1}
+                  alt="Formula 1 Store Mobile"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
             </div>
@@ -299,13 +300,13 @@ function Home() {
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
-                  src={featured1PcMediaUrl || dualFootball}
-                  alt="Training Apparel Desktop"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  src={featured1PcMediaUrl || dualF1}
+                  alt="Formula 1 Store Desktop"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
             </div>
@@ -314,22 +315,19 @@ function Home() {
 
             <div className="relative z-10 text-white">
               <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
-                Training Apparel
+                Formula 1 Collection
               </span>
               <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
-                All Work, No Sweat
+                Formula 1 Store
               </h3>
-              <Link
-                to="/shop/football"
-                className="px-6 py-2.5 bg-white text-black hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block cursor-pointer shadow-md"
-              >
-                Shop
-              </Link>
+              <span className="px-6 py-2.5 bg-white text-black group-hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block shadow-md">
+                Shop Formula 1
+              </span>
             </div>
-          </div>
+          </Link>
 
-          {/* Featured Card 2 (Edge to Edge, Video or Photo support) */}
-          <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0">
+          {/* Featured Card 2 - Cricket Section (Edge to Edge, Video or Photo support) */}
+          <Link to="/shop/cricket" className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0 group cursor-pointer">
             {/* Mobile View Media */}
             <div className="block md:hidden absolute inset-0 w-full h-full">
               {featured2MobileMediaUrl && isVideoUrl(featured2MobileMediaUrl) ? (
@@ -339,13 +337,13 @@ function Home() {
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
-                  src={featured2MobileMediaUrl || dualF1}
-                  alt="Studio Matchwear Mobile"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  src={featured2MobileMediaUrl || dualFootball}
+                  alt="Cricket Section Mobile"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
             </div>
@@ -359,13 +357,13 @@ function Home() {
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
-                  src={featured2PcMediaUrl || dualF1}
-                  alt="Studio Matchwear Desktop"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05]"
+                  src={featured2PcMediaUrl || dualFootball}
+                  alt="Cricket Section Desktop"
+                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
             </div>
@@ -374,19 +372,16 @@ function Home() {
 
             <div className="relative z-10 text-white">
               <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
-                It's Just a Matchwear Until It's Not
+                Official Cricket Apparel
               </span>
               <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
-                Studio Matchwear
+                Cricket Section
               </h3>
-              <Link
-                to="/shop/f1"
-                className="px-6 py-2.5 bg-white text-black hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block cursor-pointer shadow-md"
-              >
-                Shop
-              </Link>
+              <span className="px-6 py-2.5 bg-white text-black group-hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block shadow-md">
+                Shop Cricket
+              </span>
             </div>
-          </div>
+          </Link>
 
         </div>
       </section>
@@ -412,46 +407,12 @@ function Home() {
 
       {/* 
         ========================================================================
-        TRUST STRIP
-        ========================================================================
-      */}
-      <section className="w-full bg-neutral-50 border-y border-black/10 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-            {TRUST_POINTS.map((pt, i) => (
-              <div key={i} className="flex items-center gap-3 py-2 px-3 rounded-xl bg-white border border-black/5">
-                <div className="w-7 h-7 rounded-full bg-[#d32f2f]/10 text-[#d32f2f] flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-black truncate">
-                    {pt.label}
-                  </span>
-                  <span className="text-[8px] sm:text-[9px] font-medium text-neutral-500 truncate">
-                    {pt.sub}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 
-        ========================================================================
         SHOP BY TEAM (Continuous Marquee)
         ========================================================================
       */}
       <div className="w-full bg-white py-6 border-b border-black/10">
         <UnifiedShopByTeam />
       </div>
-
-      {/* 
-        ========================================================================
-        HOT SELLING SECTION
-        ========================================================================
-      */}
-      <HotSellingSection />
 
       {/* 
         ========================================================================
@@ -594,89 +555,3 @@ const UnifiedShopByTeam = React.memo(function UnifiedShopByTeam() {
     </section>
   );
 });
-
-function HotSellingSection() {
-  const { products } = useCatalog();
-  const { hotSellingIds, loaded } = useHotSelling();
-  
-  const hotProducts = useMemo(() => {
-    if (!products.length) return [];
-    if (hotSellingIds.length > 0) {
-      const matched = hotSellingIds
-        .map((id) => products.find((p) => p.id === id))
-        .filter(Boolean) as typeof products;
-      if (matched.length > 0) return matched;
-    }
-    return products.slice(0, 10);
-  }, [products, hotSellingIds]);
-
-  if (!loaded && !products.length) return null;
-  if (!hotProducts.length) return null;
-
-  return (
-    <section className="w-full bg-[#0a0a0a] text-white py-6 sm:py-10 overflow-hidden border-y border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 text-center">
-        <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-neutral-400 mb-1">
-          TRENDING NOW
-        </div>
-        <h2 className="font-display text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight">
-          HOT <span className="italic font-black text-[#d32f2f]">SELLING</span>
-        </h2>
-      </div>
-
-      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)] pb-2">
-        <div className="flex w-max animate-team-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] cursor-pointer">
-          {[0, 1].map((copyIdx) => (
-            <div key={copyIdx} className="flex shrink-0 gap-3 sm:gap-4.5 pr-3 sm:pr-4.5" aria-hidden={copyIdx > 0}>
-              {hotProducts.map((p, i) => (
-                <div
-                  key={`${p.id}-${copyIdx}-${i}`}
-                  className="w-[180px] sm:w-[240px] shrink-0 rounded-2xl bg-[#141414] border border-white/10 hover:border-white/40 transition-all p-3 sm:p-3.5 flex flex-col justify-between group shadow-xl"
-                >
-                  <Link
-                    to="/product/$id"
-                    params={{ id: p.id }}
-                    className="relative aspect-square w-full rounded-xl bg-neutral-900 overflow-hidden flex items-center justify-center p-2 mb-2.5 cursor-pointer"
-                  >
-                    <img
-                      src={p.images[0]}
-                      alt={p.name}
-                      loading="eager"
-                      decoding="sync"
-                      className="w-full h-full object-contain filter drop-shadow-md group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </Link>
-
-                  <div className="flex flex-col flex-1 justify-between px-0.5">
-                    <div>
-                      <h3 className="font-black text-xs sm:text-base uppercase text-white tracking-tight leading-tight truncate">
-                        {p.team || p.name}
-                      </h3>
-                      <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 truncate mt-0.5">
-                        {p.name}
-                      </p>
-                    </div>
-
-                    <div className="mt-2.5 sm:mt-[#d32f2f] pt-2 sm:pt-2.5 border-t border-white/10 flex items-center justify-between">
-                      <span className="font-mono text-xs sm:text-base font-bold text-white">
-                        ₹{p.price.toLocaleString("en-IN")}
-                      </span>
-                      <Link
-                        to="/product/$id"
-                        params={{ id: p.id }}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-[#d32f2f] hover:text-white transition group-hover:scale-105 shadow-md active:scale-95 cursor-pointer"
-                        aria-label="View product"
-                      >
-                        <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
