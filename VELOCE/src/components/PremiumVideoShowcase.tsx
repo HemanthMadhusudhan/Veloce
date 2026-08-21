@@ -2,9 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
+let cachedShowcaseVideos: any[] = [];
+let cachedShowcaseSettings: any = null;
+
+if (typeof window !== "undefined") {
+  try {
+    const v = localStorage.getItem("veloce_showcase_videos");
+    const s = localStorage.getItem("veloce_showcase_settings");
+    if (v) cachedShowcaseVideos = JSON.parse(v);
+    if (s) cachedShowcaseSettings = JSON.parse(s);
+  } catch (e) {}
+}
+
 export function PremiumVideoShowcase() {
-  const [videos, setVideos] = useState<any[]>([]);
-  const [settings, setSettings] = useState<any>(null);
+  const [videos, setVideos] = useState<any[]>(cachedShowcaseVideos);
+  const [settings, setSettings] = useState<any>(cachedShowcaseSettings);
   const [activeIndex, setActiveIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -21,8 +33,18 @@ export function PremiumVideoShowcase() {
           supabase.from("mobile_showcase_videos").select("*").eq("active", true).order("display_order", { ascending: true }),
           supabase.from("mobile_showcase_settings").select("*").eq("id", 1).single()
         ]);
-        if (vidRes.data) setVideos(vidRes.data);
-        if (setRes.data) setSettings(setRes.data);
+        if (vidRes.data) {
+          setVideos(vidRes.data);
+          try {
+            localStorage.setItem("veloce_showcase_videos", JSON.stringify(vidRes.data));
+          } catch (e) {}
+        }
+        if (setRes.data) {
+          setSettings(setRes.data);
+          try {
+            localStorage.setItem("veloce_showcase_settings", JSON.stringify(setRes.data));
+          } catch (e) {}
+        }
       } catch (e) {
         console.error("Failed to load mobile showcase", e);
       }
@@ -186,7 +208,7 @@ export function PremiumVideoShowcase() {
                   loop={vid.loop !== false}
                   muted
                   playsInline
-                  preload="lazy"
+                  preload="auto"
                 />
                 
                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/90 pointer-events-none" />

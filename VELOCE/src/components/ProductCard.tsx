@@ -129,6 +129,8 @@ export function ProductCard({ p: initialP, view = "grid", priority = false }: { 
               className="h-full w-full flex items-center justify-center overflow-hidden"
               imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              decoding="async"
             />
           </Link>
           

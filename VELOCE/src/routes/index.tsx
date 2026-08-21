@@ -221,6 +221,8 @@ function Home() {
                 loop
                 muted
                 playsInline
+                preload="auto"
+                poster={dualFootball}
                 className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700"
               />
             ) : (
@@ -229,6 +231,7 @@ function Home() {
                 alt="Veloce Wear Campaign Hero Mobile"
                 className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700"
                 loading="eager"
+                decoding="async"
               />
             )}
           </div>
@@ -242,6 +245,8 @@ function Home() {
                 loop
                 muted
                 playsInline
+                preload="auto"
+                poster={dualFootball}
                 className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-700"
               />
             ) : (
@@ -250,6 +255,7 @@ function Home() {
                 alt="Veloce Wear Campaign Hero Desktop"
                 className="w-full h-full object-cover object-center group-hover:scale-[1.01] transition-transform duration-700"
                 loading="eager"
+                decoding="async"
               />
             )}
           </div>
@@ -281,12 +287,16 @@ function Home() {
                   loop
                   muted
                   playsInline
+                  preload="auto"
+                  poster={dualF1}
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
                   src={featured1MobileMediaUrl || dualF1}
                   alt="Formula 1 Store Mobile"
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
@@ -301,12 +311,16 @@ function Home() {
                   loop
                   muted
                   playsInline
+                  preload="auto"
+                  poster={dualF1}
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
                   src={featured1PcMediaUrl || dualF1}
                   alt="Formula 1 Store Desktop"
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
@@ -338,12 +352,16 @@ function Home() {
                   loop
                   muted
                   playsInline
+                  preload="auto"
+                  poster={dualFootball}
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
                   src={featured2MobileMediaUrl || dualFootball}
                   alt="Cricket Section Mobile"
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}
@@ -358,12 +376,16 @@ function Home() {
                   loop
                   muted
                   playsInline
+                  preload="auto"
+                  poster={dualFootball}
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               ) : (
                 <img
                   src={featured2PcMediaUrl || dualFootball}
                   alt="Cricket Section Desktop"
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
                 />
               )}

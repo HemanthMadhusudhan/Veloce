@@ -194,8 +194,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function ScrollToTop() {
   const location = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname, location.search]);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [location.pathname]);
   return null;
 }
 
@@ -203,18 +203,16 @@ function AnimatedRouteContent() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -4 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full flex-1"
-      >
-        <Outlet />
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0, filter: "blur(8px)", y: 4 }}
+      animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+      exit={{ opacity: 0, filter: "blur(6px)", y: -4 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full flex-1"
+    >
+      <Outlet />
+    </motion.div>
   );
 }
 

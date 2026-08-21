@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { getPicture, type PictureSet } from "@/lib/images";
 
 type Props = {
@@ -28,12 +29,14 @@ export function Picture({
   decoding = "async",
   aspect,
 }: Props) {
+  const [hasError, setHasError] = useState(false);
   if (!src) return null;
   const pic: PictureSet | undefined = typeof src === "string" ? getPicture(src) : src;
-  const fallback = typeof src === "string" ? src : src.src;
+  const rawFallback = typeof src === "string" ? src : src.src;
+  const fallback = hasError ? "/products/standardized/arsenal-home-player-version-26-27-main.webp" : rawFallback;
   const style = aspect ? { aspectRatio: aspect } : undefined;
 
-  if (!pic) {
+  if (!pic || hasError) {
     return (
       <img
         src={fallback}
@@ -41,9 +44,9 @@ export function Picture({
         className={[imgClassName, className].filter(Boolean).join(" ")}
         loading={loading}
         decoding={decoding}
-        
         fetchPriority={fetchPriority}
         style={style}
+        onError={() => setHasError(true)}
       />
     );
   }
@@ -59,9 +62,9 @@ export function Picture({
         className={imgClassName}
         loading={loading}
         decoding={decoding}
-        
         fetchPriority={fetchPriority}
         style={style}
+        onError={() => setHasError(true)}
       />
     </picture>
   );

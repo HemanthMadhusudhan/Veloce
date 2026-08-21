@@ -258,6 +258,25 @@ function CheckoutPage() {
     }
   }, [profile]);
 
+  // Synchronize and clamp existing cart item quantities against current live stock
+  useEffect(() => {
+    cart.forEach((item) => {
+      const prod = getById(item.id);
+      if (prod) {
+        const availableStock =
+          prod.stockBySize?.[item.size] !== undefined
+            ? prod.stockBySize[item.size]
+            : (prod.stock ?? 10);
+        if (availableStock > 0 && item.qty > availableStock) {
+          updateQty(item.id, item.size, item.color, availableStock, availableStock);
+          toast.info(
+            `Adjusted ${prod.name} (Size: ${item.size}) quantity to available stock (${availableStock})`
+          );
+        }
+      }
+    });
+  }, [cart, getById, updateQty]);
+
   // If user is on select_address but has no stored address, show address adding form first
   useEffect(() => {
     if (step === "select_address" && !hasStoredAddress) {
@@ -676,12 +695,27 @@ function CheckoutPage() {
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 text-xs text-neutral-500 capitalize pt-0.5 font-semibold">
+                          <div className="flex items-center gap-2 text-xs text-neutral-500 capitalize pt-0.5 font-semibold flex-wrap">
                             <span className="bg-neutral-100 text-neutral-800 px-2 py-0.5 rounded text-[11px] font-bold">
                               {p.category || p.tag || "Kit"}
                             </span>
                             <span>·</span>
                             <span className="font-bold text-neutral-900">Size: {item.size}</span>
+                            {(() => {
+                              const prod = getById(item.id);
+                              const availableStock =
+                                prod?.stockBySize?.[item.size] !== undefined
+                                  ? prod.stockBySize[item.size]
+                                  : (prod?.stock ?? (p?.stock || 10));
+                              if (availableStock <= 5) {
+                                return (
+                                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-md">
+                                    Only {availableStock} left!
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
 
                           <div className="text-[11px] sm:text-xs text-neutral-600 flex flex-wrap items-center gap-2 pt-0.5 font-medium">
@@ -713,8 +747,28 @@ function CheckoutPage() {
                               </button>
                               <span className="w-4 text-center font-bold text-xs">{item.qty}</span>
                               <button
-                                onClick={() => updateQty(item.id, item.size, item.color, item.qty + 1)}
-                                className="text-neutral-500 hover:text-black transition-colors cursor-pointer p-0.5"
+                                onClick={() => {
+                                  const prod = getById(item.id);
+                                  const availableStock =
+                                    prod?.stockBySize?.[item.size] !== undefined
+                                      ? prod.stockBySize[item.size]
+                                      : (prod?.stock ?? (p?.stock || 10));
+
+                                  if (item.qty >= availableStock) {
+                                    toast.error(`Only ${availableStock} items in stock for size ${item.size}`);
+                                    return;
+                                  }
+                                  updateQty(item.id, item.size, item.color, item.qty + 1, availableStock);
+                                }}
+                                disabled={(() => {
+                                  const prod = getById(item.id);
+                                  const availableStock =
+                                    prod?.stockBySize?.[item.size] !== undefined
+                                      ? prod.stockBySize[item.size]
+                                      : (prod?.stock ?? (p?.stock || 10));
+                                  return item.qty >= availableStock;
+                                })()}
+                                className="text-neutral-500 hover:text-black transition-colors cursor-pointer p-0.5 disabled:opacity-30 disabled:cursor-not-allowed"
                                 aria-label="Increase quantity"
                               >
                                 <Plus className="h-3.5 w-3.5 stroke-[2.5]" />

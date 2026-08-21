@@ -29,6 +29,7 @@ type Override = Partial<
 
 type Ctx = {
   products: Product[];
+  loaded: boolean;
   getById: (id: string) => Product | undefined;
   updateProduct: (id: string, patch: Override) => Promise<void>;
   addProduct: (p: Product) => Promise<void>;
@@ -85,6 +86,8 @@ function mapDbRowToProduct(r: any): Product {
   };
 }
 
+const DEFAULT_PRODUCTS_LIST: Product[] = (defaultProductsRaw as any[]).map(mapDbRowToProduct);
+
 let cachedRaw = null;
 if (typeof window !== "undefined") {
   try {
@@ -97,22 +100,40 @@ let LIVE: Product[] = (cachedRaw || defaultProductsRaw as any[]).map(mapDbRowToP
 let listeners: (() => void)[] = [];
 
 export function getLiveProducts(): Product[] {
-  return LIVE;
+  return LIVE.length > 0 ? LIVE : DEFAULT_PRODUCTS_LIST;
 }
+
 export function getLiveProductBySlug(slug: string): Product | undefined {
   if (!slug) return undefined;
-  const s = slug.toLowerCase();
-  return LIVE.find(
+  const s = slug.toLowerCase().trim();
+  const foundInLive = LIVE.find(
+    (p) =>
+      p.id?.toLowerCase() === s ||
+      p.slug?.toLowerCase() === s ||
+      (p.name && slugify(p.name).toLowerCase() === s)
+  );
+  if (foundInLive) return foundInLive;
+
+  return DEFAULT_PRODUCTS_LIST.find(
     (p) =>
       p.id?.toLowerCase() === s ||
       p.slug?.toLowerCase() === s ||
       (p.name && slugify(p.name).toLowerCase() === s)
   );
 }
+
 export function getLiveProduct(id: string): Product | undefined {
   if (!id) return undefined;
-  const target = id.toLowerCase();
-  return LIVE.find(
+  const target = id.toLowerCase().trim();
+  const foundInLive = LIVE.find(
+    (p) =>
+      p.id?.toLowerCase() === target ||
+      p.slug?.toLowerCase() === target ||
+      (p.name && slugify(p.name).toLowerCase() === target)
+  );
+  if (foundInLive) return foundInLive;
+
+  return DEFAULT_PRODUCTS_LIST.find(
     (p) =>
       p.id?.toLowerCase() === target ||
       p.slug?.toLowerCase() === target ||
@@ -375,7 +396,26 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
       listeners.forEach((l) => l());
 
-      // Update directly in Supabase products table
+      // Call atomic RPC function in Supabase
+      try {
+        const rpcPayload = items.map((it) => ({
+          id: it.id,
+          size: it.size || "",
+          qty: it.qty || 1,
+        }));
+        await supabase.rpc("deduct_product_stock", { p_items: rpcPayload });
+      } catch (rpcErr) {
+        console.log("deductStock RPC note:", rpcErr);
+      }
+
+      // Also persist to localStorage cache immediately
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("veloce_products_cache_v10", JSON.stringify(LIVE));
+        } catch (e) {}
+      }
+
+      // Update directly in Supabase products table as fallback for admin users
       for (const it of items) {
         try {
           const { data: prodData } = await supabase
@@ -414,7 +454,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
               .eq("id", it.id);
           }
         } catch (err) {
-          console.error("Error updating stock in Supabase for item:", it.id, err);
+          // ignore
         }
       }
 
@@ -425,7 +465,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const value: Ctx = {
     products,
-    getById: (id) => products.find((p) => p.id === id),
+    loaded,
+    getById: (id) => products.find((p) => p.id === id) || getLiveProduct(id),
     updateProduct,
     addProduct,
     removeProduct,

@@ -735,18 +735,33 @@ function Pdp() {
     id: string;
     product: import("@/lib/catalog").Product | null;
   };
-  const { getById, products } = useCatalog();
-  const targetId = (id || "").toLowerCase();
+  const { getById, products, loaded } = useCatalog();
+  const targetId = (id || "").toLowerCase().trim();
   const product =
     products.find(
       (p) =>
         p.id?.toLowerCase() === targetId ||
         p.slug?.toLowerCase() === targetId ||
         (p.name && slugify(p.name).toLowerCase() === targetId)
-    ) ?? getById(id) ?? seed;
+    ) ?? getById(id) ?? getLiveProduct(id) ?? seed;
   const nav = useNavigate();
 
   if (!product) {
+    if (!loaded) {
+      return (
+        <div className="mx-auto max-w-6xl px-4 py-12 animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="aspect-square bg-neutral-100 rounded-3xl" />
+            <div className="space-y-4 py-4">
+              <div className="h-6 w-32 bg-neutral-200 rounded" />
+              <div className="h-10 w-3/4 bg-neutral-200 rounded" />
+              <div className="h-8 w-24 bg-neutral-200 rounded" />
+              <div className="h-32 w-full bg-neutral-100 rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="mx-auto max-w-xl px-6 py-20 text-center">
         <h1 className="font-display text-3xl">Product not found</h1>

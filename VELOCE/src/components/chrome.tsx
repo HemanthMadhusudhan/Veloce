@@ -8,6 +8,7 @@ import { TRENDING, ZONES } from "@/lib/catalog";
 import { LEAGUES, FOOTBALL_QUICK_LINKS } from "@/lib/leagues";
 import { useCatalog } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
+import { toast } from "sonner";
 import { computeCart } from "@/lib/pricing";
 import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams, worldCupTeams } from "@/lib/logos";
 import { useTeams } from "@/lib/teams";
@@ -648,11 +649,26 @@ export function CartDrawer() {
                       <div className="inline-flex items-center rounded-full border border-border/70">
                         <button onClick={() => updateQty(item.id, item.size, item.color, item.qty - 1)} className="px-2 py-1"><Minus className="h-3 w-3" /></button>
                         <span className="w-6 text-center font-mono text-xs">{item.qty}</span>
-                        <button onClick={() => {
-                          const p = getById(item.id);
-                          const available = p?.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : (p?.stock ?? 0);
-                          updateQty(item.id, item.size, item.color, Math.min(available, item.qty + 1));
-                        }} className="px-2 py-1"><Plus className="h-3 w-3" /></button>
+                        <button 
+                          onClick={() => {
+                            const p = getById(item.id);
+                            const available = p?.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : (p?.stock ?? 10);
+                            if (item.qty >= available) {
+                              toast.error(`Only ${available} items in stock for size ${item.size}`);
+                              return;
+                            }
+                            updateQty(item.id, item.size, item.color, item.qty + 1, available);
+                          }} 
+                          disabled={(() => {
+                            const p = getById(item.id);
+                            const available = p?.stockBySize?.[item.size] !== undefined ? p.stockBySize[item.size] : (p?.stock ?? 10);
+                            return item.qty >= available;
+                          })()}
+                          className="px-2 py-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
                       </div>
                       <button onClick={() => removeFromCart(item.id, item.size, item.color)} className="text-muted-foreground hover:text-brand" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
                     </div>

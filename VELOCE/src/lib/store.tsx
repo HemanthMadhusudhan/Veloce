@@ -104,6 +104,7 @@ type ShopCtx = {
     size: string,
     color: string,
     qty: number,
+    maxStock?: number,
   ) => void;
   removeFromCart: (
     id: string,
@@ -390,13 +391,19 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         if (idx >= 0) {
           const copy = [...prev];
           const newQty = copy[idx].qty + i.qty;
+          const clampedQty = maxStock !== undefined ? Math.min(maxStock, newQty) : newQty;
           copy[idx] = {
             ...copy[idx],
-            qty: maxStock !== undefined ? Math.min(maxStock, newQty) : newQty,
+            qty: clampedQty,
           };
           return copy;
         }
-        return [...prev, i];
+        const itemQty = maxStock !== undefined ? Math.min(maxStock, i.qty) : i.qty;
+        if (itemQty <= 0) {
+          toast.error("This item is currently out of stock");
+          return prev;
+        }
+        return [...prev, { ...i, qty: itemQty }];
       });
       setCartPopupItem(i);
     },
@@ -409,15 +416,19 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       size: string,
       color: string,
       qty: number,
+      maxStock?: number,
     ) => {
       setCart((prev) =>
-        prev.map((x) =>
-          x.id === id &&
-          x.size === size &&
-          x.color === color
-            ? { ...x, qty: Math.max(1, qty) }
-            : x,
-        ),
+        prev.map((x) => {
+          if (x.id === id && x.size === size && x.color === color) {
+            let finalQty = Math.max(1, qty);
+            if (maxStock !== undefined) {
+              finalQty = Math.min(finalQty, maxStock);
+            }
+            return { ...x, qty: finalQty };
+          }
+          return x;
+        }),
       );
     },
     [setCart],
@@ -510,8 +521,26 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           .select("*")
           .single();
         if (error) throw error;
-        // Deduct stock for each ordered item directly in Supabase
+        // Deduct stock for each ordered item in Supabase via SECURITY DEFINER RPC
         if (o.items && Array.isArray(o.items)) {
+          const rpcItems = o.items.map((it) => ({
+            id: it.id,
+            size: it.size || "",
+            qty: it.qty || 1,
+          }));
+
+          try {
+            const { error: rpcErr } = await supabase.rpc("deduct_product_stock", {
+              p_items: rpcItems,
+            });
+            if (rpcErr) {
+              console.log("RPC stock deduct note:", rpcErr.message);
+            }
+          } catch (e) {
+            console.log("RPC stock deduct exception:", e);
+          }
+
+          // Fallback direct update for admin sessions
           for (const it of o.items) {
             try {
               const prodId = it.id;
@@ -553,7 +582,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
                   .eq("id", prodId);
               }
             } catch (stockErr) {
-              console.error("Failed to deduct product stock in store.tsx:", stockErr);
+              // ignore fallback errors
             }
           }
         }
