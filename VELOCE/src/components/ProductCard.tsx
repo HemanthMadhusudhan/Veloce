@@ -12,6 +12,41 @@ const GRID_SIZES =
   "(min-width: 1280px) 320px, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw";
 const LIST_SIZES = "(min-width: 640px) 160px, 128px";
 
+function formatCardTitle(rawName: string): string {
+  if (!rawName) return "";
+  let s = rawName.trim();
+
+  // Strip trailing quoted colors/variants like 'YELLOW', 'BLUE', "GREEN", etc.
+  s = s.replace(/['"][A-Za-z0-9\s/-]+['"]$/i, "").trim();
+
+  // Convert ALL-CAPS to clean Title Case
+  if (s === s.toUpperCase() && /[A-Z]/.test(s)) {
+    s = s
+      .toLowerCase()
+      .split(" ")
+      .map((w) => {
+        if (!w) return "";
+        const u = w.toUpperCase();
+        if (["NBA", "IPL", "F1", "PSG", "RCB", "CSK", "MI", "KKR", "SRH", "DC", "PBKS", "RR", "LSG", "GT", "CR7", "LM10", "UCL"].includes(u)) {
+          return u;
+        }
+        return w.charAt(0).toUpperCase() + w.slice(1);
+      })
+      .join(" ");
+  }
+
+  // Clean redundant marketplace boilerplate words
+  s = s
+    .replace(/Dri-Fit\s+/gi, "")
+    .replace(/Icon Edition\s+/gi, "")
+    .replace(/Swingman Icon Edition\s+/gi, "Swingman ")
+    .replace(/Swingman Jersey\s+Jersey/gi, "Swingman Jersey")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return s;
+}
+
 export function ProductCard({ p: initialP, view = "grid", priority = false }: { p: Product; view?: "grid" | "list"; priority?: boolean }) {
   const { wishlist, toggleWishlist, addToCart, isAdmin } = useShop();
   const { getById } = useCatalog();
@@ -40,6 +75,8 @@ export function ProductCard({ p: initialP, view = "grid", priority = false }: { 
     setSelectedSize(null);
   };
 
+  const displayName = formatCardTitle(p.name);
+
   if (view === "list") {
     return (
       <div className="group relative flex gap-4 rounded-2xl border border-border/40 bg-card/40 p-3 transition-colors hover:border-border sm:gap-6 sm:p-4">
@@ -67,7 +104,7 @@ export function ProductCard({ p: initialP, view = "grid", priority = false }: { 
               params={{ id: p.id }}
               className="mt-1 block truncate font-display text-lg font-semibold hover:text-brand"
             >
-              {p.name}
+              {displayName}
             </Link>
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
               <span>
@@ -172,30 +209,45 @@ export function ProductCard({ p: initialP, view = "grid", priority = false }: { 
           )}
         </div>
 
-        {/* Card Body - Centered details */}
-        <div className="flex flex-col items-center text-center px-1 pt-2.5 pb-1">
-          <Link
-            to="/product/$id"
-            params={{ id: p.id }}
-            className="block text-xs sm:text-[13px] font-medium text-[#0b1d3a] hover:text-[#d32f2f] line-clamp-2 leading-snug transition-colors text-center w-full min-h-[2rem]"
-          >
-            {p.name}
-          </Link>
-
-          {/* Rating & Reviews */}
-          <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-black mt-1">
-            <Star className="h-3 w-3 fill-black text-black inline-block" />
-            <span>{p.rating > 0 ? p.rating.toFixed(1) : "4.8"}</span>
-            <span className="text-neutral-600 font-normal">({p.reviews || 45})</span>
+        {/* Card Body - Centered details with consistent vertical rhythm */}
+        <div className="flex flex-col items-center text-center px-1 pt-2.5 sm:pt-3 pb-1 w-full">
+          {/* Title - Fixed height 2-line area ensuring identical card alignment */}
+          <div className="w-full h-9 sm:h-10 flex items-center justify-center overflow-hidden">
+            <Link
+              to="/product/$id"
+              params={{ id: p.id }}
+              className="text-xs sm:text-[13px] font-medium text-neutral-900 hover:text-[#d32f2f] transition-colors text-center w-full leading-[1.25]"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                wordBreak: "break-word",
+              }}
+              title={p.name}
+            >
+              {displayName}
+            </Link>
           </div>
 
-          {/* Pricing */}
-          <div className="flex items-center justify-center gap-2 mt-1.5 font-bold">
-            <span className="text-sm sm:text-base text-black font-mono">
+          {/* Rating & Reviews */}
+          <div className="flex items-center justify-center gap-1 mt-1 text-[11px] sm:text-xs">
+            <Star className="h-3 w-3 fill-neutral-900 text-neutral-900 inline-block shrink-0" />
+            <span className="font-semibold text-neutral-900 leading-none">
+              {p.rating > 0 ? p.rating.toFixed(1) : "4.8"}
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-neutral-500 font-normal leading-none">
+              ({p.reviews || 45})
+            </span>
+          </div>
+
+          {/* Pricing Hierarchy */}
+          <div className="flex items-baseline justify-center gap-1.5 sm:gap-2 mt-1.5 font-bold">
+            <span className="text-sm sm:text-base text-neutral-950 font-mono tracking-tight leading-none">
               ₹{p.price.toLocaleString("en-IN")}
             </span>
             {p.compareAt && p.compareAt > p.price && (
-              <span className="text-xs text-neutral-400 line-through font-mono font-normal">
+              <span className="text-[11px] sm:text-xs text-neutral-400 line-through font-mono font-normal leading-none">
                 ₹{p.compareAt.toLocaleString("en-IN")}
               </span>
             )}

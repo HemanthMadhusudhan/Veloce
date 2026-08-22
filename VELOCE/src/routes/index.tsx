@@ -956,45 +956,55 @@ function Home() {
       {/* 
         ========================================================================
         CERTIFIED AUTHENTIC & VERIFIED REVIEWS
+        - Refined Spacing & Typography Hierarchy
+        - Compact Trust Metrics & Verified Customer Reviews
         ========================================================================
       */}
-      <section className="max-w-3xl mx-auto my-12 sm:my-16 px-4 sm:px-6 text-center">
-        <div className="mb-8 flex flex-col items-center">
-          <div className="text-[11px] font-black uppercase tracking-[0.25em] text-neutral-600 mb-5">
+      <section className="max-w-2xl mx-auto my-8 sm:my-12 px-4 sm:px-6 text-center border-t border-black/10 pt-8 sm:pt-12">
+        {/* Trust Metrics Block */}
+        <div className="mb-6 sm:mb-8 flex flex-col items-center">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-3.5 select-none">
             CERTIFIED AUTHENTIC & SAFE
-          </div>
+          </span>
 
-          <div className="flex items-center justify-center gap-12 sm:gap-16 w-full mb-6">
+          <div className="flex items-center justify-center gap-10 sm:gap-14 w-full">
+            {/* Trustpilot Metric */}
             <div className="flex flex-col items-center">
-              <span className="font-display text-3xl font-black text-black">4.9 / 5</span>
-              <div className="mt-1 flex items-center gap-1 text-[#00b67a] text-xs font-bold">
-                <span className="text-[#00b67a] text-base leading-none">★</span>
+              <span className="font-display text-2xl sm:text-3xl font-black text-neutral-950 tracking-tight leading-none">
+                4.9 / 5
+              </span>
+              <div className="mt-1.5 flex items-center gap-1 text-[#00b67a] text-xs font-semibold">
+                <span className="text-[#00b67a] text-sm leading-none">★</span>
                 <span>Trustpilot</span>
               </div>
             </div>
 
+            {/* ScamAdviser Metric */}
             <div className="flex flex-col items-center">
-              <span className="font-display text-3xl font-black text-black">100/100</span>
-              <div className="mt-1 flex items-center gap-1 text-[#f59e0b] text-xs font-bold">
-                <ShieldCheck className="w-4 h-4 text-[#f59e0b]" />
+              <span className="font-display text-2xl sm:text-3xl font-black text-neutral-950 tracking-tight leading-none">
+                100 / 100
+              </span>
+              <div className="mt-1.5 flex items-center gap-1 text-[#f59e0b] text-xs font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#f59e0b] shrink-0" />
                 <span>Scamadviser</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 text-left">
+        {/* Customer Review Cards */}
+        <div className="flex flex-col gap-3 sm:gap-3.5 text-left">
           {/* Review 1 - Arun Choudhary */}
-          <div className="rounded-2xl border border-black/15 bg-white p-5 sm:p-6 shadow-xs">
-            <div className="flex gap-1 text-amber-400 mb-2 text-sm">
+          <div className="rounded-xl border border-black/10 bg-white p-4 sm:p-5 shadow-xs transition-colors duration-200">
+            <div className="flex gap-0.5 text-amber-400 mb-2 text-xs select-none">
               ★ ★ ★ ★ ★
             </div>
-            <p className="text-xs sm:text-sm text-neutral-800 leading-relaxed font-medium mb-3">
+            <p className="text-xs sm:text-[13px] text-neutral-800 leading-relaxed font-normal mb-3">
               "Honestly didn't expect much for the price, but the Virat Kohli Cricket Kit blew me away. The embroidery is spot on and the fit is perfect for 5-a-side."
             </p>
-            <div className="flex items-center justify-between border-t border-black/5 pt-3">
+            <div className="flex items-center justify-between border-t border-black/5 pt-2.5">
               <div>
-                <div className="text-xs sm:text-sm font-bold text-black">Arun Choudhary</div>
+                <div className="text-xs font-bold text-neutral-900">Arun Choudhary</div>
                 <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 mt-0.5">
                   VERIFIED BUYER
                 </div>
@@ -1003,16 +1013,16 @@ function Home() {
           </div>
 
           {/* Review 2 - Arjun */}
-          <div className="rounded-2xl border border-black/15 bg-white p-5 sm:p-6 shadow-xs">
-            <div className="flex gap-1 text-amber-400 mb-2 text-sm">
+          <div className="rounded-xl border border-black/10 bg-white p-4 sm:p-5 shadow-xs transition-colors duration-200">
+            <div className="flex gap-0.5 text-amber-400 mb-2 text-xs select-none">
               ★ ★ ★ ★ ★
             </div>
-            <p className="text-xs sm:text-sm text-neutral-800 leading-relaxed font-medium mb-3">
+            <p className="text-xs sm:text-[13px] text-neutral-800 leading-relaxed font-normal mb-3">
               "Ordered the Real Madrid Player Version and Red Bull Racing polo. The fabric quality, breathability, and authentic badge stitching exceeded all expectations. Quick Pan-India delivery!"
             </p>
-            <div className="flex items-center justify-between border-t border-black/5 pt-3">
+            <div className="flex items-center justify-between border-t border-black/5 pt-2.5">
               <div>
-                <div className="text-xs sm:text-sm font-bold text-black">Arjun</div>
+                <div className="text-xs font-bold text-neutral-900">Arjun</div>
                 <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 mt-0.5">
                   VERIFIED BUYER
                 </div>
@@ -1021,16 +1031,16 @@ function Home() {
           </div>
 
           {/* Review 3 - Priyanka */}
-          <div className="rounded-2xl border border-black/15 bg-white p-5 sm:p-6 shadow-xs">
-            <div className="flex gap-1 text-amber-400 mb-2 text-sm">
+          <div className="rounded-xl border border-black/10 bg-white p-4 sm:p-5 shadow-xs transition-colors duration-200">
+            <div className="flex gap-0.5 text-amber-400 mb-2 text-xs select-none">
               ★ ★ ★ ★ ★
             </div>
-            <p className="text-xs sm:text-sm text-neutral-800 leading-relaxed font-medium mb-3">
+            <p className="text-xs sm:text-[13px] text-neutral-800 leading-relaxed font-normal mb-3">
               "Got an oversized Mumbai Indians jersey as a birthday gift and the material is premium and super soft. Customer support was polite and exchange policy gave me full peace of mind."
             </p>
-            <div className="flex items-center justify-between border-t border-black/5 pt-3">
+            <div className="flex items-center justify-between border-t border-black/5 pt-2.5">
               <div>
-                <div className="text-xs sm:text-sm font-bold text-black">Priyanka</div>
+                <div className="text-xs font-bold text-neutral-900">Priyanka</div>
                 <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 mt-0.5">
                   VERIFIED BUYER
                 </div>
