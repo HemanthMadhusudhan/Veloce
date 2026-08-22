@@ -88,6 +88,13 @@ function CheckoutPage() {
   const [showStickyAddress, setShowStickyAddress] = useState(false);
   const [showStickyPayment, setShowStickyPayment] = useState(false);
 
+  // Dynamic estimated delivery date (4 days ahead of current date)
+  const estimatedDeliveryDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 4);
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  }, []);
+
   const inlineProceedRef = useRef<HTMLButtonElement>(null);
   const inlineAddressProceedRef = useRef<HTMLButtonElement>(null);
   const inlinePaymentPayRef = useRef<HTMLButtonElement>(null);
@@ -720,7 +727,7 @@ function CheckoutPage() {
 
                           <div className="text-[11px] sm:text-xs text-neutral-600 flex flex-wrap items-center gap-2 pt-0.5 font-medium">
                             <span className="flex items-center gap-1 text-[#0fa958] font-semibold">
-                              <Truck className="h-3.5 w-3.5" /> Delivery by Thu 20 Aug
+                              <Truck className="h-3.5 w-3.5" /> Delivery by {estimatedDeliveryDate}
                             </span>
                             <span className="text-neutral-300">·</span>
                             <span>4-Day Return</span>
@@ -1140,7 +1147,7 @@ function CheckoutPage() {
             <div className="flex items-center gap-3">
               <Truck className="h-5 w-5 text-[#d32f2f]" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-neutral-900">Estimated Delivery: Thu 20 Aug</h4>
+                <h4 className="text-xs sm:text-sm font-bold text-neutral-900">Estimated Delivery: {estimatedDeliveryDate}</h4>
                 <p className="text-xs text-neutral-600 font-medium">Shipped with premium express courier</p>
               </div>
             </div>

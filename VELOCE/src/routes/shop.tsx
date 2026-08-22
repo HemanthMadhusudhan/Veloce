@@ -463,10 +463,24 @@ function isRCBProduct(p: { team?: string; name?: string; id?: string }): boolean
 
   const filtered = useMemo(() => {
     let list = [...products];
+
+    // On Shop All (no category filter), order deterministically: Football -> F1 -> Cricket -> Basketball
     if (!category && !team && sort === "featured") {
-       list.sort((a, b) => randomOffsets[a.id] - randomOffsets[b.id]);
-    } else {
-       // do nothing to maintain original order which might be new to old
+      const CATEGORY_PRIORITY: Record<string, number> = {
+        football: 1,
+        worldcup: 1,
+        retro: 1,
+        f1: 2,
+        cricket: 3,
+        basketball: 4,
+        badminton: 5,
+        accessories: 6,
+      };
+      list.sort((a, b) => {
+        const orderA = CATEGORY_PRIORITY[a.category] ?? 99;
+        const orderB = CATEGORY_PRIORITY[b.category] ?? 99;
+        return orderA - orderB;
+      });
     }
     
     if (category) {

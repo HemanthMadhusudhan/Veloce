@@ -53,7 +53,6 @@ import { VideoCropper } from "@/components/VideoCropper";
 import { useTeams, type TeamData } from "@/lib/teams";
 import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, footballTeams, worldCupTeams, allLogoEntries } from "@/lib/logos";
 import { supabase } from "@/integrations/supabase/client";
-import { processAndStandardizeJerseyImage } from "@/lib/image-processing";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -691,16 +690,8 @@ function EditProductDrawer({
                   onChange={async (e) => {
                     const files = Array.from(e.target.files ?? []);
                     if (files.length > 0) {
-                      const toastId = toast.loading("Processing & standardizing jersey image...");
-                      try {
-                        const standardized = await processAndStandardizeJerseyImage(files[0]);
-                        setF((s) => ({ ...s, images: [...s.images, standardized] }));
-                        toast.success("Jersey background removed & standardized!", { id: toastId });
-                      } catch {
-                        const url = await fileToDataUrl(files[0]);
-                        setCropImageUrl(url);
-                        toast.dismiss(toastId);
-                      }
+                      const url = await fileToDataUrl(files[0]);
+                      setCropImageUrl(url);
                     }
                     e.target.value = "";
                   }}
@@ -711,15 +702,8 @@ function EditProductDrawer({
                 onClick={async () => {
                   const u = prompt("Paste a product image URL");
                   if (u && u.trim()) {
-                    const toastId = toast.loading("Removing background & standardizing image...");
-                    try {
-                      const standardized = await processAndStandardizeJerseyImage(u.trim());
-                      setF((s) => ({ ...s, images: [...s.images, standardized] }));
-                      toast.success("Jersey background removed & standardized!", { id: toastId });
-                    } catch {
-                      setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
-                      toast.dismiss(toastId);
-                    }
+                    setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
+                    toast.success("Image URL added!");
                   }
                 }}
                 className="flex h-24 w-20 flex-col items-center justify-center gap-1 rounded border border-dashed border-gray-300 text-[9px] uppercase tracking-[0.18em] text-muted-foreground hover:border-black hover:text-black cursor-pointer"
@@ -1415,16 +1399,8 @@ function NewProductRow({
 
   const addFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const toastId = toast.loading("Processing & standardizing jersey image...");
-    try {
-      const standardized = await processAndStandardizeJerseyImage(files[0]);
-      setF((s) => ({ ...s, images: [...s.images, standardized] }));
-      toast.success("Jersey background removed & standardized!", { id: toastId });
-    } catch {
-      const url = await fileToDataUrl(files[0]);
-      setCropImageUrl(url);
-      toast.dismiss(toastId);
-    }
+    const url = await fileToDataUrl(files[0]);
+    setCropImageUrl(url);
   };
 
   const handleCropComplete = (croppedImageUrl: string) => {
@@ -1437,15 +1413,8 @@ function NewProductRow({
   const addUrl = async () => {
     const u = prompt("Paste a product image URL");
     if (u && u.trim()) {
-      const toastId = toast.loading("Removing background & standardizing image...");
-      try {
-        const standardized = await processAndStandardizeJerseyImage(u.trim());
-        setF((s) => ({ ...s, images: [...s.images, standardized] }));
-        toast.success("Jersey background removed & standardized!", { id: toastId });
-      } catch {
-        setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
-        toast.dismiss(toastId);
-      }
+      setF((s) => ({ ...s, images: [...s.images, u.trim()] }));
+      toast.success("Image URL added!");
     }
   };
   const slug = (v: string) =>
