@@ -8,7 +8,8 @@ import { useCatalog } from "@/lib/catalog-store";
 import { useTeams } from "@/lib/teams";
 import { getShortTeamName } from "@/lib/logos";
 import { useShop } from "@/lib/store";
-import { useSiteImages } from "@/lib/site-images";
+import { useSiteImages, type SiteImageSlot } from "@/lib/site-images";
+import { useHomepageFeatured } from "@/lib/homepage-featured";
 import { slugify } from "@/lib/slugify";
 
 import dualFootball from "@/assets/dual-football.jpg";
@@ -145,10 +146,10 @@ const BESTSELLER_SLUGS = [
 interface BannerItem {
   id: string;
   url: string;
-  fallback: string;
   link: string;
   title: string;
   isVideo: boolean;
+  hasBuiltInTypography?: boolean;
 }
 
 function MobileHeroCarousel({
@@ -165,7 +166,7 @@ function MobileHeroCarousel({
   const touchStartY = useRef<number | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  // 5 Mobile Banners configured via site images / defaults
+  // Dynamic Mobile Banners: Only display banners that have an uploaded/configured image or video
   const banners = useMemo<BannerItem[]>(() => {
     const raw1 = siteImages.get("hero-video-mobile") || siteImages.get("hero-video-mobile-1") || siteImages.get("hero-video");
     const raw2 = siteImages.get("hero-video-mobile-2");
@@ -174,116 +175,145 @@ function MobileHeroCarousel({
     const raw5 = siteImages.get("hero-video-mobile-5");
 
     const fallback1 = "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-mobile/1787332663765.webp";
-    const fallback2 = "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp";
-    const fallback3 = "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:f1/1786005520068.webp";
-    const fallback4 = "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/team-Real%20Madrid-mobile/1786463974553.webp";
-    const fallback5 = "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-new-kits-mobile/1786464263659.webp";
 
-    const url1 = raw1 || fallback1;
-    const url2 = raw2 || fallback2;
-    const url3 = raw3 || fallback3;
-    const url4 = raw4 || fallback4;
-    const url5 = raw5 || fallback5;
-
-    return [
+    const candidateSlots: { slotVal: string; item: BannerItem }[] = [
       {
-        id: "banner-1",
-        url: url1,
-        fallback: dualFootball,
-        link: "/new-kits",
-        title: "New 2026/27 Kits",
-        isVideo: isVideoUrl(url1),
+        slotVal: raw1 || fallback1,
+        item: {
+          id: "banner-1",
+          url: raw1 || fallback1,
+          link: "/shop",
+          title: "Veloce Shop All",
+          isVideo: isVideoUrl(raw1 || fallback1),
+          hasBuiltInTypography: false,
+        },
       },
       {
-        id: "banner-2",
-        url: url2,
-        fallback: dualFootball,
-        link: "/shop/football",
-        title: "Football Kits",
-        isVideo: isVideoUrl(url2),
+        slotVal: raw2,
+        item: {
+          id: "banner-2",
+          url: raw2,
+          link: "/shop",
+          title: "Veloce Shop All",
+          isVideo: isVideoUrl(raw2),
+          hasBuiltInTypography: false,
+        },
       },
       {
-        id: "banner-3",
-        url: url3,
-        fallback: dualF1,
-        link: "/shop/f1",
-        title: "Formula 1 Store",
-        isVideo: isVideoUrl(url3),
+        slotVal: raw3,
+        item: {
+          id: "banner-3",
+          url: raw3,
+          link: "/shop",
+          title: "Veloce Shop All",
+          isVideo: isVideoUrl(raw3),
+          hasBuiltInTypography: false,
+        },
       },
       {
-        id: "banner-4",
-        url: url4,
-        fallback: product1,
-        link: "/shop/cricket",
-        title: "Cricket Matchwear",
-        isVideo: isVideoUrl(url4),
+        slotVal: raw4,
+        item: {
+          id: "banner-4",
+          url: raw4,
+          link: "/shop",
+          title: "Veloce Shop All",
+          isVideo: isVideoUrl(raw4),
+          hasBuiltInTypography: true,
+        },
       },
       {
-        id: "banner-5",
-        url: url5,
-        fallback: product3,
-        link: "/player-version",
-        title: "Player Version",
-        isVideo: isVideoUrl(url5),
+        slotVal: raw5,
+        item: {
+          id: "banner-5",
+          url: raw5,
+          link: "/shop",
+          title: "Veloce Shop All",
+          isVideo: isVideoUrl(raw5),
+          hasBuiltInTypography: true,
+        },
       },
     ];
+
+    // Only include banner if the slot has an uploaded/configured media URL
+    const active = candidateSlots
+      .filter((entry) => Boolean(entry.slotVal && entry.slotVal.trim() !== ""))
+      .map((entry) => entry.item);
+
+    return active.length > 0 ? active : [candidateSlots[0].item];
   }, [siteImages, isVideoUrl]);
+
+  const numBanners = banners.length;
 
   const nextSlide = useCallback(() => {
     setProgress(0);
-    setActiveIdx((prev) => (prev + 1) % banners.length);
+    setActiveIdx((prev) => (prev + 1) % (banners.length || 1));
   }, [banners.length]);
 
   const prevSlide = useCallback(() => {
     setProgress(0);
-    setActiveIdx((prev) => (prev - 1 + banners.length) % banners.length);
+    setActiveIdx((prev) => (prev - 1 + (banners.length || 1)) % (banners.length || 1));
   }, [banners.length]);
 
-  // Video play/pause on slide change or pause toggle
-  useEffect(() => {
-    const currentBanner = banners[activeIdx];
-    const vid = videoRefs.current[activeIdx];
-    if (vid && currentBanner?.isVideo) {
-      if (isPaused) {
-        vid.pause();
-      } else {
-        vid.currentTime = 0;
-        vid.play().catch(() => {});
-      }
-    }
-  }, [activeIdx, isPaused, banners]);
+  const goToSlide = useCallback(
+    (idx: number) => {
+      setProgress(0);
+      setActiveIdx(idx % (banners.length || 1));
+    },
+    [banners.length]
+  );
 
-  // Slide countdown & progress animation
+  // Video play/pause & reset handling for active slide
+  useEffect(() => {
+    videoRefs.current.forEach((vid, idx) => {
+      if (!vid) return;
+      if (idx === activeIdx) {
+        if (isPaused) {
+          vid.pause();
+        } else {
+          vid.currentTime = 0;
+          vid.play().catch(() => {});
+        }
+      } else {
+        vid.pause();
+        vid.currentTime = 0;
+      }
+    });
+  }, [activeIdx, isPaused]);
+
+  // Robust, Strictly Sequential Auto-Advance Timer (0 -> 1 -> 2 -> 3 -> 4)
   useEffect(() => {
     if (isPaused) return;
 
     const currentBanner = banners[activeIdx];
     const isVideo = currentBanner?.isVideo;
-    const duration = isVideo ? 15000 : 3000;
-    const intervalTime = 30;
-    const step = (intervalTime / duration) * 100;
+
+    if (isVideo) {
+      // For video slides, progress is driven by active video's onTimeUpdate
+      // Safety timeout: 15 seconds in case video playback stalls
+      const safetyTimer = setTimeout(() => {
+        nextSlide();
+      }, 15000);
+      return () => clearTimeout(safetyTimer);
+    }
+
+    // Exact 3.0s countdown for image slides with smooth linear progress
+    const duration = 3000;
+    const startTime = Date.now();
+    setProgress(0);
 
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + step;
-        if (next >= 100) {
-          nextSlide();
-          return 0;
-        }
-        return next;
-      });
-    }, intervalTime);
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / duration) * 100);
+      setProgress(pct);
+
+      if (elapsed >= duration) {
+        clearInterval(interval);
+        nextSlide();
+      }
+    }, 33);
 
     return () => clearInterval(interval);
   }, [activeIdx, isPaused, banners, nextSlide]);
-
-  const handleVideoEnded = () => {
-    nextSlide();
-  };
-
-  const handleVideoError = () => {
-    nextSlide();
-  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -305,10 +335,6 @@ function MobileHeroCarousel({
     touchStartX.current = null;
     touchStartY.current = null;
   };
-
-  // SVG circular circumference for r=11: 2 * PI * 11 ≈ 69.115
-  const circumference = 69.115;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div
@@ -338,14 +364,29 @@ function MobileHeroCarousel({
                     muted
                     playsInline
                     preload="auto"
-                    poster={b.fallback}
-                    onEnded={handleVideoEnded}
-                    onError={handleVideoError}
+                    onTimeUpdate={(e) => {
+                      if (isActive && !isPaused) {
+                        const vid = e.currentTarget;
+                        if (vid.duration) {
+                          setProgress((vid.currentTime / vid.duration) * 100);
+                        }
+                      }
+                    }}
+                    onEnded={() => {
+                      if (isActive) {
+                        nextSlide();
+                      }
+                    }}
+                    onError={() => {
+                      if (isActive) {
+                        nextSlide();
+                      }
+                    }}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <img
-                    src={b.url || b.fallback}
+                    src={b.url}
                     alt={b.title}
                     className="w-full h-full object-cover object-center"
                     loading={idx === 0 ? "eager" : "lazy"}
@@ -358,73 +399,197 @@ function MobileHeroCarousel({
         })}
       </div>
 
-      {/* Circular Carousel Controls: [Pause/Play with Progress Ring] [< Prev] [> Next] */}
-      <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
-        {/* Pause / Play Button with Animated Countdown Progress Ring */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsPaused((prev) => !prev);
-          }}
-          className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-md text-white shadow-md active:scale-90 transition cursor-pointer"
-          aria-label={isPaused ? "Play hero carousel" : "Pause hero carousel"}
-        >
-          <svg className="absolute inset-0 w-full h-full -rotate-90 p-[1px]" viewBox="0 0 28 28">
-            <circle
-              cx="14"
-              cy="14"
-              r="11"
-              fill="none"
-              stroke="rgba(255, 255, 255, 0.25)"
-              strokeWidth="2"
-            />
-            <circle
-              cx="14"
-              cy="14"
-              r="11"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="2"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-[stroke-dashoffset] duration-75 ease-linear"
-            />
-          </svg>
-          {isPaused ? (
-            <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white ml-0.5 fill-white" />
-          ) : (
-            <Pause className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white fill-white" />
-          )}
-        </button>
+      {/* Seamless Organic Radial Vignette (Only visible on clean photo slides without built-in typography) */}
+      <div
+        className={`absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(0,0,0,0.5)_0%,_rgba(0,0,0,0.2)_25%,_rgba(0,0,0,0)_60%)] pointer-events-none z-15 transition-opacity duration-400 ease-out ${
+          !banners[activeIdx]?.hasBuiltInTypography ? "opacity-100" : "opacity-0"
+        }`}
+      />
 
-        {/* Previous Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            prevSlide();
-          }}
-          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-white/80 hover:bg-white text-black backdrop-blur-md shadow-md active:scale-90 transition cursor-pointer"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5]" />
-        </button>
-
-        {/* Next Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            nextSlide();
-          }}
-          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-white/80 hover:bg-white text-black backdrop-blur-md shadow-md active:scale-90 transition cursor-pointer"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5]" />
-        </button>
+      {/* Editorial Hero Messaging Safe Zone (Smoothly adapts per slide; hides over campaign artwork) */}
+      <div
+        className={`absolute bottom-6 left-3.5 sm:bottom-8 sm:left-5 z-25 max-w-[175px] sm:max-w-[220px] select-none pointer-events-none transition-all duration-400 ease-out motion-reduce:transition-none ${
+          !banners[activeIdx]?.hasBuiltInTypography
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-2"
+        }`}
+      >
+        <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.02em] text-white leading-tight drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]">
+          THE GAME. THE JERSEY.
+        </h2>
+        <p className="text-[11px] sm:text-xs text-white/85 font-normal tracking-normal mt-1 sm:mt-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.75)]">
+          Wear the moments that matter.
+        </p>
       </div>
+
+      {/* Minimal Premium Hero Carousel Controls (Shown only when multiple uploaded banners exist) */}
+      {banners.length > 1 && (
+        <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 z-30 flex items-center bg-black/20 backdrop-blur-[2px] px-1.75 py-0.75 rounded-full border border-white/6 shadow-none pointer-events-auto select-none gap-1.5">
+          {/* Minimal Indicators (● ━━━ ○ ○ ○) */}
+          <div className="flex items-center gap-1.25">
+            {banners.map((_, idx) => {
+              const isActive = idx === activeIdx;
+              return (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goToSlide(idx);
+                  }}
+                  className="relative flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
+                  aria-label={`Go to slide ${idx + 1}`}
+                >
+                  {isActive ? (
+                    /* Active Elongated Line with Subtle Autoplay Progress Fill */
+                    <div className="relative h-0.75 sm:h-1 w-3.5 sm:w-4.5 rounded-full bg-white/20 overflow-hidden transition-all duration-400 ease-out motion-reduce:transition-none">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-white rounded-full transition-[width] duration-75 ease-linear"
+                        style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+                      />
+                    </div>
+                  ) : (
+                    /* Inactive Small Circular Dot */
+                    <div className="h-0.75 w-0.75 sm:h-1 sm:w-1 rounded-full bg-white/30 hover:bg-white/60 transition-all duration-400 ease-out motion-reduce:transition-none" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Subtle Divider */}
+          <div className="h-2 w-px bg-white/10" />
+
+          {/* Lightweight Arrow Controls */}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                prevSlide();
+              }}
+              className="p-0.5 rounded-full text-white/60 hover:text-white active:opacity-50 transition-colors duration-200 cursor-pointer focus:outline-none"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[1.5]" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                nextSlide();
+              }}
+              className="p-0.5 rounded-full text-white/60 hover:text-white active:opacity-50 transition-colors duration-200 cursor-pointer focus:outline-none"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[1.5]" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategoryCampaignBanner({
+  mobileSlot,
+  pcSlot,
+  fallbackUrl,
+  categoryName,
+  headline,
+  description,
+  buttonText,
+  linkTo,
+  siteImages,
+  isVideoUrl,
+}: {
+  mobileSlot: SiteImageSlot;
+  pcSlot: SiteImageSlot;
+  fallbackUrl: string;
+  categoryName: string;
+  headline: string;
+  description: string;
+  buttonText: string;
+  linkTo: string;
+  siteImages: ReturnType<typeof useSiteImages>;
+  isVideoUrl: (url?: string) => boolean;
+}) {
+  const pcUrl = siteImages.get(pcSlot) || siteImages.get(mobileSlot) || fallbackUrl;
+  const mobileUrl = siteImages.get(mobileSlot) || siteImages.get(pcSlot) || fallbackUrl;
+
+  return (
+    <div className="relative w-full aspect-[4/5] sm:aspect-[4/3] md:aspect-[16/7] lg:aspect-[21/9] bg-neutral-900 overflow-hidden border-0 rounded-none m-0 p-0 group">
+      <Link
+        to={linkTo as any}
+        className="relative w-full h-full flex flex-col justify-end p-6 sm:p-10 lg:p-12 border-0 rounded-none m-0 group cursor-pointer overflow-hidden"
+      >
+        {/* Mobile View Media */}
+        <div className="block md:hidden absolute inset-0 w-full h-full">
+          {isVideoUrl(mobileUrl) ? (
+            <video
+              src={mobileUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out filter brightness-[0.88] contrast-[1.05]"
+            />
+          ) : (
+            <img
+              src={mobileUrl}
+              alt={categoryName}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out filter brightness-[0.88] contrast-[1.05]"
+            />
+          )}
+        </div>
+
+        {/* PC / Desktop View Media */}
+        <div className="hidden md:block absolute inset-0 w-full h-full">
+          {isVideoUrl(pcUrl) ? (
+            <video
+              src={pcUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out filter brightness-[0.88] contrast-[1.05]"
+            />
+          ) : (
+            <img
+              src={pcUrl}
+              alt={categoryName}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out filter brightness-[0.88] contrast-[1.05]"
+            />
+          )}
+        </div>
+
+        {/* Seamless Organic Gradient for Text Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none z-10" />
+
+        {/* Editorial Campaign Messaging Safe Zone */}
+        <div className="relative z-20 text-white max-w-sm sm:max-w-md lg:max-w-xl pointer-events-auto select-none">
+          <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
+            {categoryName}
+          </span>
+          <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-2 sm:mb-3">
+            {headline}
+          </h2>
+          <p className="text-xs sm:text-sm md:text-base text-white/85 font-normal tracking-wide mb-4 drop-shadow-sm">
+            {description}
+          </p>
+          <div>
+            <span className="px-6 py-2.5 bg-white text-black group-hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block shadow-md">
+              {buttonText}
+            </span>
+          </div>
+        </div>
+      </Link>
     </div>
   );
 }
@@ -476,75 +641,52 @@ function Home() {
     }
   };
 
-  // Fixed static Bestsellers list with the 21 specified products in exact order
-  const bestsellers = useMemo(() => {
-    if (!products.length) return [];
+  const { featured: homepageFeatured } = useHomepageFeatured();
 
-    const productMap = new Map<string, (typeof products)[0]>();
-    for (const p of products) {
-      if (p.id) productMap.set(p.id.toLowerCase(), p);
-      if (p.slug) productMap.set(p.slug.toLowerCase(), p);
-      if (p.name) productMap.set(slugify(p.name).toLowerCase(), p);
+  // Curated category products with admin override or smart category fallback
+  const footballProducts = useMemo(() => {
+    if (homepageFeatured.football && homepageFeatured.football.length > 0) {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const curated = homepageFeatured.football
+        .map((id) => byId.get(id))
+        .filter((p): p is (typeof products)[0] => !!p);
+      if (curated.length > 0) return curated;
     }
+    return products.filter((p) => p.category === "football" || p.category === "worldcup").slice(0, 4);
+  }, [products, homepageFeatured.football]);
 
-    return BESTSELLER_SLUGS.map((slug) => productMap.get(slug.toLowerCase())).filter(
-      (p): p is (typeof products)[0] => p !== undefined
-    );
-  }, [products]);
+  const cricketProducts = useMemo(() => {
+    if (homepageFeatured.cricket && homepageFeatured.cricket.length > 0) {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const curated = homepageFeatured.cricket
+        .map((id) => byId.get(id))
+        .filter((p): p is (typeof products)[0] => !!p);
+      if (curated.length > 0) return curated;
+    }
+    return products.filter((p) => p.category === "cricket").slice(0, 4);
+  }, [products, homepageFeatured.cricket]);
 
-  const curatedProducts = useMemo(() => {
-    if (!products.length) return [];
-    
-    const nonAccessories = products.filter(
-      (p) =>
-        p.category !== "accessories" &&
-        (!p.tag || !p.tag.toLowerCase().includes("accessories"))
-    );
+  const f1Products = useMemo(() => {
+    if (homepageFeatured.f1 && homepageFeatured.f1.length > 0) {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const curated = homepageFeatured.f1
+        .map((id) => byId.get(id))
+        .filter((p): p is (typeof products)[0] => !!p);
+      if (curated.length > 0) return curated;
+    }
+    return products.filter((p) => p.category === "f1").slice(0, 4);
+  }, [products, homepageFeatured.f1]);
 
-    if (selectedSportTab === "cricket") {
-      const isRCB = (p: (typeof products)[0]) => {
-        const t = (p.team || "").toLowerCase();
-        const n = (p.name || "").toLowerCase();
-        const id = (p.id || "").toLowerCase();
-        return (
-          t.includes("rcb") ||
-          t.includes("royal challengers") ||
-          t.includes("bengaluru") ||
-          t.includes("bangalore") ||
-          n.includes("rcb") ||
-          n.includes("royal challengers") ||
-          id.includes("rcb") ||
-          id.includes("royal-challengers")
-        );
-      };
-      const cricketAll = nonAccessories.filter((p) => p.category === "cricket");
-      const rcb = cricketAll.filter(isRCB);
-      const rest = cricketAll.filter((p) => !isRCB(p));
-      return [...rcb, ...rest].slice(0, 12);
+  const basketballProducts = useMemo(() => {
+    if (homepageFeatured.basketball && homepageFeatured.basketball.length > 0) {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const curated = homepageFeatured.basketball
+        .map((id) => byId.get(id))
+        .filter((p): p is (typeof products)[0] => !!p);
+      if (curated.length > 0) return curated;
     }
-    if (selectedSportTab === "football") {
-      return nonAccessories.filter((p) => p.category === "football" || p.category === "worldcup").slice(0, 12);
-    }
-    if (selectedSportTab === "basketball") {
-      return nonAccessories.filter((p) => p.category === "basketball").slice(0, 12);
-    }
-    if (selectedSportTab === "f1") {
-      return nonAccessories.filter((p) => p.category === "f1").slice(0, 12);
-    }
-
-    const cricket = nonAccessories.filter((p) => p.category === "cricket").slice(0, 4);
-    const football = nonAccessories.filter((p) => p.category === "football").slice(0, 6);
-    const basketball = nonAccessories.filter((p) => p.category === "basketball").slice(0, 2);
-    const f1 = nonAccessories.filter((p) => p.category === "f1").slice(0, 2);
-    
-    const combined = [...cricket, ...football, ...basketball, ...f1, ...nonAccessories];
-    const seen = new Set<string>();
-    return combined.filter((p) => {
-      if (seen.has(p.id)) return false;
-      seen.add(p.id);
-      return true;
-    }).slice(0, 12);
-  }, [products, selectedSportTab]);
+    return products.filter((p) => p.category === "basketball").slice(0, 4);
+  }, [products, homepageFeatured.basketball]);
 
   return (
     <div className="min-h-screen bg-white text-black selection:bg-[#d32f2f] selection:text-white">
@@ -564,8 +706,8 @@ function Home() {
         </div>
 
         {/* PC / Desktop View Hero Banner */}
-        <div className="hidden md:block w-full h-full">
-          <Link to="/new-kits" className="block w-full h-full cursor-pointer">
+        <div className="hidden md:block w-full h-full relative">
+          <Link to="/shop" className="block w-full h-full cursor-pointer">
             {heroPcMediaUrl && isVideoUrl(heroPcMediaUrl) ? (
               <video
                 src={heroPcMediaUrl}
@@ -587,182 +729,228 @@ function Home() {
               />
             )}
           </Link>
+
+          {/* Desktop Seamless Organic Radial Vignette */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(0,0,0,0.65)_0%,_rgba(0,0,0,0.3)_35%,_rgba(0,0,0,0)_70%)] pointer-events-none z-10" />
+
+          {/* Desktop Editorial Hero Messaging Safe Zone (Bottom-Left) */}
+          <div className="absolute bottom-8 left-8 lg:bottom-12 lg:left-12 z-20 max-w-md pointer-events-none select-none">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-[0.05em] text-white leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+              THE GAME. THE JERSEY.
+            </h2>
+            <p className="text-sm md:text-base text-white/90 font-normal tracking-wide mt-1.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              Wear the moments that matter.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* 
         ========================================================================
-        FEATURED SECTION (Directly below Hero - Configurable via 'featured-1' & 'featured-2' Admin Slots)
-        - 100% FULL-WIDTH EDGE-TO-EDGE VIDEO OR PHOTO
-        - NO ROUNDED CORNERS (rounded-none), NO MARGINS, NO PADDING, NO GAPS
+        1. FOOTBALL CATEGORY SECTION
+        - Full-width Football Campaign Banner (Configurable via Admin 'featured-football-pc' & 'featured-football-mobile')
+        - 4 Curated Football Products
         ========================================================================
       */}
-      <section className="w-full bg-white py-0 my-0">
-        <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-black tracking-tight px-6 pt-8 pb-4">
-          Featured
-        </h2>
+      <section className="w-full my-0 py-0">
+        <CategoryCampaignBanner
+          mobileSlot="featured-football-mobile"
+          pcSlot="featured-football-pc"
+          fallbackUrl={
+            siteImages.get("featured-2-pc") ||
+            "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
+          }
+          categoryName="Football Collection"
+          headline="THE BEAUTIFUL GAME"
+          description="Authentic matchday club & national team jerseys."
+          buttonText="Shop Football"
+          linkTo="/shop/football"
+          siteImages={siteImages}
+          isVideoUrl={isVideoUrl}
+        />
 
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-0 p-0 m-0">
-          
-          {/* Featured Card 1 - Formula 1 (Edge to Edge, Video or Photo support) */}
-          <Link to="/shop/f1" className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0 group cursor-pointer">
-            {/* Mobile View Media */}
-            <div className="block md:hidden absolute inset-0 w-full h-full">
-              {featured1MobileMediaUrl && isVideoUrl(featured1MobileMediaUrl) ? (
-                <video
-                  src={featured1MobileMediaUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster={dualF1}
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              ) : (
-                <img
-                  src={featured1MobileMediaUrl || dualF1}
-                  alt="Formula 1 Store Mobile"
-                  loading="eager"
-                  decoding="async"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              )}
+        {/* Curated Football Products */}
+        {footballProducts.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-display text-2xl sm:text-3xl font-black text-black tracking-tight">
+                  Featured Football Kits
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">Top match-day authentic editions</p>
+              </div>
+              <Link
+                to="/shop/football"
+                className="group inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-black hover:opacity-75 transition-opacity"
+              >
+                <span>View All Football</span>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
             </div>
 
-            {/* PC / Desktop View Media */}
-            <div className="hidden md:block absolute inset-0 w-full h-full">
-              {featured1PcMediaUrl && isVideoUrl(featured1PcMediaUrl) ? (
-                <video
-                  src={featured1PcMediaUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster={dualF1}
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              ) : (
-                <img
-                  src={featured1PcMediaUrl || dualF1}
-                  alt="Formula 1 Store Desktop"
-                  loading="eager"
-                  decoding="async"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+              {footballProducts.map((p, i) => (
+                <ProductCard key={p.id} p={p} priority={i < 4} />
+              ))}
             </div>
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-            <div className="relative z-10 text-white">
-              <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
-                Formula 1 Collection
-              </span>
-              <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
-                Formula 1 Store
-              </h3>
-              <span className="px-6 py-2.5 bg-white text-black group-hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block shadow-md">
-                Shop Formula 1
-              </span>
-            </div>
-          </Link>
-
-          {/* Featured Card 2 - Cricket Section (Edge to Edge, Video or Photo support) */}
-          <Link to="/shop/cricket" className="relative w-full aspect-[4/5] sm:aspect-[4/3] overflow-hidden bg-neutral-900 flex flex-col justify-end p-6 sm:p-10 border-0 rounded-none m-0 group cursor-pointer">
-            {/* Mobile View Media */}
-            <div className="block md:hidden absolute inset-0 w-full h-full">
-              {featured2MobileMediaUrl && isVideoUrl(featured2MobileMediaUrl) ? (
-                <video
-                  src={featured2MobileMediaUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster={dualFootball}
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              ) : (
-                <img
-                  src={featured2MobileMediaUrl || dualFootball}
-                  alt="Cricket Section Mobile"
-                  loading="eager"
-                  decoding="async"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              )}
-            </div>
-
-            {/* PC / Desktop View Media */}
-            <div className="hidden md:block absolute inset-0 w-full h-full">
-              {featured2PcMediaUrl && isVideoUrl(featured2PcMediaUrl) ? (
-                <video
-                  src={featured2PcMediaUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  poster={dualFootball}
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              ) : (
-                <img
-                  src={featured2PcMediaUrl || dualFootball}
-                  alt="Cricket Section Desktop"
-                  loading="eager"
-                  decoding="async"
-                  className="w-full h-full object-cover filter brightness-[0.85] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
-                />
-              )}
-            </div>
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-            <div className="relative z-10 text-white">
-              <span className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-wider block mb-1">
-                Official Cricket Apparel
-              </span>
-              <h3 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-4">
-                Cricket Section
-              </h3>
-              <span className="px-6 py-2.5 bg-white text-black group-hover:bg-neutral-200 text-xs sm:text-sm font-bold rounded-full transition-transform active:scale-95 inline-block shadow-md">
-                Shop Cricket
-              </span>
-            </div>
-          </Link>
-
-        </div>
+          </div>
+        )}
       </section>
 
       {/* 
         ========================================================================
-        SHOP BY TEAM (Continuous Marquee)
+        2. CRICKET CATEGORY SECTION
+        - Full-width Cricket Campaign Banner (Configurable via Admin 'featured-cricket-pc' & 'featured-cricket-mobile')
+        - 4 Curated Cricket Products
         ========================================================================
       */}
-      <div className="w-full bg-white py-6 border-b border-black/10">
-        <UnifiedShopByTeam />
-      </div>
+      <section className="w-full my-0 py-0 border-t border-black/10">
+        <CategoryCampaignBanner
+          mobileSlot="featured-cricket-mobile"
+          pcSlot="featured-cricket-pc"
+          fallbackUrl={
+            siteImages.get("featured-2-pc") ||
+            "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
+          }
+          categoryName="Cricket Collection"
+          headline="CRICKET ATELIER"
+          description="Official national team jerseys & IPL matchwear."
+          buttonText="Shop Cricket"
+          linkTo="/shop/cricket"
+          siteImages={siteImages}
+          isVideoUrl={isVideoUrl}
+        />
+
+        {/* Curated Cricket Products */}
+        {cricketProducts.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-display text-2xl sm:text-3xl font-black text-black tracking-tight">
+                  Featured Cricket Kits
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">International & League Matchwear</p>
+              </div>
+              <Link
+                to="/shop/cricket"
+                className="group inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-black hover:opacity-75 transition-opacity"
+              >
+                <span>View All Cricket</span>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+              {cricketProducts.map((p, i) => (
+                <ProductCard key={p.id} p={p} priority={i < 4} />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* 
         ========================================================================
-        BESTSELLERS SECTION (Matching Nike Reference Screenshot 2)
-        - Headline: Bestsellers
-        - Product cards carousel / grid with price ₹ formatting
+        3. FORMULA 1 CATEGORY SECTION
+        - Full-width Formula 1 Campaign Banner (Configurable via Admin 'featured-f1-pc' & 'featured-f1-mobile')
+        - 4 Curated F1 Products
         ========================================================================
       */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-black/10">
-        <h2 className="font-display text-3xl sm:text-4xl font-black text-black tracking-tight mb-6 sm:mb-8">
-          Bestsellers
-        </h2>
+      <section className="w-full my-0 py-0 border-t border-black/10">
+        <CategoryCampaignBanner
+          mobileSlot="featured-f1-mobile"
+          pcSlot="featured-f1-pc"
+          fallbackUrl={
+            siteImages.get("featured-1-pc") ||
+            "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:f1/1786005520068.webp"
+          }
+          categoryName="Motorsport Collection"
+          headline="FORMULA 1 STORE"
+          description="Official team paddock polos, jerseys, and fan tees."
+          buttonText="Shop Formula 1"
+          linkTo="/shop/f1"
+          siteImages={siteImages}
+          isVideoUrl={isVideoUrl}
+        />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-          {bestsellers.map((p, i) => (
-            <ProductCard key={p.id} p={p} priority={i < 4} />
-          ))}
-        </div>
+        {/* Curated F1 Products */}
+        {f1Products.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-display text-2xl sm:text-3xl font-black text-black tracking-tight">
+                  Featured Formula 1 Apparel
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">High-speed teamwear & racing tees</p>
+              </div>
+              <Link
+                to="/shop/f1"
+                className="group inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-black hover:opacity-75 transition-opacity"
+              >
+                <span>View All F1</span>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+              {f1Products.map((p, i) => (
+                <ProductCard key={p.id} p={p} priority={i < 4} />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 
+        ========================================================================
+        4. BASKETBALL CATEGORY SECTION
+        - Full-width Basketball Campaign Banner (Configurable via Admin 'featured-basketball-pc' & 'featured-basketball-mobile')
+        - 4 Curated Basketball Products
+        ========================================================================
+      */}
+      <section className="w-full my-0 py-0 border-t border-black/10">
+        <CategoryCampaignBanner
+          mobileSlot="featured-basketball-mobile"
+          pcSlot="featured-basketball-pc"
+          fallbackUrl={
+            siteImages.get("featured-1-pc") ||
+            "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-basketball/1784609699446.webp"
+          }
+          categoryName="Basketball Collection"
+          headline="COURT CULTURE"
+          description="Iconic NBA & street-ready athletic silhouettes."
+          buttonText="Shop Basketball"
+          linkTo="/shop/basketball"
+          siteImages={siteImages}
+          isVideoUrl={isVideoUrl}
+        />
+
+        {/* Curated Basketball Products */}
+        {basketballProducts.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="font-display text-2xl sm:text-3xl font-black text-black tracking-tight">
+                  Featured Basketball Kits
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">Classic hardwood & court editions</p>
+              </div>
+              <Link
+                to="/shop/basketball"
+                className="group inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-black hover:opacity-75 transition-opacity"
+              >
+                <span>View All Basketball</span>
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+              {basketballProducts.map((p, i) => (
+                <ProductCard key={p.id} p={p} priority={i < 4} />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 

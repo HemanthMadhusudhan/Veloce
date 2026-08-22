@@ -33,6 +33,7 @@ import { DEFAULT_DROPS, useDrops, type Drop } from "@/lib/drops";
 import { formatOrderId } from "@/lib/format";
 import { formatINR } from "@/lib/format";
 import { useShop, type OrderStatus } from "@/lib/store";
+import { useHomepageFeatured, type HomepageFeaturedCategories } from "@/lib/homepage-featured";
 import {
   useSiteImages,
   uploadSiteImageFile,
@@ -92,6 +93,7 @@ type Tab =
   | "orders"
   | "users"
   | "images"
+  | "featuredSections"
   | "categories"
   | "drops"
   | "teams"
@@ -119,6 +121,13 @@ function Admin() {
           icon={<Package className="h-3.5 w-3.5" />}
         >
           Products
+        </TabBtn>
+        <TabBtn
+          active={tab === "featuredSections"}
+          onClick={() => setTab("featuredSections")}
+          icon={<Sparkles className="h-3.5 w-3.5" />}
+        >
+          Homepage Sections
         </TabBtn>
         <TabBtn
           active={tab === "inventory"}
@@ -180,6 +189,7 @@ function Admin() {
 
       <div className="mt-8">
         {tab === "products" && <ProductsTab />}
+        {tab === "featuredSections" && <FeaturedSectionsTab />}
         {tab === "inventory" && <InventoryTab />}
         {tab === "orders" && <OrdersTab />}
         {tab === "users" && <UsersTab />}
@@ -2821,6 +2831,227 @@ function TeamsTab() {
     </div>
   );
 }
+
+/* ---------- HOMEPAGE FEATURED SECTIONS TAB ---------- */
+function FeaturedSectionsTab() {
+  const { products } = useCatalog();
+  const { featured, updateCategoryFeatured } = useHomepageFeatured();
+  const [selectedSport, setSelectedSport] = useState<keyof HomepageFeaturedCategories>("football");
+  const [search, setSearch] = useState("");
+
+  const currentIds = featured[selectedSport] || [];
+
+  const selectedProducts = useMemo(() => {
+    const productMap = new Map(products.map((p) => [p.id, p]));
+    return currentIds.map((id) => productMap.get(id)).filter((p): p is Product => !!p);
+  }, [products, currentIds]);
+
+  const availableProducts = useMemo(() => {
+    const selectedSet = new Set(currentIds);
+    return products
+      .filter((p) => {
+        if (selectedSet.has(p.id)) return false;
+        if (selectedSport === "football") {
+          if (p.category !== "football" && p.category !== "worldcup") return false;
+        } else if (selectedSport === "cricket") {
+          if (p.category !== "cricket") return false;
+        } else if (selectedSport === "f1") {
+          if (p.category !== "f1") return false;
+        } else if (selectedSport === "basketball") {
+          if (p.category !== "basketball") return false;
+        }
+        if (!search.trim()) return true;
+        const q = search.toLowerCase();
+        return (
+          p.name.toLowerCase().includes(q) ||
+          (p.team && p.team.toLowerCase().includes(q)) ||
+          p.id.toLowerCase().includes(q)
+        );
+      })
+      .slice(0, 50);
+  }, [products, currentIds, selectedSport, search]);
+
+  const handleAdd = (id: string) => {
+    if (currentIds.length >= 8) {
+      toast.error("Maximum 8 featured products allowed per category section.");
+      return;
+    }
+    updateCategoryFeatured(selectedSport, [...currentIds, id]);
+    toast.success("Product added to homepage section!");
+  };
+
+  const handleRemove = (id: string) => {
+    updateCategoryFeatured(
+      selectedSport,
+      currentIds.filter((item) => item !== id)
+    );
+    toast.success("Product removed from homepage section.");
+  };
+
+  const sportLabels: Record<keyof HomepageFeaturedCategories, string> = {
+    football: "Football Kits",
+    cricket: "Cricket Kits",
+    f1: "Formula 1 Store",
+    basketball: "Basketball Kits",
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-display text-xl font-bold">Homepage Category Sections</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Curate the 4–6 featured kits that appear immediately under each sport's full-width campaign banner on the homepage.
+        </p>
+      </div>
+
+      {/* Category selector pills */}
+      <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+        {(["football", "cricket", "f1", "basketball"] as const).map((sport) => {
+          const count = (featured[sport] || []).length;
+          const isActive = selectedSport === sport;
+          return (
+            <button
+              key={sport}
+              onClick={() => {
+                setSelectedSport(sport);
+                setSearch("");
+              }}
+              className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition ${
+                isActive
+                  ? "bg-black text-white"
+                  : "border border-gray-300 text-black hover:border-black hover:bg-gray-50"
+              }`}
+            >
+              <span>{sportLabels[sport]}</span>
+              <span
+                className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                  isActive ? "bg-white text-black" : "bg-black/10 text-black"
+                }`}
+              >
+                {count > 0 ? `${count} curated` : "Auto"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Left Column: Curated Items */}
+        <div className="rounded-none border border-gray-300 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-display text-base font-bold">
+                Featured {sportLabels[selectedSport]} ({selectedProducts.length}/8)
+              </h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {selectedProducts.length === 0
+                  ? "Currently using top catalog items. Add products below to handpick."
+                  : "These exact items are displayed on the homepage in this order."}
+              </p>
+            </div>
+            {selectedProducts.length > 0 && (
+              <button
+                onClick={() => updateCategoryFeatured(selectedSport, [])}
+                className="text-[11px] font-bold text-red-600 uppercase tracking-wider hover:underline"
+              >
+                Reset to Auto
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+            {selectedProducts.map((p, idx) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-none border border-gray-200 p-3 bg-white hover:border-black transition"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-muted-foreground w-4">{idx + 1}.</span>
+                  {p.images[0] && (
+                    <img src={p.images[0]} className="h-10 w-8 rounded object-cover" alt={p.name} />
+                  )}
+                  <div className="truncate max-w-[200px] text-xs">
+                    <div className="font-semibold truncate">{p.name}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {p.team || p.category} • ₹{p.price}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRemove(p.id)}
+                  className="p-1.5 text-neutral-400 hover:text-red-600 transition-colors"
+                  title="Remove from homepage"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+
+            {selectedProducts.length === 0 && (
+              <div className="rounded-none border border-dashed border-gray-300 p-8 text-center text-xs text-muted-foreground">
+                No custom products selected for {sportLabels[selectedSport]}.
+                <div className="mt-1 font-medium text-black">The homepage will automatically display the top 4 kits.</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Search & Add Products */}
+        <div className="rounded-none border border-gray-300 p-6 flex flex-col">
+          <h3 className="font-display text-base font-bold">Add {sportLabels[selectedSport]}</h3>
+          <p className="mt-0.5 text-[11px] text-muted-foreground mb-4">
+            Search products in the {sportLabels[selectedSport]} category to feature on the homepage.
+          </p>
+
+          <div className="relative mb-4">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder={`Search ${sportLabels[selectedSport]} by name or team...`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-none border border-gray-300 bg-white py-2 pl-9 pr-4 text-xs outline-none focus:border-black"
+            />
+          </div>
+
+          <div className="flex-1 min-h-0 h-[420px] overflow-y-auto pr-2 space-y-2">
+            {availableProducts.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-none border border-gray-200 p-2.5 hover:bg-neutral-50 transition"
+              >
+                <div className="flex items-center gap-3">
+                  {p.images[0] && (
+                    <img src={p.images[0]} className="h-10 w-8 rounded object-cover" alt={p.name} />
+                  )}
+                  <div className="truncate max-w-[200px] text-xs">
+                    <div className="font-medium truncate">{p.name}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {p.team || p.category} • ₹{p.price}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleAdd(p.id)}
+                  className="rounded-none bg-black px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-white hover:bg-black/80 transition-colors"
+                >
+                  Feature
+                </button>
+              </div>
+            ))}
+
+            {availableProducts.length === 0 && (
+              <div className="rounded-none border border-dashed border-gray-300 p-8 text-center text-xs text-muted-foreground">
+                No matching {sportLabels[selectedSport]} found.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 

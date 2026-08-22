@@ -27,7 +27,15 @@ export type SiteImageSlot =
   | "featured-1"
   | "featured-2-pc"
   | "featured-2-mobile"
-  | "featured-2";
+  | "featured-2"
+  | "featured-football-pc"
+  | "featured-football-mobile"
+  | "featured-cricket-pc"
+  | "featured-cricket-mobile"
+  | "featured-f1-pc"
+  | "featured-f1-mobile"
+  | "featured-basketball-pc"
+  | "featured-basketball-mobile";
 
 export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description: string }[] = [
   {
@@ -38,47 +46,67 @@ export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description:
   {
     slot: "hero-video-mobile",
     label: "2. Mobile Hero Banner 1 (MP4 Video or Image)",
-    description: "Slide 1 in the 5-banner mobile carousel (New Kits Campaign).",
+    description: "Slide 1 in the mobile carousel (Hero Campaign).",
   },
   {
     slot: "hero-video-mobile-2",
     label: "3. Mobile Hero Banner 2 (MP4 Video or Image)",
-    description: "Slide 2 in the 5-banner mobile carousel (Football Kits).",
+    description: "Slide 2 in the mobile carousel.",
   },
   {
     slot: "hero-video-mobile-3",
     label: "4. Mobile Hero Banner 3 (MP4 Video or Image)",
-    description: "Slide 3 in the 5-banner mobile carousel (Formula 1 Tees).",
+    description: "Slide 3 in the mobile carousel.",
   },
   {
     slot: "hero-video-mobile-4",
     label: "5. Mobile Hero Banner 4 (MP4 Video or Image)",
-    description: "Slide 4 in the 5-banner mobile carousel (Cricket Matchwear).",
+    description: "Slide 4 in the mobile carousel.",
   },
   {
     slot: "hero-video-mobile-5",
     label: "6. Mobile Hero Banner 5 (MP4 Video or Image)",
-    description: "Slide 5 in the 5-banner mobile carousel (Player Version Kits).",
+    description: "Slide 5 in the mobile carousel.",
   },
   {
-    slot: "featured-1-pc",
-    label: "7. Featured Banner 1 - Left (PC / Desktop) (MP4 Video or Image)",
-    description: "First featured card below Hero section on desktop/PC (Formula 1 Store).",
+    slot: "featured-football-pc",
+    label: "7. Football Section Banner (PC / Desktop) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Football category section on PC.",
   },
   {
-    slot: "featured-1-mobile",
-    label: "8. Featured Banner 1 - Left (Mobile) (MP4 Video or Image)",
-    description: "First featured card below Hero section on mobile/tablet (Formula 1 Store).",
+    slot: "featured-football-mobile",
+    label: "8. Football Section Banner (Mobile) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Football category section on Mobile.",
   },
   {
-    slot: "featured-2-pc",
-    label: "9. Featured Banner 2 - Right (PC / Desktop) (MP4 Video or Image)",
-    description: "Second featured card below Hero section on desktop/PC (Football Kits).",
+    slot: "featured-cricket-pc",
+    label: "9. Cricket Section Banner (PC / Desktop) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Cricket category section on PC.",
   },
   {
-    slot: "featured-2-mobile",
-    label: "10. Featured Banner 2 - Right (Mobile) (MP4 Video or Image)",
-    description: "Second featured card below Hero section on mobile/tablet (Football Kits).",
+    slot: "featured-cricket-mobile",
+    label: "10. Cricket Section Banner (Mobile) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Cricket category section on Mobile.",
+  },
+  {
+    slot: "featured-f1-pc",
+    label: "11. Formula 1 Section Banner (PC / Desktop) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Formula 1 category section on PC.",
+  },
+  {
+    slot: "featured-f1-mobile",
+    label: "12. Formula 1 Section Banner (Mobile) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Formula 1 category section on Mobile.",
+  },
+  {
+    slot: "featured-basketball-pc",
+    label: "13. Basketball Section Banner (PC / Desktop) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Basketball category section on PC.",
+  },
+  {
+    slot: "featured-basketball-mobile",
+    label: "14. Basketball Section Banner (Mobile) (MP4 Video or Image)",
+    description: "Full-width campaign banner above Basketball category section on Mobile.",
   },
 ];
 
@@ -97,6 +125,14 @@ const DEFAULTS: Record<SiteImageSlot, string> = {
   "featured-2-pc": "",
   "featured-2-mobile": "",
   "featured-2": "",
+  "featured-football-pc": "",
+  "featured-football-mobile": "",
+  "featured-cricket-pc": "",
+  "featured-cricket-mobile": "",
+  "featured-f1-pc": "",
+  "featured-f1-mobile": "",
+  "featured-basketball-pc": "",
+  "featured-basketball-mobile": "",
 };
 
 const CACHE_KEY = "veloce.admin.site-images.v1";

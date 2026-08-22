@@ -116,11 +116,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://velocewear.shop/basketball/os-angeles-lakers-lebron-james-dri-fit-nba-swingman-association-edition-jersey-white</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://velocewear.shop/basketball/mitchell-ness-swingman-jersey-dallas-mavericks-road-1998-99-dirk-nowitzki-blue</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -132,6 +127,11 @@
   </url>
   <url>
     <loc>https://velocewear.shop/basketball/dallas-mavericks-essential-city-edition-nba-t-shirt-white</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/basketball/los-angeles-lakers-lebron-james-dri-fit-nba-swingman-association-edition-jersey-white</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

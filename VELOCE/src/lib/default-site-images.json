@@ -96,12 +96,20 @@
     "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
   },
   {
+    "slot": "featured-football-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-football-pc/1787383057526.webp"
+  },
+  {
     "slot": "category-new-kits-mobile",
     "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-new-kits-mobile/1786464263659.webp"
   },
   {
     "slot": "featured-2-mobile",
     "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-2-mobile/1787319571177.webp"
+  },
+  {
+    "slot": "featured-basketball-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-basketball-pc/1787382199655.webp"
   },
   {
     "slot": "featured-1-mobile",
@@ -112,27 +120,35 @@
     "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-1-pc/1787325554495.webp"
   },
   {
+    "slot": "featured-cricket-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-cricket-mobile/1787382140314.webp"
+  },
+  {
+    "slot": "featured-f1-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-f1-mobile/1787382153192.webp"
+  },
+  {
+    "slot": "featured-basketball-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-basketball-mobile/1787382190037.webp"
+  },
+  {
+    "slot": "featured-f1-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-f1-pc/1787382207863.webp"
+  },
+  {
     "slot": "hero-video-mobile",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-mobile/1787332663765.webp"
-  },
-  {
-    "slot": "hero-video-mobile-2",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
-  },
-  {
-    "slot": "hero-video-mobile-3",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:f1/1786005520068.webp"
-  },
-  {
-    "slot": "hero-video-mobile-4",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/team-Real%20Madrid-mobile/1786463974553.webp"
-  },
-  {
-    "slot": "hero-video-mobile-5",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-new-kits-mobile/1786464263659.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-mobile/1787383145768.webp"
   },
   {
     "slot": "hero-video-pc",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-pc/1787332482109.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-pc/1787381981680.webp"
+  },
+  {
+    "slot": "featured-cricket-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-cricket-pc/1787382315248.webp"
+  },
+  {
+    "slot": "featured-football-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-football-mobile/1787382803496.webp"
   }
 ]
