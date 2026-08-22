@@ -147,6 +147,22 @@ function LoginPage() {
         },
       });
       if (error) throw error;
+
+      if (data.user) {
+        const ownerEmail = (import.meta.env.VITE_OWNER_EMAIL || "hemanthmadhusudhan@gmail.com").toLowerCase().trim();
+        const isOwner = email.trim().toLowerCase() === ownerEmail || email.trim().toLowerCase() === "hemanthmadhusudhan@gmail.com";
+        supabase.from("users").upsert({
+          id: data.user.id,
+          email: email.trim().toLowerCase(),
+          full_name: name.trim(),
+          role: isOwner ? "admin" : "user",
+          disabled: false,
+          cart: [],
+          wishlist: [],
+          wallet_balance: 200,
+          created_at: new Date().toISOString(),
+        }, { onConflict: "id" }).then(() => {});
+      }
       
       if (data.session) {
         setInfo("Registration successful! You are now logged in.");

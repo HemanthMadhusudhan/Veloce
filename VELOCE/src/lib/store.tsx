@@ -184,18 +184,22 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
         let userProfile: AppUser | null = null;
         try {
+          const ownerEmail = (import.meta.env.VITE_OWNER_EMAIL || "hemanthmadhusudhan@gmail.com").toLowerCase().trim();
+          const userEmailNormalized = (uEmail || "").toLowerCase().trim();
+          const isThisOwner = userEmailNormalized === "hemanthmadhusudhan@gmail.com" || userEmailNormalized === ownerEmail;
+
           const { data, error } = await supabase.from("users").select("*").eq("id", uId).single();
           if (error && error.code !== "PGRST116") {
-            throw error;
+            console.log("Profile select note:", error.message);
           }
           if (data) {
             userProfile = {
               id: data.id,
-              email: uEmail || "",
-              role: data.role || "user",
+              email: uEmail || data.email || "",
+              role: isThisOwner ? "admin" : (data.role || "user"),
               disabled: data.disabled || false,
-              fullName: data.full_name || "",
-              phone: data.phone || "",
+              fullName: data.full_name || user.user_metadata?.fullName || user.user_metadata?.full_name || "",
+              phone: data.phone || user.user_metadata?.phone || "",
               addressLine1: data.address_line1 || "",
               addressLine2: data.address_line2 || "",
               city: data.city || "",
@@ -206,29 +210,45 @@ export function ShopProvider({ children }: { children: ReactNode }) {
               wishlist: data.wishlist || [],
               walletBalance: data.wallet_balance || 0,
             };
+
+            // Keep user fields in sync with Supabase
+            if (!data.email || !data.full_name || (isThisOwner && data.role !== "admin")) {
+              supabase.from("users").update({
+                email: uEmail || data.email,
+                role: isThisOwner ? "admin" : data.role,
+                full_name: userProfile.fullName,
+              }).eq("id", uId).then(() => {});
+            }
           } else {
+            const rawName = user.user_metadata?.fullName || user.user_metadata?.full_name || user.user_metadata?.name || "";
             userProfile = {
               id: uId,
               email: uEmail || "",
-              role: "user",
+              role: isThisOwner ? "admin" : "user",
               disabled: false,
+              fullName: rawName,
+              phone: user.user_metadata?.phone || "",
               cart: [],
               wishlist: [],
-              walletBalance: 0,
+              walletBalance: 200,
             };
-          }
-          const ownerEmail = (import.meta.env.VITE_OWNER_EMAIL || "hemanthmadhusudhan@gmail.com").toLowerCase().trim();
-          const userEmailNormalized = (uEmail || userProfile.email || "").toLowerCase().trim();
-          const isThisOwner = userEmailNormalized === "hemanthmadhusudhan@gmail.com" || userEmailNormalized === ownerEmail;
-          const isUserAdmin = isThisOwner || userProfile.role === "admin";
 
-          if (isThisOwner && userProfile.role !== "admin") {
-            userProfile.role = "admin";
-            // Persist admin role to DB
-            supabase.from("users").update({ role: "admin" }).eq("id", uId).then(() => {
-              console.log("Auto-promoted owner to admin in DB");
-            });
+            // Auto-upsert new user into public.users so they appear in Admin immediately
+            supabase.from("users").upsert({
+              id: uId,
+              email: uEmail || "",
+              role: isThisOwner ? "admin" : "user",
+              disabled: false,
+              full_name: rawName,
+              phone: user.user_metadata?.phone || "",
+              cart: [],
+              wishlist: [],
+              wallet_balance: 200,
+              created_at: user.created_at || new Date().toISOString(),
+            }, { onConflict: "id" }).then(() => {});
           }
+
+          const isUserAdmin = isThisOwner || userProfile.role === "admin";
 
           setProfile(userProfile);
           setIsAdmin(isUserAdmin);

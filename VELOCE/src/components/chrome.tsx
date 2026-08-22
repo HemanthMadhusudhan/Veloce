@@ -10,7 +10,7 @@ import { useCatalog } from "@/lib/catalog-store";
 import { formatINR } from "@/lib/format";
 import { toast } from "sonner";
 import { computeCart } from "@/lib/pricing";
-import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams, worldCupTeams } from "@/lib/logos";
+import { TEAM_LOGOS, f1Teams, basketballTeams, cricketTeams, cricketInternationalTeams, cricketIPLTeams, footballTeams, worldCupTeams, getShortTeamName } from "@/lib/logos";
 import { useTeams } from "@/lib/teams";
 
 const NAV = [
@@ -109,14 +109,14 @@ export function SiteNav() {
   return (
     <>
       <nav
-        className={`fixed inset-x-0 top-0 z-50 flex flex-col transition-all duration-300 ${
+        className={`fixed inset-x-0 top-0 z-50 flex flex-col transition-all duration-300 w-full ${
           isTransparent
             ? "bg-gradient-to-b from-black/80 via-black/40 to-transparent text-white border-b-0 shadow-none"
             : "bg-white/95 backdrop-blur-md text-neutral-900 border-b border-black/10 shadow-md shadow-black/5"
         }`}
       >
         {/* Main Header */}
-        <div className="flex w-full max-w-[1480px] mx-auto items-center justify-between px-3 sm:px-6 lg:px-8 py-3 gap-2 sm:gap-4">
+        <div className="flex w-full max-w-[1480px] mx-auto items-center justify-between px-3 sm:px-5 lg:px-6 xl:px-8 py-2.5 sm:py-3 gap-2 xl:gap-4">
           {/* Left: Brand Logo (Always Red) */}
           <div className="flex items-center shrink-0">
             <Logo />
@@ -124,12 +124,15 @@ export function SiteNav() {
 
           {/* Center: Desktop Navigation Bar (Clean Responsive Spacing) */}
           <div
-            className={`hidden lg:flex items-center justify-center gap-2.5 xl:gap-5 2xl:gap-6 text-[11px] xl:text-xs 2xl:text-[13px] font-bold uppercase tracking-wide whitespace-nowrap flex-1 px-2 xl:px-4 transition-colors duration-300 ${
+            className={`hidden lg:flex items-center justify-center gap-3 xl:gap-5 2xl:gap-7 text-[11px] xl:text-xs 2xl:text-[13px] font-bold uppercase tracking-wide whitespace-nowrap min-w-0 px-2 xl:px-4 transition-colors duration-300 ${
               isTransparent ? "text-white" : "text-neutral-900"
             }`}
           >
             <Link to="/new-kits" className="hover:opacity-80 transition-opacity flex items-center gap-1" activeProps={{ className: "font-black underline" }}>
               <span>New Kits</span>
+            </Link>
+            <Link to="/player-version" className="hover:opacity-80 transition-opacity flex items-center gap-1" activeProps={{ className: "font-black underline" }}>
+              <span>Player Version</span>
             </Link>
             <Link to="/shop" className="hover:opacity-80 transition-opacity" activeProps={{ className: "font-black underline" }}>Shop All</Link>
             <FootballMenu />
@@ -137,11 +140,10 @@ export function SiteNav() {
             <CricketMenu />
             <BasketballMenu />
             <WorldCupMenu />
-            <Link to="/shop/accessories" className="hover:opacity-80 transition-opacity" activeProps={{ className: "font-black underline" }}>Accessories</Link>
           </div>
 
           {/* Right Utilities Container */}
-          <div className="flex items-center gap-1 sm:gap-1.5 xl:gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 xl:gap-2 shrink-0 pr-1 sm:pr-0">
             {/* Desktop Pill Search Input */}
             <button
               onClick={openSearch}
@@ -159,7 +161,7 @@ export function SiteNav() {
             {/* Mobile / Tablet Search Icon */}
             <button
               onClick={openSearch}
-              className={`flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+              className={`flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
                 isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
               }`}
               aria-label="Search store"
@@ -170,7 +172,7 @@ export function SiteNav() {
             {/* Desktop Wishlist Heart Icon */}
             <Link
               to="/wishlist"
-              className={`relative hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+              className={`relative hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
                 isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
               }`}
               onClick={(e) => {
@@ -192,7 +194,7 @@ export function SiteNav() {
             {/* Desktop Profile Icon */}
             <Link
               to={userEmail ? "/profile" : "/login"}
-              className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+              className={`hidden lg:flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
                 isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
               }`}
               aria-label="Profile"
@@ -210,7 +212,7 @@ export function SiteNav() {
                   nav({ to: "/checkout" });
                 }
               }}
-              className={`relative flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+              className={`relative flex h-9 w-9 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
                 isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
               }`}
               aria-label="Bag"
@@ -226,7 +228,7 @@ export function SiteNav() {
             {/* Hamburger Drawer Trigger Icon (Mobile & Tablet) */}
             <button
               onClick={() => setDrawerOpen(true)}
-              className={`flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition cursor-pointer ${
+              className={`flex lg:hidden h-9 w-9 items-center justify-center rounded-full transition cursor-pointer shrink-0 ${
                 isTransparent ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
               }`}
               aria-label="Open menu"
@@ -278,11 +280,13 @@ function FootballMenu() {
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Football Clubs</div>
                 <div className="grid grid-cols-5 gap-x-4 gap-y-6">
                   {combinedFootball.map(([t, logo]) => (
-                    <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                    <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                       </div>
-                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                        {getShortTeamName(t)}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -291,11 +295,13 @@ function FootballMenu() {
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">National Teams</div>
                 <div className="grid grid-cols-3 gap-x-4 gap-y-6">
                   {combinedWC.map(([t, logo]) => (
-                    <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                    <Link key={t} to="/shop/football" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                       </div>
-                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                        {getShortTeamName(t)}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -324,11 +330,13 @@ function WorldCupMenu() {
             </div>
             <div className="grid grid-cols-6 gap-x-4 gap-y-6">
               {combinedWC.map(([t, logo]) => (
-                <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                <Link key={t} to="/shop/worldcup" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                   <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                     <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                   </div>
-                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                    {getShortTeamName(t)}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -355,11 +363,13 @@ function F1Menu() {
             </div>
             <div className="grid grid-cols-6 gap-x-4 gap-y-6">
               {combinedF1.map(([t, logo]) => (
-                <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                <Link key={t} to="/shop/f1" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                   <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                     <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                   </div>
-                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                    {getShortTeamName(t)}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -386,11 +396,13 @@ function BasketballMenu() {
             </div>
             <div className="grid grid-cols-6 gap-x-4 gap-y-6">
               {combinedB.map(([t, logo]) => (
-                <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                <Link key={t} to="/shop/basketball" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                   <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                     <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                   </div>
-                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                  <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                    {getShortTeamName(t)}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -417,11 +429,13 @@ function CricketMenu() {
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">Cricket Jerseys</div>
                 <div className="grid grid-cols-4 gap-x-4 gap-y-6">
                   {combinedCricketIPL.map(([t, logo]) => (
-                    <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                    <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                       </div>
-                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                        {getShortTeamName(t)}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -430,11 +444,13 @@ function CricketMenu() {
                 <div className="mb-4 text-[10px] uppercase tracking-[0.28em] font-bold text-brand">National Teams</div>
                 <div className="grid grid-cols-3 gap-x-4 gap-y-6">
                   {combinedCricketInt.map(([t, logo]) => (
-                    <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer">
+                    <Link key={t} to="/shop/cricket" search={{ team: t } as never} onClick={() => setOpen(false)} className="flex flex-col items-center gap-2 group cursor-pointer w-full max-w-[80px] mx-auto">
                       <div className="w-16 h-16 rounded-full bg-white border border-border/40 flex items-center justify-center p-3 shadow-sm hover:shadow-md hover:border-black transition-all">
                         <img src={logo} alt={t} loading="lazy" referrerPolicy="no-referrer" className="max-w-full max-h-full object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300" />
                       </div>
-                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold">{t}</span>
+                      <span className="text-[10px] text-center font-medium text-black leading-tight group-hover:font-bold truncate w-full block" title={t}>
+                        {getShortTeamName(t)}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -1145,7 +1161,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                         <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
                           <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
                         </div>
-                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{getShortTeamName(t)}</span>
                       </button>
                     ))}
                   </div>
@@ -1176,7 +1192,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                       <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
                         <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
                       </div>
-                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{getShortTeamName(t)}</span>
                     </button>
                   ))}
                 </div>
@@ -1208,7 +1224,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                         <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
                           <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
                         </div>
-                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{getShortTeamName(t)}</span>
                       </button>
                     ))}
                   </div>
@@ -1234,7 +1250,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                         <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition overflow-hidden">
                           <img src={flag} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
                         </div>
-                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                        <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{getShortTeamName(t)}</span>
                       </button>
                     ))}
                   </div>
@@ -1265,7 +1281,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                       <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
                         <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
                       </div>
-                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{getShortTeamName(t)}</span>
                     </button>
                   ))}
                 </div>
@@ -1295,7 +1311,7 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
                       <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 flex items-center justify-center p-1.5 shadow-2xs group-hover:border-black transition">
                         <img src={logo} alt={t} className="max-w-full max-h-full object-contain filter drop-shadow-2xs group-hover:scale-105 transition-transform" />
                       </div>
-                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{t}</span>
+                      <span className="text-[9px] font-medium text-center text-neutral-800 leading-tight truncate w-full group-hover:font-bold">{getShortTeamName(t)}</span>
                     </button>
                   ))}
                 </div>
@@ -1306,10 +1322,11 @@ export function SideDrawerMenu({ open, onClose }: { open: boolean; onClose: () =
           {/* PLAYER VERSION KITS */}
           <div className="border-t border-black/5 pt-1.5">
             <button
-              onClick={() => handleNav("/shop", { tag: "player-version" })}
-              className="w-full text-left font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer"
+              onClick={() => handleNav("/player-version")}
+              className="w-full text-left font-bold text-[15px] tracking-normal text-black py-2 hover:text-[#d32f2f] transition cursor-pointer flex items-center justify-between"
             >
-              Player Version Kits
+              <span>Player Version Kits</span>
+              <span className="bg-black text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase">PRO</span>
             </button>
           </div>
 

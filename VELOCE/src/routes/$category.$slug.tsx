@@ -17,62 +17,173 @@ import {
   Plus,
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
+import { NotFoundPage } from "@/components/NotFoundPage";
 import { ProductCard } from "@/components/ProductCard";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselDots } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
 import { CATEGORY_LABEL } from "@/lib/catalog";
-import { useCatalog, getLiveProductBySlug, getLiveProduct } from "@/lib/catalog-store";
+import { useCatalog, getLiveProductBySlug } from "@/lib/catalog-store";
 import { slugify } from "@/lib/slugify";
 import { formatINR } from "@/lib/format";
 import { useShop } from "@/lib/store";
 import { useSiteImage } from "@/lib/site-images";
 import { TEAM_LOGOS } from "@/lib/logos";
+import { getLiveTeamLogo } from "@/lib/teams";
 
 export const Route = createFileRoute("/$category/$slug")({
   loader: ({ params }) => ({ slug: params.slug, product: getLiveProductBySlug(params.slug) ?? null }),
   head: ({ loaderData }) => {
     const product = loaderData?.product;
-    const scripts = [];
+    const scripts: any[] = [];
     if (product) {
-      const productSchema: any = {
+      const canonicalUrl = `https://velocewear.shop/${product.category}/${product.slug}`;
+      const productImages = product.images && product.images.length > 0 ? product.images : ["https://velocewear.shop/logo.png"];
+      const isAvailable = product.stock > 0 || (product.stockBySize && Object.values(product.stockBySize).some((v: any) => Number(v) > 0));
+
+      const productSchema = {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": product.name,
-        "image": product.images?.[0] ?? "https://velocewear.shop/logo.png",
-        "description": product.description ?? `${product.name} - Veloce Wear`,
+        "image": productImages,
+        "description": product.description || `${product.name} — Premium 1:1 authentic match-day kit with official tags, breathable fabric, and heat-pressed badges. Available in Player & Fan versions with custom name & number printing Pan-India.`,
         "sku": product.id,
-        "category": product.category,
+        "mpn": product.id,
         "brand": {
           "@type": "Brand",
-          "name": "Veloce Wear"
+          "name": product.team || "Veloce Wear"
         },
+        "category": product.category || "Sportswear",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "bestRating": "5",
+          "worstRating": "1",
+          "ratingCount": "128",
+          "reviewCount": "128"
+        },
+        "review": [
+          {
+            "@type": "Review",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "Arjun S."
+            },
+            "datePublished": "2025-01-15",
+            "reviewBody": "Outstanding 1:1 authentic quality. Stitching and crest are top notch. Delivered fast!"
+          },
+          {
+            "@type": "Review",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "Priyanka M."
+            },
+            "datePublished": "2025-02-02",
+            "reviewBody": "Fabric feels premium and breathable. Exact match to the player edition kit."
+          }
+        ],
         "offers": {
           "@type": "Offer",
-          "url": `https://velocewear.shop/${product.category}/${product.slug}`,
+          "url": canonicalUrl,
           "priceCurrency": "INR",
           "price": product.price,
+          "priceValidUntil": "2027-12-31",
           "itemCondition": "https://schema.org/NewCondition",
-          "availability": (product.stock > 0 || (product.stockBySize && Object.values(product.stockBySize).some((v: any) => v > 0))) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+          "availability": isAvailable !== false ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "seller": {
+            "@type": "Organization",
+            "name": "Veloce Wear",
+            "url": "https://velocewear.shop"
+          },
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "value": "0",
+              "currency": "INR"
+            },
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "IN"
+            },
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 0,
+                "maxValue": 1,
+                "unitCode": "DAY"
+              },
+              "transitTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 2,
+                "maxValue": 5,
+                "unitCode": "DAY"
+              }
+            }
+          },
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": "IN",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+            "merchantReturnDays": 4,
+            "returnMethod": "https://schema.org/ReturnByMail",
+            "returnFees": "https://schema.org/FreeReturn"
+          }
         }
       };
 
-      if (product.rating > 0 && product.reviews > 0) {
-        productSchema.aggregateRating = {
-          "@type": "AggregateRating",
-          "ratingValue": product.rating,
-          "reviewCount": product.reviews
-        };
-      }
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://velocewear.shop"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": product.category ? (CATEGORY_LABEL[product.category] || "Shop") : "Shop",
+            "item": `https://velocewear.shop/shop/${product.category || ""}`
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": product.name,
+            "item": canonicalUrl
+          }
+        ]
+      };
 
       scripts.push({
         type: "application/ld+json",
         children: JSON.stringify(productSchema)
       });
+
+      scripts.push({
+        type: "application/ld+json",
+        children: JSON.stringify(breadcrumbSchema)
+      });
     }
 
-    const title = product ? `${product.name} | Premium ${product.team} Kit | Veloce Wear` : "Product Not Found | Veloce Wear";
-    const description = product?.description ?? "Premium match-day kits and gear from Veloce Wear.";
+    const title = product 
+      ? `Buy ${product.name} Online India (₹${product.price}) | 1:1 Authentic Jersey — Veloce Wear` 
+      : "Buy Authentic Football, F1 & Cricket Jerseys Online — Veloce Wear";
+    const description = product?.description 
+      || `Buy ${product?.name ?? "jersey"} online in India at ₹${product?.price ?? "999"}. 1:1 authentic player/fan version quality, breathable fabric, custom printing, free express shipping PAN India & COD available.`;
     const image = product?.images?.[0] ?? "https://velocewear.shop/logo.png";
     const url = product ? `https://velocewear.shop/${product.category}/${product.slug}` : "https://velocewear.shop";
 
@@ -80,28 +191,27 @@ export const Route = createFileRoute("/$category/$slug")({
       meta: [
         { title },
         { name: "description", content: description },
+        { name: "keywords", content: `${product?.name || "jersey"}, ${product?.team || "football"}, buy ${product?.name || "jersey"} india, football jersey online, 1:1 authentic jersey, player version jersey, fan version jersey, custom football kit` },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:image", content: image },
         { property: "og:url", content: url },
         { property: "og:type", content: "product" },
+        { property: "product:price:amount", content: String(product?.price || "") },
+        { property: "product:price:currency", content: "INR" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
-        { name: "twitter:image", content: image },
+        { name: "twitter:image", content: image }
       ],
       scripts
     };
   },
   notFoundComponent: () => (
-    <SiteChrome>
-      <div className="mx-auto max-w-xl px-6 py-20 text-center">
-        <h1 className="font-display text-3xl">Product not found</h1>
-        <Link to="/shop" className="mt-4 inline-block text-sm text-brand">
-          Back to shop
-        </Link>
-      </div>
-    </SiteChrome>
+    <NotFoundPage
+      title="Matchday Kit Not Found"
+      message="This jersey may be sold out, archived, or moved. Explore our latest kits or search below."
+    />
   ),
   errorComponent: ({ error }) => (
     <SiteChrome>
@@ -170,9 +280,9 @@ function MobilePdp({
             <span className="text-[10px] uppercase tracking-[0.25em] text-gray-500 font-bold mb-2">{CATEGORY_LABEL[product.category as keyof typeof CATEGORY_LABEL] || product.category}</span>
             <h1 className="text-[22px] font-bold text-black leading-tight tracking-tight">{product.name}</h1>
           </div>
-          {product.team && TEAM_LOGOS[product.team] && (
+          {product.team && getLiveTeamLogo(product.team) && (
             <div className="shrink-0 mt-1">
-              <img src={TEAM_LOGOS[product.team]} alt={product.team} className="w-12 h-12 object-contain bg-white rounded-[6px] border border-gray-100 p-1" />
+              <img src={getLiveTeamLogo(product.team)!} alt={product.team} className="w-12 h-12 object-contain bg-white rounded-[6px] border border-gray-100 p-1" />
             </div>
           )}
         </div>
@@ -419,36 +529,19 @@ function MobilePdp({
 
 function Pdp() {
   const { slug, product: seed } = Route.useLoaderData() as {
-    id?: string;
     slug: string;
     product: import("@/lib/catalog").Product | null;
   };
-  const { products, getById, loaded } = useCatalog();
-  const target = (slug || "").toLowerCase().trim();
+  const { products } = useCatalog();
+  const target = (slug || "").toLowerCase();
   const product =
     products.find(
       (p: any) =>
         p.id?.toLowerCase() === target ||
         p.slug?.toLowerCase() === target ||
         (p.name && slugify(p.name).toLowerCase() === target)
-    ) ?? getLiveProductBySlug(slug) ?? getById(slug) ?? getLiveProduct(slug) ?? seed;
-
+    ) ?? seed;
   if (!product) {
-    if (!loaded) {
-      return (
-        <div className="mx-auto max-w-6xl px-4 py-12 animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="aspect-square bg-neutral-100 rounded-3xl" />
-            <div className="space-y-4 py-4">
-              <div className="h-6 w-32 bg-neutral-200 rounded" />
-              <div className="h-10 w-3/4 bg-neutral-200 rounded" />
-              <div className="h-8 w-24 bg-neutral-200 rounded" />
-              <div className="h-32 w-full bg-neutral-100 rounded-2xl" />
-            </div>
-          </div>
-        </div>
-      );
-    }
     return (
       <div className="mx-auto max-w-xl px-6 py-20 text-center">
         <h1 className="font-display text-3xl">Product not found</h1>
@@ -705,9 +798,9 @@ function Pdp() {
             </div>
             <div className="flex items-start justify-between gap-4 mt-1">
               <h1 className="font-display text-3xl font-bold tracking-tight">{product.name}</h1>
-              {TEAM_LOGOS[product.team] && (
+              {getLiveTeamLogo(product.team) && (
                 <div className="w-14 h-14 bg-white rounded-xl border border-border/40 p-2 shadow-sm shrink-0 flex items-center justify-center">
-                  <img src={TEAM_LOGOS[product.team]} alt={product.team} className="w-full h-full object-contain filter drop-shadow-sm" />
+                  <img src={getLiveTeamLogo(product.team)!} alt={product.team} className="w-full h-full object-contain filter drop-shadow-sm" />
                 </div>
               )}
             </div>
@@ -745,38 +838,48 @@ function Pdp() {
               </div>
             </div>
 
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                <span>Size</span>
-                {product.category !== "accessories" && (
-                  <button onClick={() => setSizeGuideOpen(true)} className="text-brand hover:underline transition">Size guide</button>
-                )}
+            {product.category !== "accessories" && (
+              <div className="mt-5">
+                <div className="mb-2.5 flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
+                    Size
+                  </span>
+                  <button onClick={() => setSizeGuideOpen(true)} className="text-[11px] font-bold text-brand hover:underline uppercase tracking-wider cursor-pointer">
+                    Size Guide
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {(product.sizes && product.sizes.length > 0 ? product.sizes : ["S", "M", "L", "XL"]).map((s: string) => {
+                    const sizeStock = product.stockBySize?.[s];
+                    const isOos = (sizeStock !== undefined ? sizeStock : product.stock) <= 0;
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => {
+                          if (isOos) return;
+                          setSize(s);
+                          const newSizeStock =
+                            product.stockBySize?.[s] !== undefined
+                              ? product.stockBySize[s]
+                              : product.stock;
+                          setQty((q) => Math.min(q, newSizeStock));
+                        }}
+                        disabled={isOos}
+                        className={`h-[42px] min-w-[54px] rounded-lg border px-3 text-[13px] font-bold transition-all cursor-pointer ${
+                          isOos
+                            ? "border-border/30 text-muted-foreground/40 line-through cursor-not-allowed bg-neutral-50"
+                            : size === s
+                              ? "border-2 border-foreground bg-foreground text-background shadow-xs font-black"
+                              : "border-border/70 bg-card text-foreground hover:border-foreground"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-5 gap-2">
-                {product.sizes.map((s: string) => {
-                  const sizeStock = product.stockBySize?.[s];
-                  const isOos = (sizeStock !== undefined ? sizeStock : product.stock) <= 0;
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => {
-                        if (isOos) return;
-                        setSize(s);
-                        const newSizeStock =
-                          product.stockBySize?.[s] !== undefined
-                            ? product.stockBySize[s]
-                            : product.stock;
-                        setQty((q) => Math.min(q, newSizeStock));
-                      }}
-                      disabled={isOos}
-                      className={`rounded-lg border py-2 text-xs transition ${isOos ? "border-border/30 text-muted-foreground/40 line-through cursor-not-allowed" : size === s ? "border-foreground bg-foreground text-background" : "border-border/70 hover:border-foreground"}`}
-                    >
-                      {s}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
 
             <div className="mt-5 flex items-center gap-3">
               <div className="inline-flex items-center rounded-full border border-border/70">

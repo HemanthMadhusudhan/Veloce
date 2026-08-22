@@ -6,21 +6,52 @@ async function assertAdmin() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Forbidden: admin only");
 
-  const { data: profile } = await supabase.from("users").select("role").eq("id", user.id).single();
+  const ownerEmail = (import.meta.env.VITE_OWNER_EMAIL || "hemanthmadhusudhan@gmail.com").toLowerCase().trim();
+  const userEmail = (user.email || "").toLowerCase().trim();
+  const isOwner = userEmail === "hemanthmadhusudhan@gmail.com" || userEmail === ownerEmail;
+
+  if (isOwner) return;
+
+  const { data: profile } = await supabase.from("users").select("role").eq("id", user.id).maybeSingle();
 
   if (profile?.role !== "admin") throw new Error("Forbidden: admin only");
 }
 
 export async function listUsers() {
   await assertAdmin();
-  const { data: users, error } = await supabase.from("users").select("*").order("id");
-  if (error) throw error;
+  let query = supabase.from("users").select("*");
+  try {
+    const { data: users, error } = await query.order("created_at", { ascending: false });
+    if (!error && users) {
+      return users.map((user) => ({
+        id: user.id,
+        email: user.email ?? "",
+        emailVerified: true,
+        createdAt: user.created_at || new Date().toISOString(),
+        lastSignInAt: null,
+        provider: "email",
+        roles: user.role ? [user.role] : ["user"],
+        disabled: user.disabled || false,
+        fullName: user.full_name ?? "",
+        phone: user.phone ?? "",
+        city: user.city ?? "",
+        state: user.state ?? "",
+        addressLine1: user.address_line1 ?? "",
+        postalCode: user.postal_code ?? "",
+      }));
+    }
+  } catch (e) {
+    // fallback
+  }
 
-  return (users || []).map((user) => ({
+  const { data: usersFallback, error: fbErr } = await supabase.from("users").select("*").order("id");
+  if (fbErr) throw fbErr;
+
+  return (usersFallback || []).map((user) => ({
     id: user.id,
     email: user.email ?? "",
     emailVerified: true,
-    createdAt: new Date().toISOString(),
+    createdAt: user.created_at || new Date().toISOString(),
     lastSignInAt: null,
     provider: "email",
     roles: user.role ? [user.role] : ["user"],

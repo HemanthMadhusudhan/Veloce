@@ -19,58 +19,89 @@ import { TeamsProvider } from "@/lib/teams";
 
 import { SupportBot } from "@/components/SupportBot";
 import { Toaster } from "@/components/ui/sonner";
+import { NotFoundPage } from "@/components/NotFoundPage";
 
 function NotFoundComponent() {
+  return <NotFoundPage />;
+}
+
+function isChunkLoadError(error: any): boolean {
+  if (!error) return false;
+  const msg = (error?.message || error?.toString() || "").toLowerCase();
+  const name = (error?.name || "").toLowerCase();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
-      </div>
-    </div>
+    msg.includes("mime type") ||
+    msg.includes("text/html") ||
+    msg.includes("dynamically imported module") ||
+    msg.includes("failed to fetch") ||
+    msg.includes("importing a module script failed") ||
+    msg.includes("loading chunk") ||
+    msg.includes("loading css chunk") ||
+    name.includes("chunkloaderror")
   );
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", () => {
+    const lastReload = sessionStorage.getItem("veloce_chunk_reload");
+    const now = Date.now();
+    if (!lastReload || now - Number(lastReload) > 10000) {
+      sessionStorage.setItem("veloce_chunk_reload", String(now));
+      window.location.reload();
+    }
+  });
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const isChunkError = isChunkLoadError(error);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && isChunkError) {
+      const lastReload = sessionStorage.getItem("veloce_chunk_reload");
+      const now = Date.now();
+      if (!lastReload || now - Number(lastReload) > 10000) {
+        sessionStorage.setItem("veloce_chunk_reload", String(now));
+        window.location.reload();
+      }
+    }
+  }, [isChunkError]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {isChunkError ? "Updating to latest version..." : "This page didn't load"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          {isChunkError
+            ? "A new version of Veloce Wear was deployed. Refreshing your page..."
+            : "Something went wrong on our end. You can try refreshing or head back home."}
         </p>
-        <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-md text-left overflow-auto max-h-48 text-xs text-red-600 font-mono">
-          <div className="font-bold">{error.name}: {error.message}</div>
-          <div className="mt-2 whitespace-pre-wrap opacity-80">{error.stack}</div>
-        </div>
+        {!isChunkError && (
+          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-md text-left overflow-auto max-h-48 text-xs text-red-600 font-mono">
+            <div className="font-bold">{error.name}: {error.message}</div>
+            <div className="mt-2 whitespace-pre-wrap opacity-80">{error.stack}</div>
+          </div>
+        )}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
-              router.invalidate();
-              reset();
+              if (isChunkError) {
+                window.location.reload();
+              } else {
+                router.invalidate();
+                reset();
+              }
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-none bg-black px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition"
           >
-            Try again
+            {isChunkError ? "Refresh Now" : "Try again"}
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-none border border-neutral-300 bg-white px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-neutral-100 transition"
           >
             Go home
           </a>
@@ -85,29 +116,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
-      { title: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
+      { title: "Veloce Wear — Buy Authentic Football, F1 & Cricket Jerseys Online India" },
       {
         name: "description",
         content:
-          "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
+          "Shop 1:1 authentic football jerseys, official Formula 1 team t-shirts, cricket gear, and retro kits online in India. Real Madrid, Barcelona, Arsenal, Man City, player version kits. Free express shipping PAN India & COD available.",
+      },
+      {
+        name: "keywords",
+        content:
+          "football jerseys, buy football jersey india, real madrid jersey, barcelona jersey, arsenal jersey, new football kits, retro jerseys india, f1 t shirts india, cricket jerseys, player version jersey, fan version jersey, custom jersey printing india",
       },
       { name: "author", content: "Veloce Wear" },
       { name: "theme-color", content: "#ffffff" },
-      { property: "og:title", content: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
+      { property: "og:title", content: "Veloce Wear — Buy Authentic Football, F1 & Cricket Jerseys Online India" },
       {
         property: "og:description",
         content:
-          "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
+          "Shop 1:1 authentic football jerseys, official Formula 1 team t-shirts, cricket gear, and retro kits online in India. Real Madrid, Barcelona, Arsenal, Man City, player version kits. Free express shipping PAN India & COD available.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:image", content: "/logo.png" },
-      { name: "twitter:title", content: "Veloce Wear — Football, F1, Basketball & Cricket Jerseys/Merch" },
+      { name: "twitter:title", content: "Veloce Wear — Buy Authentic Football, F1 & Cricket Jerseys Online India" },
       {
         name: "twitter:description",
         content:
-          "Veloce Wear curates authentic match-day football kits, official Formula 1 team merchandise, basketball jerseys, and cricket gear. Engineered precision. Delivered worldwide.",
+          "Shop 1:1 authentic football jerseys, official Formula 1 team t-shirts, cricket gear, and retro kits online in India. Free express shipping PAN India & COD available.",
       },
       { name: "google-site-verification", content: "oPzpm4BDpj02pakSqCyZa4EDEF5TlkRyLNyesRTQUI4" },
     ],
@@ -143,14 +179,47 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const currentUrl = `https://velocewear.shop${location.pathname}`;
+  const rawPath = location.pathname || "/";
+  const canonicalPath = rawPath === "/" ? "" : rawPath.endsWith("/") ? rawPath.slice(0, -1) : rawPath;
+  const currentUrl = `https://velocewear.shop${canonicalPath || "/"}`;
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hostname === "www.velocewear.shop") {
+      window.location.replace(`https://velocewear.shop${window.location.pathname}${window.location.search}`);
+    }
+  }, []);
   
-  const structuredData = {
+  const organizationData = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "ClothingStore", "OnlineStore"],
     "name": "Veloce Wear",
     "url": "https://velocewear.shop",
-    "logo": "https://velocewear.shop/logo.png"
+    "logo": "https://velocewear.shop/logo.png",
+    "image": "https://velocewear.shop/logo.png",
+    "description": "India's premier online sportswear store for 1:1 authentic football jerseys, Formula 1 teamwear, cricket gear and retro kits.",
+    "priceRange": "₹₹",
+    "currenciesAccepted": "INR",
+    "paymentAccepted": "Cash on Delivery, Credit Card, Debit Card, UPI, Net Banking",
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
+    "sameAs": [
+      "https://t.me/Velocewear",
+      "https://instagram.com/velocewear"
+    ]
+  };
+
+  const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Veloce Wear",
+    "url": "https://velocewear.shop",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://velocewear.shop/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
   };
 
   const breadcrumbData = {
@@ -180,7 +249,8 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <link rel="canonical" href={currentUrl} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }} />
       </head>
       <body>
@@ -194,8 +264,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function ScrollToTop() {
   const location = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [location.pathname]);
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.search]);
   return null;
 }
 
@@ -203,16 +273,18 @@ function AnimatedRouteContent() {
   const location = useLocation();
 
   return (
-    <motion.div
-      key={location.pathname}
-      initial={{ opacity: 0, filter: "blur(8px)", y: 4 }}
-      animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-      exit={{ opacity: 0, filter: "blur(6px)", y: -4 }}
-      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full flex-1"
-    >
-      <Outlet />
-    </motion.div>
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full flex-1"
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

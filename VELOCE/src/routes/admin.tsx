@@ -23,6 +23,7 @@ import {
   Wallet,
   Video,
   GripVertical,
+  Sparkles,
 } from "lucide-react";
 import { SiteChrome } from "@/components/chrome";
 import { useCatalog } from "@/lib/catalog-store";
@@ -94,7 +95,8 @@ type Tab =
   | "categories"
   | "drops"
   | "teams"
-  | "newKits";
+  | "newKits"
+  | "playerVersions";
 
 function Admin() {
   const [tab, setTab] = useState<Tab>("products");
@@ -167,6 +169,13 @@ function Admin() {
         >
           New Kits
         </TabBtn>
+        <TabBtn
+          active={tab === "playerVersions"}
+          onClick={() => setTab("playerVersions")}
+          icon={<Sparkles className="h-3.5 w-3.5" />}
+        >
+          Player Versions
+        </TabBtn>
       </div>
 
       <div className="mt-8">
@@ -177,6 +186,7 @@ function Admin() {
         {tab === "images" && <SiteImagesTab />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "newKits" && <NewKitsTab />}
+        {tab === "playerVersions" && <PlayerVersionsTab />}
         {tab === "teams" && <TeamsTab />}
       </div>
     </div>
@@ -205,9 +215,9 @@ function TabBtn({
   );
 }
 
-/* ---------- PRODUCTS TAB ---------- */
 function ProductsTab() {
   const { products, updateProduct, addProduct, removeProduct } = useCatalog();
+  const { combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt } = useTeams();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<Category | "all">("all");
   const [adding, setAdding] = useState(false);
@@ -215,15 +225,23 @@ function ProductsTab() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const searchOptions = useMemo(() => {
-    let list = allLogoEntries;
-    if (cat === "f1") list = f1Teams;
-    else if (cat === "basketball") list = basketballTeams;
-    else if (cat === "cricket") list = cricketTeams;
-    else if (cat === "football" || cat === "worldcup") list = [...footballTeams, ...worldCupTeams];
+    let list: [string, string][] = [
+      ...combinedFootball,
+      ...combinedWC,
+      ...combinedF1,
+      ...combinedB,
+      ...combinedCricketIPL,
+      ...combinedCricketInt,
+    ];
+    if (cat === "f1") list = combinedF1;
+    else if (cat === "basketball") list = combinedB;
+    else if (cat === "cricket") list = [...combinedCricketIPL, ...combinedCricketInt];
+    else if (cat === "football") list = combinedFootball;
+    else if (cat === "worldcup") list = combinedWC;
 
     if (!q) return [];
     return list.filter(([t]) => t.toLowerCase().includes(q.toLowerCase()));
-  }, [cat, q]);
+  }, [cat, q, combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt]);
 
   const list = useMemo(() => {
     return products.filter((p) => {
@@ -1014,10 +1032,71 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   cancelled: "bg-rose-500/20 text-rose-300 border-rose-500/40",
 };
 function OrdersTab() {
-  const { orders, updateOrderStatus, removeOrder } = useShop();
+  const { orders: storeOrders, updateOrderStatus, removeOrder } = useShop();
   const { getById } = useCatalog();
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
-  const list = orders.filter((o) => filter === "all" || o.status === filter);
+  const [q, setQ] = useState("");
+  const [liveOrders, setLiveOrders] = useState<typeof storeOrders | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchLiveOrders = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        setLiveOrders(
+          data.map((r: any) => ({
+            id: r.id,
+            createdAt: new Date(r.created_at).getTime(),
+            items: r.items || [],
+            total: Number(r.total || 0),
+            subtotal: Number(r.subtotal || 0),
+            discount: Number(r.discount || 0),
+            shipping: Number(r.shipping || 0),
+            tax: Number(r.tax || 0),
+            status: r.status as OrderStatus,
+            customer: r.customer || {},
+            payment: r.payment || {},
+          }))
+        );
+      }
+    } catch (e) {
+      console.error("Failed to load live orders:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveOrders();
+    const channel = supabase
+      .channel("admin_orders_live_sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        fetchLiveOrders();
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const orders = liveOrders !== null ? liveOrders : storeOrders;
+
+  const filtered = orders.filter((o) => {
+    if (filter !== "all" && o.status !== filter) return false;
+    if (!q.trim()) return true;
+    const query = q.toLowerCase();
+    const orderId = (o.id || "").toLowerCase();
+    const name = (o.customer?.name || "").toLowerCase();
+    const email = (o.customer?.email || "").toLowerCase();
+    const phone = (o.customer?.phone || "").toLowerCase();
+    const city = (o.customer?.city || "").toLowerCase();
+    return orderId.includes(query) || name.includes(query) || email.includes(query) || phone.includes(query) || city.includes(query);
+  });
+
   const stats: Record<OrderStatus | "all", number> = {
     all: orders.length,
     awaiting_payment: orders.filter((o) => o.status === "awaiting_payment").length,
@@ -1027,6 +1106,7 @@ function OrdersTab() {
     delivered: orders.filter((o) => o.status === "delivered").length,
     cancelled: orders.filter((o) => o.status === "cancelled").length,
   };
+
   const statuses: (OrderStatus | "all")[] = [
     "all",
     "awaiting_payment",
@@ -1039,43 +1119,62 @@ function OrdersTab() {
 
   return (
     <>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search order ID, name, email, phone, city"
+            className="w-72 sm:w-80 rounded-none border border-gray-300 bg-transparent py-2 pl-9 pr-4 text-xs outline-none focus:border-black"
+          />
+        </div>
+        <button
+          onClick={fetchLiveOrders}
+          disabled={loading}
+          className="ml-auto inline-flex items-center gap-2 rounded-none border border-gray-300 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hover:text-black disabled:opacity-50"
+        >
+          <RotateCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> {loading ? "Syncing…" : "Refresh"}
+        </button>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         {statuses.map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`rounded-none border px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] ${filter === s ? "border-black bg-black text-white" : "border-gray-300 text-muted-foreground"}`}
+            className={`rounded-none border px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] ${filter === s ? "border-black bg-black text-white" : "border-gray-300 text-muted-foreground hover:border-black"}`}
           >
-            {s} · {stats[s]}
+            {s.replace("_", " ")} · {stats[s]}
           </button>
         ))}
       </div>
 
-      {list.length === 0 && (
+      {filtered.length === 0 && (
         <div className="mt-10 rounded-none border border-dashed border-gray-300 p-10 text-center text-sm text-muted-foreground">
-          No orders yet. Place one from the storefront and it will appear here.
+          {orders.length === 0 ? "No orders yet. Place one from the storefront and it will appear here." : "No orders match the current filter or search criteria."}
         </div>
       )}
 
       <div className="mt-6 grid gap-3">
-        {list.map((o) => (
+        {filtered.map((o: any) => (
           <div key={o.id} className="rounded-none border border-gray-300 p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs">{formatOrderId(o.id)}</span>
                   <span
-                    className={`rounded-none border px-2 py-0.5 text-[9px] uppercase tracking-[0.22em] ${STATUS_STYLE[o.status]}`}
+                    className={`rounded-none border px-2 py-0.5 text-[9px] uppercase tracking-[0.22em] ${STATUS_STYLE[o.status as OrderStatus] || ""}`}
                   >
                     {o.status}
                   </span>
                 </div>
                 <div className="mt-1 text-[11px] text-muted-foreground">
-                  {new Date(o.createdAt).toLocaleString()} · {o.customer.name || "—"} ·{" "}
-                  {o.customer.email || "no email"} · {o.customer.phone || "no phone"}
+                  {new Date(o.createdAt).toLocaleString()} · {o.customer?.name || "—"} ·{" "}
+                  {o.customer?.email || "no email"} · {o.customer?.phone || "no phone"}
                   <br />
-                  {o.customer.address || "—"}, {o.customer.city || "—"}, {o.customer.state || "—"} -{" "}
-                  {o.customer.pincode || "—"}
+                  {o.customer?.address || "—"}, {o.customer?.city || "—"}, {o.customer?.state || "—"} -{" "}
+                  {o.customer?.pincode || "—"}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -1101,7 +1200,7 @@ function OrdersTab() {
               </div>
             </div>
             <div className="mt-3 grid gap-2 border-t border-border/40 pt-3">
-              {o.items.map((it, i) => {
+              {(o.items || []).map((it: any, i: number) => {
                 const p = getById(it.id);
                 return (
                   <div key={i} className="flex items-center gap-3 text-xs">
@@ -1204,17 +1303,35 @@ function OrdersTab() {
 function TeamCombobox({ value, onChange, category }: { value: string, onChange: (v: string) => void, category: Category }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const { combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt } = useTeams();
   
   const options = useMemo(() => {
-    let list = allLogoEntries;
-    if (category === "f1") list = f1Teams;
-    else if (category === "basketball") list = basketballTeams;
-    else if (category === "cricket") list = cricketTeams;
-    else if (category === "football" || category === "worldcup") list = [...footballTeams, ...worldCupTeams];
+    let list: [string, string][] = [
+      ...combinedFootball,
+      ...combinedWC,
+      ...combinedF1,
+      ...combinedB,
+      ...combinedCricketIPL,
+      ...combinedCricketInt,
+    ];
+    if (category === "f1") list = combinedF1;
+    else if (category === "basketball") list = combinedB;
+    else if (category === "cricket") list = [...combinedCricketIPL, ...combinedCricketInt];
+    else if (category === "football") list = combinedFootball;
+    else if (category === "worldcup") list = combinedWC;
 
-    if (!search) return list;
-    return list.filter(([t]) => t.toLowerCase().includes(search.toLowerCase()));
-  }, [category, search]);
+    // Deduplicate by team name
+    const seen = new Set<string>();
+    const uniqueList = list.filter(([t]) => {
+      const lower = t.toLowerCase();
+      if (seen.has(lower)) return false;
+      seen.add(lower);
+      return true;
+    });
+
+    if (!search) return uniqueList;
+    return uniqueList.filter(([t]) => t.toLowerCase().includes(search.toLowerCase()));
+  }, [category, search, combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt]);
 
   return (
     <div className="relative w-full">
@@ -1952,14 +2069,51 @@ function UsersTab() {
   const reload = async () => {
     setErr(null);
     try {
+      const { data: dbUsers, error: dbErr } = await supabase
+        .from("users")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!dbErr && dbUsers) {
+        setUsers(
+          dbUsers.map((u: any) => ({
+            id: u.id,
+            email: u.email || "",
+            emailVerified: true,
+            createdAt: u.created_at || new Date().toISOString(),
+            lastSignInAt: null,
+            provider: "email",
+            roles: u.role ? [u.role] : ["user"],
+            disabled: u.disabled || false,
+            fullName: u.full_name || "",
+            phone: u.phone || "",
+            city: u.city || "",
+            state: u.state || "",
+            addressLine1: u.address_line1 || "",
+            postalCode: u.postal_code || "",
+          }))
+        );
+        return;
+      }
+
       const data = await list();
       setUsers(data as AdminUser[]);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed to load users");
     }
   };
+
   useEffect(() => {
-    reload(); /* eslint-disable-next-line */
+    reload();
+    const channel = supabase
+      .channel("admin_users_live_sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "users" }, () => {
+        reload();
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const doAction = async (id: string, fn: () => Promise<unknown>) => {
@@ -2447,6 +2601,121 @@ function NewKitsTab() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- PLAYER VERSIONS TAB ---------- */
+import { usePlayerVersions } from "@/lib/player-versions";
+
+function PlayerVersionsTab() {
+  const { products } = useCatalog();
+  const { playerVersionIds, setPlayerVersionIds } = usePlayerVersions();
+  const [search, setSearch] = useState("");
+
+  const selectedProducts = playerVersionIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter(Boolean) as import("@/lib/catalog").Product[];
+
+  const availableProducts = products.filter(
+    (p) =>
+      !playerVersionIds.includes(p.id) &&
+      (p.name.toLowerCase().includes(search.toLowerCase()) ||
+        (p.team && p.team.toLowerCase().includes(search.toLowerCase())) ||
+        (p.tag && p.tag.toLowerCase().includes(search.toLowerCase())))
+  );
+
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      <div className="rounded-none border border-gray-300 p-6">
+        <h2 className="font-display text-xl font-bold">Current Player Version Kits</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          These appear on the /player-version page ({selectedProducts.length} selected).
+        </p>
+        <div className="mt-4 space-y-2 max-h-[500px] overflow-y-auto pr-1">
+          {selectedProducts.map((p, i) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between rounded-none border border-border/40 p-2 bg-gray-50"
+            >
+              <div className="flex items-center gap-3 text-sm">
+                <span className="font-mono text-xs text-muted-foreground w-4">{i + 1}.</span>
+                {p.images[0] && <img src={p.images[0]} className="h-10 w-8 rounded object-cover" />}
+                <div className="truncate max-w-[170px] text-xs">
+                  <div className="font-medium truncate">{p.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{p.team}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setPlayerVersionIds(selectedProducts.map((sp) => sp.id).filter((id) => id !== p.id))}
+                className="rounded-none bg-brand/10 p-2 text-brand hover:bg-brand/20 transition-colors"
+                title="Remove from Player Versions"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          {selectedProducts.length === 0 && (
+            <div className="rounded-none border border-dashed border-gray-300 p-6 text-center text-xs text-muted-foreground">
+              No player version kits selected.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-none border border-gray-300 p-6 flex flex-col">
+        <h2 className="font-display text-xl font-bold">Add Player Version Kits</h2>
+        <p className="mt-1 text-xs text-muted-foreground mb-4">
+          Search and select kits to feature on the Player Version page.
+        </p>
+
+        <div className="relative mb-4">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search player edition kits by name or team..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-none border border-gray-300 bg-white py-2 pl-9 pr-4 text-sm outline-none focus:border-black"
+          />
+        </div>
+
+        {selectedProducts.length >= 150 ? (
+          <div className="mt-4 rounded border border-brand/50 bg-brand/10 p-3 text-xs text-brand">
+            You have reached the maximum limit. Remove some kits to add others.
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 h-[400px] overflow-y-auto pr-2 space-y-2">
+            {availableProducts.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between rounded-none border border-border/40 p-2 hover:bg-neutral-50 transition"
+              >
+                <div className="flex items-center gap-3 text-sm">
+                  {p.images[0] && (
+                    <img src={p.images[0]} className="h-10 w-8 rounded object-cover" />
+                  )}
+                  <div className="truncate w-[180px] text-xs">
+                    <div className="font-medium truncate">{p.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{p.team}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPlayerVersionIds([...selectedProducts.map((sp) => sp.id), p.id])}
+                  className="rounded-none bg-black px-3 py-1 text-[10px] uppercase tracking-wider text-white hover:bg-black/80 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
+            ))}
+            {availableProducts.length === 0 && (
+              <div className="rounded-none border border-dashed border-gray-300 p-6 text-center text-xs text-muted-foreground">
+                No matching products found.
+              </div>
+            )}
           </div>
         )}
       </div>

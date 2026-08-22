@@ -1,27 +1,47 @@
 [
   {
     "slot": "nav-grid-football",
-    "url": "/images/nav-grid-football.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-football/1784609673786.webp"
+  },
+  {
+    "slot": "hero-1",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-1/1785917287222.webp"
+  },
+  {
+    "slot": "music-name-1",
+    "url": "Freed from desire"
+  },
+  {
+    "slot": "featured-2-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-2-pc/1787325603658.webp"
   },
   {
     "slot": "nav-grid-f1",
-    "url": "/images/nav-grid-f1.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-f1/1784609689697.webp"
+  },
+  {
+    "slot": "music-url-1",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/music-url-1/1786270522116.mp3"
   },
   {
     "slot": "nav-grid-basketball",
-    "url": "/images/nav-grid-basketball.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-basketball/1784609699446.webp"
+  },
+  {
+    "slot": "team-Real Madrid-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/team-Real%20Madrid-mobile/1786463974553.webp"
+  },
+  {
+    "slot": "hero-4",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-4/1785489214875.webp"
   },
   {
     "slot": "nav-grid-cricket",
-    "url": "/images/nav-grid-cricket.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-cricket/1784609709348.webp"
   },
   {
-    "slot": "promo-popup",
-    "url": "/images/promo-popup.png"
-  },
-  {
-    "slot": "worldcup-banner",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/worldcup-banner/1783372056920.mp4"
+    "slot": "hero-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-pc/1785917299230.webp"
   },
   {
     "slot": "zone-messi",
@@ -40,15 +60,79 @@
     "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/zone-hamilton/1783527487266.webp"
   },
   {
-    "slot": "category-football",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-football/1783528137168.webp"
+    "slot": "hero-1-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-1-mobile/1786464303549.webp"
   },
   {
-    "slot": "category-f1",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-f1/1783528159835.webp"
+    "slot": "banner:football",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
   },
   {
     "slot": "hero",
-    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero/1783528586878.webp"
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero/1784538260116.webp"
+  },
+  {
+    "slot": "banner:f1",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:f1/1786005520068.webp"
+  },
+  {
+    "slot": "nav-grid-football-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-football/1784609673786.webp"
+  },
+  {
+    "slot": "nav-grid-f1-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-f1/1784609689697.webp"
+  },
+  {
+    "slot": "nav-grid-basketball-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-basketball/1784609699446.webp"
+  },
+  {
+    "slot": "nav-grid-cricket-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/nav-grid-cricket/1784609709348.webp"
+  },
+  {
+    "slot": "banner:shop",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
+  },
+  {
+    "slot": "category-new-kits-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-new-kits-mobile/1786464263659.webp"
+  },
+  {
+    "slot": "featured-2-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-2-mobile/1787319571177.webp"
+  },
+  {
+    "slot": "featured-1-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-1-mobile/1787319470113.webp"
+  },
+  {
+    "slot": "featured-1-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/featured-1-pc/1787325554495.webp"
+  },
+  {
+    "slot": "hero-video-mobile",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-mobile/1787332663765.webp"
+  },
+  {
+    "slot": "hero-video-mobile-2",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:football/1786005500700.webp"
+  },
+  {
+    "slot": "hero-video-mobile-3",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/banner:f1/1786005520068.webp"
+  },
+  {
+    "slot": "hero-video-mobile-4",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/team-Real%20Madrid-mobile/1786463974553.webp"
+  },
+  {
+    "slot": "hero-video-mobile-5",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/category-new-kits-mobile/1786464263659.webp"
+  },
+  {
+    "slot": "hero-video-pc",
+    "url": "https://gyxjytykxzivbtmymtek.supabase.co/storage/v1/object/public/site-images/hero-video-pc/1787332482109.webp"
   }
 ]

@@ -160,9 +160,9 @@ function ProfilePage() {
           {/* Header */}
           <div className="flex items-center gap-3 px-5 py-3.5 border-b border-neutral-100">
             <button
-              onClick={() => (window.history.length > 1 ? window.history.back() : nav({ to: "/" }))}
+              onClick={() => nav({ to: "/" })}
               className="p-1 text-neutral-900 hover:text-neutral-600 transition cursor-pointer"
-              aria-label="Back"
+              aria-label="Back to home"
             >
               <ArrowLeft className="h-6 w-6 stroke-[2]" />
             </button>
@@ -688,10 +688,10 @@ function ProfilePage() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Email Support</h3>
               <p className="text-xs text-neutral-600">Queries, sizing help, order tracking & returns</p>
               <a
-                href="mailto:support@velocewear.shop"
+                href="mailto:velocewears@gmail.com"
                 className="inline-block text-xs font-bold text-[#0078ad] hover:underline"
               >
-                support@velocewear.shop
+                velocewears@gmail.com
               </a>
             </div>
 
@@ -699,12 +699,12 @@ function ProfilePage() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Telegram Community</h3>
               <p className="text-xs text-neutral-600">Instant customer assistance: Mon–Sat (10am–8pm IST)</p>
               <a
-                href="https://t.me/VELOCE_JERSEY"
+                href="https://t.me/Velocewear"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-block text-xs font-bold text-[#0078ad] hover:underline"
               >
-                @VELOCE_JERSEY →
+                @Velocewear →
               </a>
             </div>
 

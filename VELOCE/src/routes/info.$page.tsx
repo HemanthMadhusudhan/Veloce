@@ -239,7 +239,7 @@ const PAGES: Record<
           <div className="rounded-2xl border border-border/50 bg-card/40 p-6 text-center space-y-3">
             <Mail className="h-6 w-6 mx-auto text-brand" />
             <h3 className="font-display text-sm font-semibold">Email</h3>
-            <p className="text-sm text-muted-foreground">support@velocejersey.com</p>
+            <p className="text-sm text-muted-foreground">velocewears@gmail.com</p>
           </div>
           <div className="rounded-2xl border border-border/50 bg-card/40 p-6 text-center space-y-3">
             <Phone className="h-6 w-6 mx-auto text-brand" />
@@ -352,8 +352,8 @@ const PAGES: Record<
           <ol className="space-y-3 text-sm text-muted-foreground list-decimal list-inside">
             <li>
               Email{" "}
-              <a href="mailto:support@velocejersey.com" className="text-brand hover:underline">
-                support@velocejersey.com
+              <a href="mailto:velocewears@gmail.com" className="text-brand hover:underline">
+                velocewears@gmail.com
               </a>{" "}
               with your order number and reason for exchange.
             </li>

@@ -1,6 +1,5 @@
 import type { CartItem } from "./store";
 import type { Product } from "./catalog";
-import { getLiveProduct } from "./catalog-store";
 
 export type CartLine = {
   item: CartItem;
@@ -33,25 +32,9 @@ export function computeCart(
   couponCode?: string,
   isFirstOrder?: boolean,
 ): CartTotals {
-  const enriched = cart.map((c) => {
-    let prod = lookup(c.id) || getLiveProduct(c.id);
-    if (!prod) {
-      prod = {
-        id: c.id,
-        name: c.name || "Match Jersey",
-        price: c.price || 699,
-        compareAt: c.compareAt || 3499,
-        images: c.image ? [c.image] : ["/logo.png"],
-        colors: [c.color || "Default"],
-        sizes: [c.size || "M"],
-        category: "football",
-        stock: 50,
-        rating: 5,
-        reviews: 50,
-      } as Product;
-    }
-    return { item: c, product: prod };
-  });
+  const enriched = cart
+    .map((c) => ({ item: c, product: lookup(c.id) }))
+    .filter((x): x is { item: CartItem; product: Product } => !!x.product);
 
   const itemCount = enriched.reduce((a, b) => a + b.item.qty, 0);
   const subtotal = enriched.reduce((a, b) => a + (b.product.price + (b.item.customName ? 100 : 0)) * b.item.qty, 0);

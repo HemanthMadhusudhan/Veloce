@@ -311,16 +311,10 @@ export function getTeamTheme(teamName: string): TeamThemeConfig {
   };
 }
 
-export function getTeamLogo(teamName: string): string | null {
-  if (TEAM_LOGOS[teamName]) return TEAM_LOGOS[teamName];
-  
-  const lower = teamName.toLowerCase().trim();
-  const entry = Object.entries(TEAM_LOGOS).find(([k]) => {
-    const kLower = k.toLowerCase().trim();
-    return kLower === lower || kLower.includes(lower) || lower.includes(kLower);
-  });
+import { getLiveTeamLogo } from "@/lib/teams";
 
-  return entry ? entry[1] : null;
+export function getTeamLogo(teamName: string): string | null {
+  return getLiveTeamLogo(teamName);
 }
 
 function AnimatedTeamHeader({
@@ -451,6 +445,22 @@ export function ShopInner({
     }, {} as Record<string, number>);
   }, [products]);
 
+function isRCBProduct(p: { team?: string; name?: string; id?: string }): boolean {
+  const team = (p.team || "").toLowerCase();
+  const name = (p.name || "").toLowerCase();
+  const id = (p.id || "").toLowerCase();
+  return (
+    team.includes("rcb") ||
+    team.includes("royal challengers") ||
+    team.includes("bengaluru") ||
+    team.includes("bangalore") ||
+    name.includes("rcb") ||
+    name.includes("royal challengers") ||
+    id.includes("rcb") ||
+    id.includes("royal-challengers")
+  );
+}
+
   const filtered = useMemo(() => {
     let list = [...products];
     if (!category && !team && sort === "featured") {
@@ -474,6 +484,14 @@ export function ShopInner({
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     else if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
     else if (sort === "rating") list = [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    // Show RCB products at the top always for cricket category
+    if (category === "cricket" && !team && sort === "featured") {
+      const rcb = list.filter(isRCBProduct);
+      const rest = list.filter((p) => !isRCBProduct(p));
+      list = [...rcb, ...rest];
+    }
+
     return list;
   }, [category, team, price, sort, products, randomOffsets, customProductIds]);
 

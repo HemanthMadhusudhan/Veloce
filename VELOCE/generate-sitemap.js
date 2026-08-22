@@ -15,6 +15,8 @@ async function generateSitemap() {
     const staticRoutes = [
       '',
       '/shop',
+      '/new-kits',
+      '/player-version',
       '/shop/football',
       '/shop/f1',
       '/shop/basketball',
@@ -66,8 +68,16 @@ async function generateSitemap() {
     await fs.writeFile('./public/robots.txt', robotsTxt);
     console.log("robots.txt generated successfully at public/robots.txt");
 
+    // Sync site_images table to default-site-images.json for permanent persistence
+    console.log("Fetching live site_images from Supabase...");
+    const { data: siteImages, error: imgError } = await supabase.from('site_images').select('slot, url');
+    if (!imgError && siteImages && siteImages.length > 0) {
+      await fs.writeFile('./src/lib/default-site-images.json', JSON.stringify(siteImages, null, 2), 'utf8');
+      console.log(`Synced ${siteImages.length} site images to default-site-images.json`);
+    }
+
   } catch (err) {
-    console.error("Error generating sitemap:", err);
+    console.error("Error generating sitemap / syncing images:", err);
   }
 }
 

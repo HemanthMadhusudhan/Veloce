@@ -11,6 +11,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://velocewear.shop/new-kits</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/player-version</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://velocewear.shop/shop/football</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -467,11 +477,6 @@
   </url>
   <url>
     <loc>https://velocewear.shop/football/argentina-away-2006-retro</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://velocewear.shop/football/argentina-50th-anniversary-player-version-2425</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1421,11 +1426,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://velocewear.shop/football/siuu-the-cristiano-special-kit</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://velocewear.shop/cricket/puma-x-rcb-2026-mens-virat18-official-jersey</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -1497,6 +1497,11 @@
   </url>
   <url>
     <loc>https://velocewear.shop/f1/kimi-antonelli-mercedes-f1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/football/al-nassr-home-ronaldo-version-2425</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -1621,17 +1626,42 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://velocewear.shop/f1/max-verstappen-oversized-t-shirt-helmet-edition</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://velocewear.shop/f1/lewis-hamilton-oversized-t-shirt-helmet-edition</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://velocewear.shop/f1/monza-formula-1-oversized-t-shirt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/football/siuu-the-cristiano-special-kit</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/football/argentina-50th-anniversary-player-version-2425</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/f1/max-verstappen-oversized-t-shirt-helmet-edition</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/football/al-nassr-home-player-version-2425</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/football/al-nassr-away-player-version-2425</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://velocewear.shop/football/al-nassr-third-player-version-2425</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

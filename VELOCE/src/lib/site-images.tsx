@@ -16,6 +16,11 @@ import defaultSiteImagesRaw from "./default-site-images.json";
 export type SiteImageSlot =
   | "hero-video-pc"
   | "hero-video-mobile"
+  | "hero-video-mobile-1"
+  | "hero-video-mobile-2"
+  | "hero-video-mobile-3"
+  | "hero-video-mobile-4"
+  | "hero-video-mobile-5"
   | "hero-video"
   | "featured-1-pc"
   | "featured-1-mobile"
@@ -32,34 +37,59 @@ export const SITE_IMAGE_META: { slot: SiteImageSlot; label: string; description:
   },
   {
     slot: "hero-video-mobile",
-    label: "2. Main Hero Banner - Mobile (MP4 Video or Image)",
-    description: "Featured top video or photo background on mobile/tablet homepage Hero section.",
+    label: "2. Mobile Hero Banner 1 (MP4 Video or Image)",
+    description: "Slide 1 in the 5-banner mobile carousel (New Kits Campaign).",
+  },
+  {
+    slot: "hero-video-mobile-2",
+    label: "3. Mobile Hero Banner 2 (MP4 Video or Image)",
+    description: "Slide 2 in the 5-banner mobile carousel (Football Kits).",
+  },
+  {
+    slot: "hero-video-mobile-3",
+    label: "4. Mobile Hero Banner 3 (MP4 Video or Image)",
+    description: "Slide 3 in the 5-banner mobile carousel (Formula 1 Tees).",
+  },
+  {
+    slot: "hero-video-mobile-4",
+    label: "5. Mobile Hero Banner 4 (MP4 Video or Image)",
+    description: "Slide 4 in the 5-banner mobile carousel (Cricket Matchwear).",
+  },
+  {
+    slot: "hero-video-mobile-5",
+    label: "6. Mobile Hero Banner 5 (MP4 Video or Image)",
+    description: "Slide 5 in the 5-banner mobile carousel (Player Version Kits).",
   },
   {
     slot: "featured-1-pc",
-    label: "3. Featured Banner 1 - Left (PC / Desktop) (MP4 Video or Image)",
-    description: "First featured card below Hero section on desktop/PC (Training Apparel).",
+    label: "7. Featured Banner 1 - Left (PC / Desktop) (MP4 Video or Image)",
+    description: "First featured card below Hero section on desktop/PC (Formula 1 Store).",
   },
   {
     slot: "featured-1-mobile",
-    label: "4. Featured Banner 1 - Left (Mobile) (MP4 Video or Image)",
-    description: "First featured card below Hero section on mobile/tablet (Training Apparel).",
+    label: "8. Featured Banner 1 - Left (Mobile) (MP4 Video or Image)",
+    description: "First featured card below Hero section on mobile/tablet (Formula 1 Store).",
   },
   {
     slot: "featured-2-pc",
-    label: "5. Featured Banner 2 - Right (PC / Desktop) (MP4 Video or Image)",
-    description: "Second featured card below Hero section on desktop/PC (Studio Matchwear).",
+    label: "9. Featured Banner 2 - Right (PC / Desktop) (MP4 Video or Image)",
+    description: "Second featured card below Hero section on desktop/PC (Football Kits).",
   },
   {
     slot: "featured-2-mobile",
-    label: "6. Featured Banner 2 - Right (Mobile) (MP4 Video or Image)",
-    description: "Second featured card below Hero section on mobile/tablet (Studio Matchwear).",
+    label: "10. Featured Banner 2 - Right (Mobile) (MP4 Video or Image)",
+    description: "Second featured card below Hero section on mobile/tablet (Football Kits).",
   },
 ];
 
 const DEFAULTS: Record<SiteImageSlot, string> = {
   "hero-video-pc": "",
   "hero-video-mobile": "",
+  "hero-video-mobile-1": "",
+  "hero-video-mobile-2": "",
+  "hero-video-mobile-3": "",
+  "hero-video-mobile-4": "",
+  "hero-video-mobile-5": "",
   "hero-video": "",
   "featured-1-pc": "",
   "featured-1-mobile": "",
@@ -110,68 +140,101 @@ export async function uploadSiteImageFile(slot: SiteImageSlot, file: File): Prom
   return urlData.publicUrl;
 }
 
-let cachedSiteImagesRaw = null;
-if (typeof window !== "undefined") {
-  try {
-    const c = localStorage.getItem("veloce_site_images_cache");
-    if (c) cachedSiteImagesRaw = JSON.parse(c);
-  } catch (e) {}
+function buildInitialMap(): Partial<Record<SiteImageSlot, string>> {
+  const map: Partial<Record<SiteImageSlot, string>> = {};
+  if (Array.isArray(defaultSiteImagesRaw)) {
+    defaultSiteImagesRaw.forEach((r: any) => {
+      if (r?.slot && r?.url) map[r.slot as SiteImageSlot] = r.url;
+    });
+  }
+  if (typeof window !== "undefined") {
+    try {
+      const c = localStorage.getItem("veloce_site_images_cache");
+      if (c) {
+        const parsed = JSON.parse(c);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((r: any) => {
+            if (r?.slot && r?.url) map[r.slot as SiteImageSlot] = r.url;
+          });
+        }
+      }
+    } catch (e) {}
+  }
+  return map;
 }
 
-const initialOverrides: Partial<Record<SiteImageSlot, string>> = {};
-const sourceData = cachedSiteImagesRaw || (defaultSiteImagesRaw as any[]);
-sourceData.forEach((r: any) => {
-  initialOverrides[r.slot as SiteImageSlot] = r.url;
-});
-
 export function SiteImagesProvider({ children }: { children: ReactNode }) {
-  const [overrides, setOverrides] = useState<Partial<Record<SiteImageSlot, string>>>(initialOverrides);
+  const [overrides, setOverrides] = useState<Partial<Record<SiteImageSlot, string>>>(buildInitialMap);
 
-  // Fetch the real data from Supabase (source of truth)
-  useEffect(() => {
-    let active = true;
-    async function load() {
-      try {
-        const { data, error } = await supabase.from("site_images").select("slot, url");
-        if (error) {
-          console.warn("site_images table error:", error.message);
-          return;
-        }
-        if (data && active) {
-          const map: Partial<Record<SiteImageSlot, string>> = {};
-          data.forEach((r: any) => {
-            map[r.slot as SiteImageSlot] = r.url;
-          });
-          setOverrides(map);
-          if (typeof window !== "undefined") {
-            try {
-              localStorage.setItem("veloce_site_images_cache", JSON.stringify(data));
-            } catch (e) {}
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load site images from Supabase:", err);
+  const loadFromSupabase = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from("site_images").select("slot, url");
+      if (error) {
+        console.warn("site_images table error:", error.message);
+        return;
       }
+      if (data && data.length > 0) {
+        setOverrides((prev) => {
+          const next = { ...prev };
+          data.forEach((r: any) => {
+            if (r?.slot && r?.url) next[r.slot as SiteImageSlot] = r.url;
+          });
+          return next;
+        });
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("veloce_site_images_cache", JSON.stringify(data));
+          } catch (e) {}
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load site images from Supabase:", err);
     }
-    load();
-    return () => {
-      active = false;
-    };
   }, []);
 
+  // Fetch the real data from Supabase and subscribe to realtime updates
+  useEffect(() => {
+    loadFromSupabase();
+
+    const channel = supabase
+      .channel("public:site_images_live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_images" },
+        () => {
+          loadFromSupabase();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadFromSupabase]);
+
   const set = useCallback(async (slot: SiteImageSlot, url: string | null) => {
+    const cleanUrl = url && url.trim() ? url.trim() : null;
+
     setOverrides((prev) => {
       const next = { ...prev };
-      if (url && url.trim()) next[slot] = url.trim();
+      if (cleanUrl) next[slot] = cleanUrl;
       else delete next[slot];
+
+      if (typeof window !== "undefined") {
+        try {
+          const list = Object.entries(next).map(([s, u]) => ({ slot: s, url: u }));
+          localStorage.setItem("veloce_site_images_cache", JSON.stringify(list));
+        } catch (e) {}
+      }
+
       return next;
     });
 
     try {
-      if (url && url.trim()) {
+      if (cleanUrl) {
         await supabase
           .from("site_images")
-          .upsert({ slot, url: url.trim(), updated_at: new Date().toISOString() });
+          .upsert({ slot, url: cleanUrl, updated_at: new Date().toISOString() });
       } else {
         await supabase.from("site_images").delete().eq("slot", slot);
         // Also clean up storage files for this slot
@@ -191,6 +254,11 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(async () => {
     setOverrides({});
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("veloce_site_images_cache");
+      } catch (e) {}
+    }
     try {
       // Delete all rows from site_images table
       const { data } = await supabase.from("site_images").select("slot");
@@ -215,15 +283,56 @@ export function SiteImagesProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const get = useCallback(
+    (slot: SiteImageSlot): string => {
+      if (overrides[slot]) return overrides[slot]!;
+
+      // Direct fallback aliases if slot variations are queried
+      if (slot === "hero-video-pc" || slot === "hero-video") {
+        return overrides["hero-video-pc"] || overrides["hero-video"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "hero-video-mobile" || slot === "hero-video-mobile-1") {
+        return overrides["hero-video-mobile"] || overrides["hero-video-mobile-1"] || overrides["hero-video"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "hero-video-mobile-2") {
+        return overrides["hero-video-mobile-2"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "hero-video-mobile-3") {
+        return overrides["hero-video-mobile-3"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "hero-video-mobile-4") {
+        return overrides["hero-video-mobile-4"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "hero-video-mobile-5") {
+        return overrides["hero-video-mobile-5"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "featured-1-pc" || slot === "featured-1") {
+        return overrides["featured-1-pc"] || overrides["featured-1"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "featured-1-mobile") {
+        return overrides["featured-1-mobile"] || overrides["featured-1"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "featured-2-pc" || slot === "featured-2") {
+        return overrides["featured-2-pc"] || overrides["featured-2"] || DEFAULTS[slot] || "";
+      }
+      if (slot === "featured-2-mobile") {
+        return overrides["featured-2-mobile"] || overrides["featured-2"] || DEFAULTS[slot] || "";
+      }
+
+      return DEFAULTS[slot] || "";
+    },
+    [overrides]
+  );
+
   const value = useMemo<Ctx>(
     () => ({
       overrides,
-      get: (slot) => overrides[slot] || DEFAULTS[slot],
+      get,
       getDefault: (slot) => DEFAULTS[slot],
       set,
       reset,
     }),
-    [overrides, set, reset],
+    [overrides, get, set, reset],
   );
 
   return <C.Provider value={value}>{children}</C.Provider>;

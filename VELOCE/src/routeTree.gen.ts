@@ -14,6 +14,7 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PlayerVersionRouteImport } from './routes/player-version'
 import { Route as NewKitsRouteImport } from './routes/new-kits'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -57,6 +58,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayerVersionRoute = PlayerVersionRouteImport.update({
+  id: '/player-version',
+  path: '/player-version',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewKitsRoute = NewKitsRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/new-kits': typeof NewKitsRoute
+  '/player-version': typeof PlayerVersionRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/new-kits': typeof NewKitsRoute
+  '/player-version': typeof PlayerVersionRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
   '/new-kits': typeof NewKitsRoute
+  '/player-version': typeof PlayerVersionRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/new-kits'
+    | '/player-version'
     | '/profile'
     | '/reset-password'
     | '/search'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/new-kits'
+    | '/player-version'
     | '/profile'
     | '/reset-password'
     | '/search'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/new-kits'
+    | '/player-version'
     | '/profile'
     | '/reset-password'
     | '/search'
@@ -319,6 +331,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
   NewKitsRoute: typeof NewKitsRoute
+  PlayerVersionRoute: typeof PlayerVersionRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
@@ -367,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/player-version': {
+      id: '/player-version'
+      path: '/player-version'
+      fullPath: '/player-version'
+      preLoaderRoute: typeof PlayerVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/new-kits': {
@@ -535,6 +555,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
   NewKitsRoute: NewKitsRoute,
+  PlayerVersionRoute: PlayerVersionRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,

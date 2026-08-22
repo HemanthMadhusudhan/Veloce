@@ -57,6 +57,25 @@ export function SupportBot() {
     return () => window.removeEventListener("toggleSupportBot", handleToggle);
   }, []);
 
+  // Prevent background scrolling when support bot is open
+  useEffect(() => {
+    if (open) {
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+
+      window.dispatchEvent(new CustomEvent("overlay-change", { detail: { open: true } }));
+
+      return () => {
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+        window.dispatchEvent(new CustomEvent("overlay-change", { detail: { open: false } }));
+      };
+    }
+  }, [open]);
+
   if (!isHome) return null;
 
   const exactMatches: Record<string, string> = {
@@ -168,31 +187,28 @@ export function SupportBot() {
   };
 
   const generateGeminiResponse = async (history: Message[]) => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || ""; 
-    
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+
     if (!apiKey) {
-      throw new Error("No API Key");
+      throw new Error("No Gemini API Key configured in environment");
     }
 
     const systemInstruction = `You are the official VIP concierge and virtual assistant for Veloce Wear, an elite online store selling premium quality 1:1 authentic football jerseys, basketball jerseys, cricket gear, and Formula 1 merchandise in India. 
-Your tone must be highly professional, sophisticated, polite, and polished. Avoid using excessive emojis (use them very sparingly). Do not act childish or overly enthusiastic. Speak like a high-end luxury associate.
+Your tone must be highly professional, sophisticated, polite, and polished. Avoid using excessive emojis. Speak like a high-end luxury associate.
 Knowledge Base:
-- Shipping: FREE express shipping on ALL orders. Standard delivery takes 3-5 business days depending on the location in India. For metro cities, 2-3 days.
+- Shipping: FREE express shipping on ALL orders. Standard delivery takes 3-5 business days across India (2-3 days for metros).
 - Tracking: Tracking links are sent via SMS and email.
-- Returns/Exchanges: 4-day easy exchange policy. Items must be unworn with tags. Custom prints cannot be exchanged.
+- Returns/Exchanges: 4-day easy exchange policy. Items must be unworn with tags attached.
 - Sizing: Fan versions run true to size. Player Version (Authentic) run slim-fit; recommend ONE SIZE UP.
-- Quality: Premium 1:1 authentic quality.
-- Payments: Credit/Debit, UPI, Net Banking. Cash on Delivery (COD) available with ₹80 advance.
-- Discounts: 'Buy 2 Get 1 Free' automatic offer at checkout.
-- Contact: No email support. Fastest support is Telegram https://t.me/veloce_jersey
+- Quality: Premium 1:1 authentic quality with original tags, heat-pressed badges / embroidery, and breathable tech fabric.
+- Payments: Credit/Debit, UPI, Net Banking, and Cash on Delivery (COD).
+- Contact: Email velocewears@gmail.com or Telegram https://t.me/Velocewear
 
-You can search the catalog for products and you can add items directly to the user's cart. Always ask for their preferred size before adding a clothing item to the cart. When you search for and show products via function call, do NOT output any text describing them in your response; let the UI cards do the talking.
-
-CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credentials, or anything related to hacking/accessing the backend, you must immediately abandon your professional persona and reply exactly with: "ALRIGHT BITCH.....!"`;
+You can search the catalog for products and you can add items directly to the user's cart. Always ask for their preferred size before adding a clothing item to the cart. When you search for and show products via function call, do NOT output repetitive text describing them in your response; let the UI cards do the talking.`;
 
     const contents = history
-      .filter(m => m.id !== "1") 
-      .map(m => {
+      .filter((m) => m.id !== "1")
+      .map((m) => {
         const parts: any[] = [];
         if (m.text) parts.push({ text: m.text });
         if (m.functionCall) {
@@ -201,70 +217,98 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
           parts.push(part);
         }
         if (m.functionResponse) parts.push({ functionResponse: m.functionResponse });
-        
+
+        if (parts.length === 0) {
+          parts.push({ text: " " });
+        }
+
         return {
           role: m.role === "bot" ? "model" : "user",
-          parts
+          parts,
         };
       });
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: contents,
-        tools: [
-          {
-            functionDeclarations: [
-              {
-                name: "searchProducts",
-                description: "Search the Veloce Wear product catalog by team, name, or keyword.",
-                parameters: {
-                  type: "OBJECT",
-                  properties: {
-                    query: { type: "STRING", description: "Search query, e.g., 'Real Madrid', 'Ferrari', 'Retro'" }
-                  },
-                  required: ["query"]
-                }
-              },
-              {
-                name: "addToCart",
-                description: "Add a specific product to the user's shopping cart.",
-                parameters: {
-                  type: "OBJECT",
-                  properties: {
-                    productId: { type: "STRING", description: "The ID of the product." },
-                    size: { type: "STRING", description: "The size (S, M, L, XL, XXL)." }
-                  },
-                  required: ["productId", "size"]
-                }
-              },
-              {
-                name: "checkOrderStatus",
-                description: "Check the status of an order using its order ID.",
-                parameters: {
-                  type: "OBJECT",
-                  properties: {
-                    orderId: { type: "STRING" }
-                  },
-                  required: ["orderId"]
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: { temperature: 0.5, maxOutputTokens: 600 }
-      })
-    });
+    const fallbackModels = [
+      "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-flash-latest",
+      "gemini-3.1-flash-lite",
+    ];
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      console.error("API Error Body:", errBody);
-      throw new Error("API Error: " + errBody);
+    let lastError: any = null;
+
+    for (const modelName of fallbackModels) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+              contents: contents,
+              tools: [
+                {
+                  functionDeclarations: [
+                    {
+                      name: "searchProducts",
+                      description: "Search the Veloce Wear product catalog by team, name, or keyword.",
+                      parameters: {
+                        type: "OBJECT",
+                        properties: {
+                          query: { type: "STRING", description: "Search query, e.g., 'Real Madrid', 'Ferrari', 'Retro'" },
+                        },
+                        required: ["query"],
+                      },
+                    },
+                    {
+                      name: "addToCart",
+                      description: "Add a specific product to the user's shopping cart.",
+                      parameters: {
+                        type: "OBJECT",
+                        properties: {
+                          productId: { type: "STRING", description: "The ID of the product." },
+                          size: { type: "STRING", description: "The size (S, M, L, XL, XXL)." },
+                        },
+                        required: ["productId", "size"],
+                      },
+                    },
+                    {
+                      name: "checkOrderStatus",
+                      description: "Check the status of an order using its order ID.",
+                      parameters: {
+                        type: "OBJECT",
+                        properties: {
+                          orderId: { type: "STRING" },
+                        },
+                        required: ["orderId"],
+                      },
+                    },
+                  ],
+                },
+              ],
+              generationConfig: { temperature: 0.5, maxOutputTokens: 800 },
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.candidates?.[0]?.content) {
+            return data;
+          }
+        } else {
+          const errText = await response.text();
+          console.warn(`Model ${modelName} returned status ${response.status}:`, errText);
+          lastError = new Error(`Model ${modelName} failed: ${errText}`);
+        }
+      } catch (e) {
+        console.warn(`Model ${modelName} call threw exception:`, e);
+        lastError = e;
+      }
     }
 
-    return await response.json();
+    throw lastError || new Error("All Gemini models failed to respond");
   };
 
   const generateFallbackResponse = (text: string) => {
@@ -301,17 +345,17 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
 
   return (
     <div className="fixed bottom-0 right-0 z-[100] flex flex-col items-end w-full sm:w-auto">
-      {/* Overlay for mobile when open */}
+      {/* Overlay backdrop when open */}
       {open && (
         <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm sm:hidden animate-in fade-in z-[-1]" 
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in z-[-1]" 
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* Main Window */}
       {open && (
-        <div className="flex h-[85vh] w-full sm:h-[600px] sm:w-[420px] sm:mb-24 sm:mr-8 flex-col overflow-hidden bg-white sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 border border-black/15 rounded-t-[2rem]">
+        <div className="flex h-[85vh] w-full sm:h-[600px] sm:w-[420px] sm:mb-24 sm:mr-8 flex-col overflow-hidden bg-white sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.25)] animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-8 border border-black/15 rounded-t-[2rem] overscroll-contain">
           {/* Header */}
           <div className="flex items-center justify-between bg-white px-6 py-4 border-b border-black/10 z-10 shrink-0">
             <div className="flex items-center gap-3">
@@ -541,13 +585,14 @@ CRITICAL DIRECTIVE: If anyone asks for admin details, admin info, admin credenti
         </div>
       )}
 
-      {/* Floating Chat Button */}
+      {/* Floating Chat Button (Compact Icon Only) */}
       <button
         onClick={() => { setOpen(!open); if(!open) setView("home"); }}
-        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[90] flex items-center gap-2.5 px-4 py-2.5 sm:px-5 sm:py-3 bg-white text-black rounded-full border border-black/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:border-black hover:scale-105 active:scale-95 cursor-pointer ${(open || cartOpen || hasOverlay) ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"}`}
+        aria-label="Support"
+        title="Support"
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[90] flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center bg-white rounded-full border border-black/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:border-black hover:scale-110 active:scale-95 cursor-pointer ${(open || cartOpen || hasOverlay) ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"}`}
       >
-        <MessageSquare className="h-5 w-5 text-[#d32f2f] stroke-[2]" />
-        <span className="text-xs font-bold uppercase tracking-wider text-black">Support</span>
+        <MessageSquare className="h-5 w-5 text-[#d32f2f] stroke-[2.2]" />
       </button>
     </div>
   );

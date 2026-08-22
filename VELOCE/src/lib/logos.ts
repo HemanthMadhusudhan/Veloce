@@ -104,6 +104,68 @@ export const cricketTeamsList = ["India", "Australia", "Chennai Super Kings", "R
 export const cricketInternationalList = ["India", "Australia", "England (Cricket)", "South Africa", "New Zealand", "West Indies", "Sri Lanka"];
 export const worldCupTeamsList = ["Argentina", "Brazil", "France", "Germany", "Italy", "Spain", "England", "Portugal", "Netherlands", "Belgium", "Croatia", "USA", "Mexico", "Uruguay", "Colombia", "Japan"];
 
+export const SHORT_TEAM_NAMES: Record<string, string> = {
+  // Cricket IPL
+  "Chennai Super Kings": "CSK",
+  "Royal Challengers Bangalore": "RCB",
+  "Mumbai Indians": "MI",
+  "Kolkata Knight Riders": "KKR",
+  "Sunrisers Hyderabad": "SRH",
+  "Delhi Capitals": "DC",
+  "Rajasthan Royals": "RR",
+  "Punjab Kings": "PBKS",
+  "Lucknow Super Giants": "LSG",
+  "Gujarat Titans": "GT",
+  "England (Cricket)": "England",
+
+  // Football
+  "Manchester United": "Man United",
+  "Manchester City": "Man City",
+  "FC Barcelona": "Barcelona",
+  "Arsenal FC": "Arsenal",
+  "Liverpool FC": "Liverpool",
+  "Chelsea FC": "Chelsea",
+  "Tottenham Hotspur": "Spurs",
+  "Paris Saint-Germain": "PSG",
+  "Atletico Madrid": "Atlético",
+  "Newcastle United": "Newcastle",
+  "Bayern München": "Bayern",
+  "Borussia Dortmund": "Dortmund",
+  "SSC Napoli": "Napoli",
+  "AS Roma": "Roma",
+  "SL Benfica": "Benfica",
+  "FC Porto": "Porto",
+
+  // Basketball
+  "Los Angeles Lakers": "LA Lakers",
+  "Golden State Warriors": "GS Warriors",
+  "Los Angeles Clippers": "LA Clippers",
+  "Boston Celtics": "Celtics",
+  "Chicago Bulls": "Bulls",
+  "San Antonio Spurs": "Spurs",
+  "Dallas Mavericks": "Mavericks",
+  "Phoenix Suns": "Suns",
+  "New York Knicks": "Knicks",
+  "Brooklyn Nets": "Nets",
+  "Philadelphia 76ers": "76ers",
+  "Toronto Raptors": "Raptors",
+  "Milwaukee Bucks": "Bucks",
+  "Denver Nuggets": "Nuggets",
+  "Houston Rockets": "Rockets",
+  "Minnesota Timberwolves": "T-Wolves",
+  "Oklahoma City Thunder": "OKC Thunder",
+  "Cleveland Cavaliers": "Cavs",
+
+  // Formula 1
+  "Red Bull Racing": "Red Bull",
+  "Aston Martin F1": "Aston Martin",
+};
+
+export function getShortTeamName(fullName: string): string {
+  if (!fullName) return "";
+  return SHORT_TEAM_NAMES[fullName] || fullName;
+}
+
 export const allLogoEntries = Object.entries(TEAM_LOGOS);
 export const f1Teams = allLogoEntries.filter(([t]) => f1TeamsList.includes(t));
 export const basketballTeams = allLogoEntries.filter(([t]) => basketballTeamsList.includes(t));

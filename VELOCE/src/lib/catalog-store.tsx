@@ -29,7 +29,6 @@ type Override = Partial<
 
 type Ctx = {
   products: Product[];
-  loaded: boolean;
   getById: (id: string) => Product | undefined;
   updateProduct: (id: string, patch: Override) => Promise<void>;
   addProduct: (p: Product) => Promise<void>;
@@ -59,6 +58,22 @@ function mapDbRowToProduct(r: any): Product {
   const name = r.name || "Jersey";
   const slug = r.slug || generateProductSlug(name) || r.id;
 
+  let parsedSizes: string[] = ["S", "M", "L", "XL"];
+  if (Array.isArray(r.sizes) && r.sizes.length > 0) {
+    parsedSizes = r.sizes;
+  } else if (typeof r.sizes === "string" && r.sizes.trim()) {
+    parsedSizes = r.sizes.split(",").map((s: string) => s.trim()).filter(Boolean);
+  } else if (r.category === "accessories") {
+    parsedSizes = [];
+  }
+
+  let parsedColors: string[] = ["Default"];
+  if (Array.isArray(r.colors) && r.colors.length > 0) {
+    parsedColors = r.colors;
+  } else if (typeof r.colors === "string" && r.colors.trim()) {
+    parsedColors = r.colors.split(",").map((c: string) => c.trim()).filter(Boolean);
+  }
+
   return {
     id: r.id,
     slug: slug,
@@ -72,8 +87,8 @@ function mapDbRowToProduct(r: any): Product {
     price: Number(r.price),
     compareAt: r.compare_at ? Number(r.compare_at) : undefined,
     badge: r.badge || undefined,
-    colors: r.colors || [],
-    sizes: r.sizes || [],
+    colors: parsedColors,
+    sizes: parsedSizes,
     images: images,
     description: r.description,
     material: r.material,
@@ -85,8 +100,6 @@ function mapDbRowToProduct(r: any): Product {
     has360: r.has_360 || false,
   };
 }
-
-const DEFAULT_PRODUCTS_LIST: Product[] = (defaultProductsRaw as any[]).map(mapDbRowToProduct);
 
 let cachedRaw = null;
 if (typeof window !== "undefined") {
@@ -100,40 +113,22 @@ let LIVE: Product[] = (cachedRaw || defaultProductsRaw as any[]).map(mapDbRowToP
 let listeners: (() => void)[] = [];
 
 export function getLiveProducts(): Product[] {
-  return LIVE.length > 0 ? LIVE : DEFAULT_PRODUCTS_LIST;
+  return LIVE;
 }
-
 export function getLiveProductBySlug(slug: string): Product | undefined {
   if (!slug) return undefined;
-  const s = slug.toLowerCase().trim();
-  const foundInLive = LIVE.find(
-    (p) =>
-      p.id?.toLowerCase() === s ||
-      p.slug?.toLowerCase() === s ||
-      (p.name && slugify(p.name).toLowerCase() === s)
-  );
-  if (foundInLive) return foundInLive;
-
-  return DEFAULT_PRODUCTS_LIST.find(
+  const s = slug.toLowerCase();
+  return LIVE.find(
     (p) =>
       p.id?.toLowerCase() === s ||
       p.slug?.toLowerCase() === s ||
       (p.name && slugify(p.name).toLowerCase() === s)
   );
 }
-
 export function getLiveProduct(id: string): Product | undefined {
   if (!id) return undefined;
-  const target = id.toLowerCase().trim();
-  const foundInLive = LIVE.find(
-    (p) =>
-      p.id?.toLowerCase() === target ||
-      p.slug?.toLowerCase() === target ||
-      (p.name && slugify(p.name).toLowerCase() === target)
-  );
-  if (foundInLive) return foundInLive;
-
-  return DEFAULT_PRODUCTS_LIST.find(
+  const target = id.toLowerCase();
+  return LIVE.find(
     (p) =>
       p.id?.toLowerCase() === target ||
       p.slug?.toLowerCase() === target ||
@@ -264,7 +259,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         if (patch.category !== undefined) dbPatch.category = patch.category;
         if (patch.driver !== undefined) dbPatch.driver = patch.driver;
 
-        const { error } = await supabase.from("products").update(dbPatch).eq("id", id);
+        let { error } = await supabase.from("products").update(dbPatch).eq("id", id);
+        if (error && (error.message?.includes("slug") || error.code === "PGRST204" || error.message?.includes("schema cache"))) {
+          const { slug, has_video, has_360, ...fallbackPatch } = dbPatch;
+          const retry = await supabase.from("products").update(fallbackPatch).eq("id", id);
+          error = retry.error;
+        }
         if (error) throw new Error(error.message || "Failed to update product");
         refresh(); // Refresh asynchronously to keep UI fast
       } catch (e: any) {
@@ -292,7 +292,15 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
           p.stockBySize = res;
         }
         const dbRow = mapProductToDbRow(p);
-        const { error } = await supabase.from("products").insert(dbRow);
+        let { error } = await supabase.from("products").insert(dbRow);
+        
+        // Resilient fallback if Supabase table lacks optional columns (like slug, has_video, has_360)
+        if (error && (error.message?.includes("slug") || error.code === "PGRST204" || error.message?.includes("schema cache"))) {
+          const { slug, has_video, has_360, ...fallbackRow } = dbRow;
+          const retry = await supabase.from("products").insert(fallbackRow);
+          error = retry.error;
+        }
+
         if (error) throw new Error(error.message || "Failed to add product");
         refresh(); // Refresh asynchronously
       } catch (e: any) {
@@ -465,8 +473,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const value: Ctx = {
     products,
-    loaded,
-    getById: (id) => products.find((p) => p.id === id) || getLiveProduct(id),
+    getById: (id) => products.find((p) => p.id === id),
     updateProduct,
     addProduct,
     removeProduct,

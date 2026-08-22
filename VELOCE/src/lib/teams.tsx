@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { f1Teams, basketballTeams, cricketIPLTeams, cricketInternationalTeams, footballTeams, worldCupTeams } from "./logos";
+import { TEAM_LOGOS, f1Teams, basketballTeams, cricketIPLTeams, cricketInternationalTeams, footballTeams, worldCupTeams } from "./logos";
 import { supabase } from "@/integrations/supabase/client";
 
 export type TeamData = {
@@ -15,6 +15,7 @@ type TeamsCtx = {
   removeTeam: (name: string) => void;
   hideStaticTeam: (name: string) => void;
   restoreStaticTeam: (name: string) => void;
+  getTeamLogo: (name?: string | null) => string | null;
   
   // Expose the clean, ready-to-use lists!
   combinedFootball: [string, string][];
@@ -26,6 +27,20 @@ type TeamsCtx = {
 };
 
 const TeamsContext = createContext<TeamsCtx | null>(null);
+
+// Global live lookup helper
+export function getLiveTeamLogo(teamName?: string | null): string | null {
+  if (!teamName) return null;
+  if (TEAM_LOGOS[teamName]) return TEAM_LOGOS[teamName];
+
+  const lower = teamName.toLowerCase().trim();
+  const entry = Object.entries(TEAM_LOGOS).find(([k]) => {
+    const kLower = k.toLowerCase().trim();
+    return kLower === lower || kLower.includes(lower) || lower.includes(kLower);
+  });
+
+  return entry ? entry[1] : null;
+}
 
 export function TeamsProvider({ children }: { children: ReactNode }) {
   const [customTeams, setCustomTeams] = useState<TeamData[]>([]);
@@ -42,6 +57,14 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
         if (data) {
           const custom = data.filter((t: any) => t.is_custom).map((t: any) => ({ name: t.name, logoUrl: t.logo_url, category: t.category as any }));
           const hidden = data.filter((t: any) => t.is_hidden).map((t: any) => t.name);
+          
+          // Register custom logos in global map
+          custom.forEach((t: any) => {
+            if (t.name && t.logoUrl) {
+              TEAM_LOGOS[t.name] = t.logoUrl;
+            }
+          });
+
           setCustomTeams(custom);
           setHiddenStaticTeams(hidden);
         }
@@ -53,6 +76,9 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addTeam = async (team: TeamData) => {
+    if (team.name && team.logoUrl) {
+      TEAM_LOGOS[team.name] = team.logoUrl;
+    }
     setCustomTeams(prev => prev.filter(t => t.name !== team.name).concat(team));
     setHiddenStaticTeams(prev => prev.filter(n => n !== team.name));
     try {
@@ -63,6 +89,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
   };
 
   const removeTeam = async (name: string) => {
+    delete TEAM_LOGOS[name];
     setCustomTeams(prev => prev.filter(t => t.name !== name));
     try {
       await supabase.from("teams").delete().eq("name", name).eq("is_custom", true);
@@ -89,6 +116,10 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getTeamLogo = (teamName?: string | null): string | null => {
+    return getLiveTeamLogo(teamName);
+  };
+
   // Helper to merge and filter
   const buildList = (staticList: [string, string][], cat: TeamData["category"]) => {
     const customList: [string, string][] = customTeams
@@ -107,7 +138,7 @@ export function TeamsProvider({ children }: { children: ReactNode }) {
 
   return (
     <TeamsContext.Provider value={{ 
-      customTeams, hiddenStaticTeams, addTeam, removeTeam, hideStaticTeam, restoreStaticTeam,
+      customTeams, hiddenStaticTeams, addTeam, removeTeam, hideStaticTeam, restoreStaticTeam, getTeamLogo,
       combinedFootball, combinedWC, combinedF1, combinedB, combinedCricketIPL, combinedCricketInt
     }}>
       {children}

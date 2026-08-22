@@ -18,7 +18,14 @@ export type AppUser = {
   walletBalance?: number;
 };
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  (typeof process !== "undefined" ? process.env?.VITE_SUPABASE_URL : undefined) ||
+  "https://gyxjytykxzivbtmymtek.supabase.co";
+
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  (typeof process !== "undefined" ? process.env?.VITE_SUPABASE_ANON_KEY : undefined) ||
+  "sb_publishable_NQhEUCQp7vP04rcMcO9jTA_Zd0wtfJi";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
